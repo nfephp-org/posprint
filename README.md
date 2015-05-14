@@ -1,10 +1,9 @@
 # posprint
 API para impressão em impressoras POS (Point of Sales) térmicas.
 
-O modo de funcionamento desta API é pelo envio de comandos diretos (RAW) da impressora sem a necessidade de drivers especificos.
-E esta construida com base nos comandos Esc/Pos disponíveis para as impressoras de vários fabricantes.
-Com foco no mercado Brasileiro dessas impressoras.
-Os fabricantes a seguir estão inclusos nessa API, porém nem todos os modelos dessas marcas irão funcionar devido a disponibilidade de recursos oferecidos pelo seu próprio firmware
+O modo de funcionamento desta API é pelo envio de comandos diretos (RAW) para a impressora, sem a necessidade de drivers especificos.
+E está construída com base nos comandos Esc/Pos disponíveis para as impressoras de vários fabricantes (com foco no mercado Brasileiro dessas impressoras).
+Os fabricantes a seguir estão inclusos nessa API, porém nem todos os modelos dessas marcas irão funcionar devido a disponibilidade de recursos oferecidos pelo seu próprio firmware. (Os modelos indicados por enquanto são mera informação de base, ainda não foram feitos todos os testes funcionais reais). 
 
 * EPSON (TM-T20)
 * DARUMA  (DR700)
@@ -14,7 +13,7 @@ Os fabricantes a seguir estão inclusos nessa API, porém nem todos os modelos d
 * SWEDA (SI-300)
 * DIEBOLD (TSP143MD/MU)
 
-Esta API deve prover acesso as impressoras térmicas conectadas atraves de várias formas de conexão e em qualquer sistema operacional, dependendo apenas da correta intalação e configuração da conexão, sem a necessidade de drivers especificos para cada S.O. (apenas um driver RAW padrão em algusn casos) :
+Esta API deve prover acesso as impressoras térmicas conectadas atraves de várias formas de conexão e em qualquer sistema operacional, dependendo apenas da correta intalação e configuração da conexão, sem a necessidade de drivers especificos para cada S.O. (apenas um driver RAW padrão em alguns casos) :
 
 * Serial
 * Paralela
@@ -28,5 +27,5 @@ Esta API deve prover acesso as impressoras térmicas conectadas atraves de vári
 Prerequisitos PHP
 
 * PHP > 5.3
-* ext-imagick
+* ext-imagick (para tratamento das imagens e logos)
 
