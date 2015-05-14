@@ -14,19 +14,19 @@ Os fabricantes a seguir estão inclusos nessa API, porém nem todos os modelos d
 * SWEDA (SI-300)
 * DIEBOLD (TSP143MD/MU)
 
-Esta API deve prover acesso as impressoras térmicas conectadas atraves de várias formas de conexão :
+Esta API deve prover acesso as impressoras térmicas conectadas atraves de várias formas de conexão e em qualquer sistema operacional, dependendo apenas da correta intalação e configuração da conexão, sem a necessidade de drivers especificos para cada S.O. (apenas um driver RAW padrão em algusn casos) :
 
 * Serial
+* Paralela
 * USB
-* Cups
-* Windows Printer
+* Cups Print Server
+* Windows Printer Server
 * IPP
 * LPR
+* Web (jZebra java applet)
 
 Prerequisitos PHP
 
 * PHP > 5.3
 * ext-imagick
-
-
 
