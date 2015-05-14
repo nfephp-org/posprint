@@ -1,9 +1,9 @@
 <?php
 
-namespace Posprinter\Common;
+namespace Posprint\Common;
 
 use Endroid\QrCode\QrCode;
-use Intervention\Image\ImageManagerStatic as Image;
+use Exception;
 
 class Graphics
 {
@@ -12,11 +12,11 @@ class Graphics
     public static $imgWidth;
 
     /**
-     * Seta o uso da extensão Imagick ao invés de GD
+     * 
      */
-    public function __construct()
+    public function __construct($filename = '', $width = null, $height = null)
     {
-        Image::configure(array('driver' => 'imagick'));
+        self::loadImage($filename, $width, $height);
     }
 
     /**
@@ -25,30 +25,34 @@ class Graphics
      * @param type $width
      * @param type $height
      */
-    public static function loadImage($resource, $width = null, $height = null)
+    public static function loadImage($filename, $width = null, $height = null)
     {
-        $img = Image::make($resource);
-        if ($width != null && $height != null) {
-            $img->fit($width, $height);
-        } elseif ($width != null || $height != null) {
-            $img->resize(
-                $width,
-                $height,
-                function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                }
-            );
+        if (! is_file($filename)) {
+            return;
         }
-        self::$img = $img->getCore();
-        self::zWHimg();
+        if (!is_readable($filename)) {
+            throw new Exception("Não é possivel ler esse arquivo '$filename' Permissões!!");
+        }
+        $tipo = self::zIdentifyImg($filename);
+        $func = 'imagecreatefrom' . strtolower($tipo);
+        if (! function_exists($func)) {
+            throw new Exception("Não é possivel usar ou tratar esse tipo de imagem, com GD");
+        }
+        self::$img = $func($filename);
+        if (! self::$img) {
+            throw new Exception("Falhou ao carregar a imagem '$filename'.");
+        }
+        self::zLoadDimImage();
+        if ($width != null || $height != null) {
+            self::resizeImage($width, $height);
+        }
     }
     
     /**
      * 
      * @return type
      */
-    public static function getRaster()
+    public static function getImageRaster()
     {
         return self::zGetBinaryImage(self::$img);
     }
@@ -60,9 +64,18 @@ class Graphics
      */
     public static function resizeImage($width = null, $height = null)
     {
-        self::loadImage(self::$img, $width, $height);
+        if ($width != null && $height == null) {
+            $razao = $width / self::$imgWidth;
+            $height = (int) round($razao * self::$imgHeight, 0);
+        } elseif ($width == null && $height != null) {
+            $razao = $height / self::$imgHeight;
+            $width = (int) round($razao * self::$imgWidth, 0);
+        }
+        $tempimg = imagecreatetruecolor($width, $height);
+        imagecopyresampled($tempimg, self::$img, 0, 0, 0, 0, $width, $height, self::$imgWidth, self::$imgHeight);
+        self::$img = $tempimg;
+        self::zLoadDimImage();
     }
-    
 
     /**
      * 
@@ -72,7 +85,7 @@ class Graphics
      * @param string $imageType PNG, GIF, JPEG, WBMP
      * @param string $dataText dados do QRCode
      */
-    public function createQRCodeImg(
+    public static function getImageQRCode(
         $width = 200,
         $padding = 10,
         $errCorretion = 'low',
@@ -92,22 +105,24 @@ class Graphics
                ->setLabel('')
                ->setLabelFontSize(8);
         self::$img = $qrCode->getImage();
-        self::zWHimg();
+        self::zLoadDimImage();
     }
 
+    public static function getImage()
+    {
+        return self::$img;
+    }
+    
     /**
      * 
-     * @param type $im
      * @return type
      */
-    protected static function zGetBinaryImage($objImg)
+    protected static function zGetBinaryImage()
     {
         $data = "";
-        $yMax = imagesx($objImg); // image width
-        $xMax = imagesy($objImg); // image height
-        for ($xPos = 0; $xPos < $xMax; $xPos++) {
-            for ($yPos = 0; $yPos < $yMax; $yPos++) {
-                $rgb = imagecolorat($objImg, $yPos, $xPos);
+        for ($yPos = 0; $yPos < self::$imgHeight; $yPos++) {
+            for ($xPos = 0; $xPos < self::$imgWidth; $xPos++) {
+                $rgb = imagecolorat(self::$img, $xPos, $yPos);
                 $red = ($rgb >> 16) & 0xFF;
                 $green = ($rgb >> 8) & 0xFF;
                 $blue = $rgb & 0xFF;
@@ -121,9 +136,36 @@ class Graphics
     /**
      * 
      */
-    private static function zWHimg()
+    private static function zLoadDimImage()
     {
         self::$imgHeight = imagesy(self::$img);
         self::$imgWidth = imagesx(self::$img);
+    }
+    
+    /**
+     * zIdentifyImg
+     * @param string $filename
+     * @return string
+     */
+    private static function zIdentifyImg($filename)
+    {
+        $imgtype = exif_imagetype($filename);
+        switch ($imgtype) {
+            case 1:
+                $typo = 'GIF';
+                break;
+            case 2:
+                $typo = 'JPEG';
+                break;
+            case 3:
+                $typo = 'PNG';
+                break;
+            case 15:
+                $typo = 'WBMP';
+                break;
+            default:
+                $typo = 'none';
+        }
+        return $typo;
     }
 }

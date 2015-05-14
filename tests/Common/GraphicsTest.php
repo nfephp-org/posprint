@@ -3,9 +3,9 @@
  * Class Graphics
  * @author Roberto L. Machado <linux.rlm at gmail dot com>
  */
-namespace Posprinter\tests\Common;
+namespace Posprint\tests\Common;
 
-use Posprinter\Common\Graphics;
+use Posprint\Common\Graphics;
 
 class GraphicsTest extends PHPUnit_Framework_TestCase
 {
