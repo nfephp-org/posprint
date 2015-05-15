@@ -29,3 +29,7 @@ Prerequisitos PHP
 * PHP > 5.3
 * ext-imagick (para tratamento das imagens e logos)
 
+Referencias 
+* [escpos-php](https://github.com/mike42/escpos-php)
+* [php-esc-pos](https://github.com/ronisaha/php-esc-pos)
+* [PHP:IPP](http://www.nongnu.org/phpprintipp/) (C) Thomas Harding
