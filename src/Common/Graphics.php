@@ -40,11 +40,15 @@ class Graphics
             throw new Exception("Não é possivel ler esse arquivo '$filename' Permissões!!");
         }
         $tipo = self::zIdentifyImg($filename);
-        $func = 'imagecreatefrom' . strtolower($tipo);
-        if (! function_exists($func)) {
-            throw new Exception("Não é possivel usar ou tratar esse tipo de imagem, com GD");
+        if ($tipo == 'BMP') {
+            self::$img = self::imageCreateFrombmp($filename);
+        } else {
+            $func = 'imagecreatefrom' . strtolower($tipo);
+            if (! function_exists($func)) {
+                throw new Exception("Não é possivel usar ou tratar esse tipo de imagem, com GD");
+            }
+            self::$img = $func($filename);
         }
-        self::$img = $func($filename);
         if (! self::$img) {
             throw new Exception("Falhou ao carregar a imagem '$filename'.");
         }
@@ -255,6 +259,9 @@ class Graphics
             case 15:
                 $typo = 'WBMP';
                 break;
+            case 6:
+                $typo = 'BMP';
+                break;
             default:
                 $typo = 'none';
         }
@@ -275,5 +282,89 @@ class Graphics
             $num = round($num/$base) * $base;
         }
         return $num;
+    }
+    
+    /**
+     * imageCreateFrombmp
+     * Create a GD image from BMP file
+     * @param string $filename
+     * @return GD object
+     */
+    private static function imageCreateFrombmp($filename)
+    {
+        //Load the image into a string
+        $file = fopen($filename, "rb");
+        $read = fread($file, 10);
+        //continue at the end of file
+        while (! feof($file) && ($read <> "")) {
+            $read .= fread($file, 1024);
+        }
+        fclose($file);
+        $temp = unpack("H*", $read);
+        $hex = $temp[1];
+        $header = substr($hex, 0, 108);
+        //Process the header
+        //Structure: http://www.fastgraph.com/help/bmp_header_format.html
+        if (substr($header, 0, 4) != "424d") {
+            //is not a BMP file
+            return false;
+        }
+        //Cut it in parts of 2 bytes
+        $headerParts = str_split($header, 2);
+        //Get the width 4 bytes
+        $width = hexdec($headerParts[19].$headerParts[18]);
+        //Get the height 4 bytes
+        $height = hexdec($headerParts[23].$headerParts[22]);
+        // Unset the header params
+        unset($headerParts);
+        // Define starting X and Y
+        $xPos = 0;
+        $yPos = 1;
+        //Create new gd image
+        $image = imagecreatetruecolor($width, $height);
+        //Grab the body from the image
+        $body = substr($hex, 108);
+        //Calculate if padding at the end-line is needed
+        //Divided by two to keep overview.
+        //1 byte = 2 HEX-chars
+        $bodySize = (strlen($body) / 2);
+        $headerSize = ($width * $height);
+        //Use end-line padding? Only when needed
+        $usePadding = ($bodySize > ($headerSize * 3) + 4);
+        //Using a for-loop with index-calculation instaid of str_split to avoid large memory consumption
+        //Calculate the next DWORD-position in the body
+        for ($iCount = 0; $iCount < $bodySize; $iCount += 3) {
+            //Calculate line-ending and padding
+            if ($xPos >= $width) {
+                //If padding needed, ignore image-padding
+                //Shift i to the ending of the current 32-bit-block
+                if ($usePadding) {
+                    $iCount += $width % 4;
+                }
+                //Reset horizontal position
+                $xPos = 0;
+                //Raise the height-position (bottom-up)
+                $yPos++;
+                //Reached the image-height? Break the for-loop
+                if ($yPos > $height) {
+                    break;
+                }
+            }
+            //Calculation of the RGB-pixel (defined as BGR in image-data)
+            //Define $i_pos as absolute position in the body
+            $iPos = $iCount * 2;
+            $red = hexdec($body[$iPos + 4] . $body[$iPos + 5]);
+            $green = hexdec($body[$iPos + 2] . $body[$iPos + 3]);
+            $blue = hexdec($body[$iPos] . $body[$iPos + 1]);
+            //Calculate and draw the pixel
+            $color = imagecolorallocate($image, $red, $green, $blue);
+            imagesetpixel($image, $xPos, $height-$yPos, $color);
+            //Raise the horizontal position
+            $xPos++;
+        }
+        //Unset the body / free the memory
+        unset($body);
+        //Return image-object
+        return $image;
     }
 }
