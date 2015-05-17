@@ -5,7 +5,6 @@
  */
 
 use Posprint\Connectors\Serial;
-use PhpSerial;
 
 class SerialTest extends PHPUnit_Framework_TestCase
 {
@@ -20,22 +19,11 @@ class SerialTest extends PHPUnit_Framework_TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->phpserial = $this->getMockBuilder('PhpSerial')->getMock();
-        //Config device params in constructor
-        $this->phpserial->expects($this->once());
-        $this->phpserial->method('deviceSet');
-        $this->phpserial->with($this->equalTo(self::DEVICE));
-        $this->phpserial->expects($this->once());
-        $this->phpserial->method('confBaudRate');
-        $this->phpserial->with($this->equalTo(self::BAUD_RATE));
-        $this->phpserial->expects($this->once());
-        $this->phpserial->method('confCharacterLength');
-        $this->phpserial->with($this->equalTo(self::BYTE_SIZE));
-        $this->phpserial->expects($this->once());
-        $this->phpserial->method('confParity');
-        $this->phpserial->with($this->equalTo(self::PARITY));
-        $this->phpserial->expects($this->once());
-        $this->phpserial->method('deviceOpen');
+        $args = array('/dev/ttyS0',9600,8,'none');
+        $this->phpserial = $this->getMockBuilder('PhpSerial')
+                ->setConstructorArgs($args)
+                ->setMethods(array('deviceSet','confBaudRate','confCharacterLength','confParity','deviceOpen'))
+                ->getMock();
         $this->object = new Serial(self::DEVICE, self::BAUD_RATE, self::BYTE_SIZE, self::PARITY);
     }
     

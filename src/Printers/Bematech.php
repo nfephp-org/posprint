@@ -4,7 +4,7 @@ namespace Posprint\Printers;
 
 use Posprint\Printers\Printer;
 
-class Epson extends Basic
+class Bematech extends Basic
 {
     
 }
