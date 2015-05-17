@@ -6,7 +6,8 @@ interface Printer
 {
     public function setDevice();
     public function setMargins();
-    public function setFontMode();
+    public function setPrintMode();
+    public function setFont();
     public function setCharset();
     public function setBold();
     public function setItalic();
