@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Graphics
+ * Class GraphicsTest
  * @author Roberto L. Machado <linux.rlm at gmail dot com>
  */
 
@@ -13,6 +13,7 @@ class GraphicsTest extends PHPUnit_Framework_TestCase
     
     protected function setUp()
     {
+        parent::setUp();
         $this->folderBase = dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR.'fixtures'.DIRECTORY_SEPARATOR;
         $this->graf = new Graphics();
     }
@@ -34,17 +35,6 @@ class GraphicsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($wdt, 196);
     }
 
-    /**
-     * @expectedException \Exception
-     * @expectedExceptionMessage 
-     */
-    public function testFailLoadImg()
-    {
-        $filename = $this->folderBase.'tux.bmp';
-        $this->graf->loadImage($filename);
-    }
-    
-    
     public function testGetImageBinary()
     {
         $filename = $this->folderBase.'tux.jpg';
