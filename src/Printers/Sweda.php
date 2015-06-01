@@ -3,9 +3,13 @@
 namespace Posprint\Printers;
 
 /**
- * Classe Star das impressoras POS.
+ * Classe Sweda das impressoras POS.
  * 
- * Foi construída em torno dos comandos do modelo TSP700
+ * Foi construída em torno dos comandos do modelo SI 300S e SI 300L
+ * Velocidade de Impressão: Máx. 220mm/s
+ * Resolução: 180 dpi
+ * Largura de Impressão: Papel 80 mm (Máx. 72 mm)
+ * Largura de Impressão: Papel 58 mm (Máx. 54 mm)
  * 
  * @category   NFePHP
  * @package    Posprint
@@ -19,7 +23,13 @@ use Posprint\Printers\Basic\Printer;
 use Posprint\Printers\Basic\PrinterInterface;
 use Posprint\Common\Graphics;
 
-class Star extends Printer implements PrinterInterface
+class Sweda extends Printer implements PrinterInterface
 {
+    
+    public function _construct()
+    {
+        $this->dpi = 180;
+        $this->dpmm = 7;
+    }
     
 }

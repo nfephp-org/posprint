@@ -17,7 +17,7 @@ namespace Posprint\Printers;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-interface Printer
+interface PrinterInterface
 {
     public function setDevice();
     public function setPaperWidth();
