@@ -143,7 +143,7 @@ class Epson extends Printer implements PrinterInterface
      */
     public function setSpacing($horizontal = 30, $vertical = 30)
     {
-        $this->connector->write(self::GS . "P" . chr($horizontal) . chr($vertical));
+        $this->text(self::GS . "P" . chr($horizontal) . chr($vertical));
     }
 
     /**
@@ -154,7 +154,7 @@ class Epson extends Printer implements PrinterInterface
      */
     public function setCharSpacing($value = 3)
     {
-        $this->connector->write(self::ESC . " " . chr($value));
+        $this->text(self::ESC . " " . chr($value));
     }
     
     /**
@@ -177,7 +177,7 @@ class Epson extends Printer implements PrinterInterface
         ($doubleH) ? $mode += 16 : $mode += 0;
         ($doubleW) ? $mode += 32 : $mode += 0;
         ($underline) ? $mode += 128 : $mode += 0;
-        $this->connector->write(self::ESC . "!" . chr($mode));
+        $this->text(self::ESC . "!" . chr($mode));
     }
     
     /**
@@ -194,7 +194,7 @@ class Epson extends Printer implements PrinterInterface
         if ($font != 'A') {
             $num = 1;
         }
-        $this->connector->write(self::ESC . "M" . chr($num));
+        $this->text(self::ESC . "M" . chr($num));
         $this->zSetMaxValues();
     }
     
@@ -204,14 +204,14 @@ class Epson extends Printer implements PrinterInterface
      */
     public function setCharset($tableNum = 0)
     {
-        $this->connector->write(self::ESC . "t" . chr($tableNum));
+        $this->text(self::ESC . "t" . chr($tableNum));
         $this->charsetTableNum = $tableNum;
     }
     
     public function setInternational($country = 'LATIN')
     {
         $mode = array_keys($this->aCountry, $country, true);
-        $this->connector->write(self::ESC . "R" . chr($mode));
+        $this->text(self::ESC . "R" . chr($mode));
     }
     
     /**
@@ -220,7 +220,7 @@ class Epson extends Printer implements PrinterInterface
      */
     public function setBold($active = true)
     {
-        $this->connector->write(self::ESC . "E". ($active ? chr(1) : chr(0)));
+        $this->text(self::ESC . "E". ($active ? chr(1) : chr(0)));
     }
     
     /**
@@ -230,7 +230,7 @@ class Epson extends Printer implements PrinterInterface
     public function setUnderlined($active = false)
     {
         ($active) ? $mode = 1 : $mode = 0;
-        $this->connector->write(self::ESC . "-". chr($mode));
+        $this->text(self::ESC . "-". chr($mode));
     }
     
     /**
@@ -241,7 +241,7 @@ class Epson extends Printer implements PrinterInterface
         $mode = 0;
         ($doubleH) ? $mode += 16 : $mode += 0;
         ($doubleW) ? $mode += 32 : $mode += 0;
-        $this->connector->write(self::ESC . "!" . chr($mode));
+        $this->text(self::ESC . "!" . chr($mode));
     }
     
     /**
@@ -255,7 +255,7 @@ class Epson extends Printer implements PrinterInterface
     public function setRotate90($active = false)
     {
         ($active) ? $mode = 1: $mode = 0;
-        $this->connector->write(self::ESC . "V" . chr($mode));
+        $this->text(self::ESC . "V" . chr($mode));
     }
     
     /**
@@ -270,7 +270,7 @@ class Epson extends Printer implements PrinterInterface
         //normal paragrafo 30/180" => 4.23 mm
         $paragrafo = round((int) $paragrafo);
         if ($paragrafo == 0) {
-            $this->connector->write(self::ESC . "2");
+            $this->text(self::ESC . "2");
             return;
         }
         if ($paragrafo < 25) {
@@ -278,7 +278,7 @@ class Epson extends Printer implements PrinterInterface
         } elseif ($paragrafo > 255) {
             $paragrafo = 255;
         }
-        $this->connector->write(self::ESC . "3" . chr($paragrafo));
+        $this->text(self::ESC . "3" . chr($paragrafo));
     }
     
     /**
@@ -295,7 +295,7 @@ class Epson extends Printer implements PrinterInterface
      */
     public function setJustification($justification)
     {
-        $this->connector->write(self::ESC . "a" . chr($justification));
+        $this->text(self::ESC . "a" . chr($justification));
     }
     
     /**
@@ -308,7 +308,7 @@ class Epson extends Printer implements PrinterInterface
      */
     public function initialize($mode = 'normal')
     {
-        $this->connector->write(self::ESC . "@");
+        $this->text(self::ESC . "@");
         $this->characterTable = 0;
         if ($mode == '42') {
             $this->zSetTo42Col();
@@ -449,19 +449,53 @@ class Epson extends Printer implements PrinterInterface
         $data = '123456'
     ) {
         if ($type != 'none') {
-            $this->connector->write(self::GS . "h" . chr($height));
-            $this->connector->write(self::GS . 'w' . chr($lineWidth));
-            $this->connector->write(self::GS . 'H' . chr($txtPosition));
-            $this->connector->write(self::GS . 'f' . chr($txtFont));
-            $this->connector->write(self::GS . "k" . chr($type) . $data . self::NUL);
+            $this->text(self::GS . "h" . chr($height));
+            $this->text(self::GS . 'w' . chr($lineWidth));
+            $this->text(self::GS . 'H' . chr($txtPosition));
+            $this->text(self::GS . 'f' . chr($txtFont));
+            $this->text(self::GS . "k" . chr($type) . $data . self::NUL);
         }
     }
 
     /**
      * 
      */
-    public function barcodeQRCode()
+    public function barcodeQRCode($texto = '', $level = 'L', $modelo = '1', $wmod = 1)
     {
+        //GS ( k pL pH cn fn [parameters]
+        //Stores, prints symbol data, or configure the settings.
+        //cn
+        //48: PDF417
+        //49: QR Code
+        //50: MaxiCode
+        //51: 2-dimensional GS1 Dat
+        
+        $b2dtype = chr(49);
+        $pLower = chr(3);
+        $pHigher = chr(0);
+        $errlevel = chr(48);
+        
+        //set QRCode model
+        $func = chr(65);
+        $qrmod = 49;
+        if ($modelo == 2) {
+            $qrmod = 50;
+        }
+        $this->text(self::GS . "(k" . $pLower . $pHigher . $b2dtype . $func . $qrmod . chr(0));
+        
+        //set module size in dots
+        $func = chr(67);
+        $this->text(self::GS . "(k" . $pLower . $pHigher . $b2dtype . $func . $wmod);
+
+        //set error correction level
+        $func = chr(69);
+        $this->text(self::GS . "(k" . $pLower . $pHigher . $b2dtype . $func . $errlevel);
+        
+        //print QR Code
+        //k = (pL + pH × 256) – 3
+        $func = chr(80);
+        $metodo = chr(48);
+        $this->text(self::GS . "(k" . $pLower . $pHigher . $b2dtype . $func . $metodo . $texto);
         
     }
     
@@ -480,9 +514,9 @@ class Epson extends Printer implements PrinterInterface
     public function feed($lines = 1)
     {
         if ($lines <= 1) {
-            $this->connector->write(self::LF);
+            $this->text(self::LF);
         } else {
-            $this->connector->write(self::ESC . "d" . chr($lines));
+            $this->text(self::ESC . "d" . chr($lines));
         }
     }
     
@@ -495,7 +529,7 @@ class Epson extends Printer implements PrinterInterface
         if ($lines > 255) {
             $lines = 255;
         }
-        $this->connector->write(self::ESC . "e" . chr($lines));
+        $this->text(self::ESC . "e" . chr($lines));
     }
     
     /**
@@ -521,7 +555,7 @@ class Epson extends Printer implements PrinterInterface
      */
     public function cut($mode = 65, $lines = 3)
     {
-        $this->connector->write(self::GS . "V" . chr($mode) . chr($lines));
+        $this->text(self::GS . "V" . chr($mode) . chr($lines));
     }
     
     /**
@@ -532,7 +566,7 @@ class Epson extends Printer implements PrinterInterface
         //puxar o bufer em  array
         $buffer = $buffer->getDataBinary(true);
         foreach ($buffer as $command) {
-            $this->connector->write($command);
+            $this->text($command);
         }
     }
     
@@ -573,11 +607,11 @@ class Epson extends Printer implements PrinterInterface
         // Entra no modo de configuração avançado da impressora
         //029 040 069 003 000 001 073 078
         //GS   (   E   pL pH  fn   d1   d2  Change into the user setting mode
-        $this->connector->write(self::GS.'(E'.chr(3).chr(0).chr(1).chr(73).chr(78));
+        $this->text(self::GS.'(E'.chr(3).chr(0).chr(1).chr(73).chr(78));
         // Configura o modo de emulação de colunas na impressora
         //029 040 069 004 000 005 011 001 000
         //GS   (   E   pL pH  fn   d1  d2  d3  Set the customized setting values
-        $this->connector->write(self::GS.'(E'.chr(4).chr(0).chr(5).chr(11).chr(1).chr(0));
+        $this->text(self::GS.'(E'.chr(4).chr(0).chr(5).chr(11).chr(1).chr(0));
         //Os dois últimos bytes do comando acima, definem o modo de emulação
         //de colunas devendo seguir à seguinte regra:
         //000 000 - Modo Normal (Configuração Default)
@@ -585,7 +619,7 @@ class Epson extends Printer implements PrinterInterface
         // Sai e finaliza o modo de configuração avançado da impressora
         //029 040 069 004 000 002 079 085 084
         //GS   (   E   pL pH  fn  d1  d2  d3  End the user setting mode session
-        $this->connector->write(self::GS.'(E'.chr(4).chr(0).chr(2).chr(79).chr(85).chr(84));
+        $this->text(self::GS.'(E'.chr(4).chr(0).chr(2).chr(79).chr(85).chr(84));
         //Obs.: esta configuração do modo de impressão ficará gravada na impressora,
         //portanto o comando não precisa necessariamente ser executado mais de uma vez.
         $this->printerMode = '42';
