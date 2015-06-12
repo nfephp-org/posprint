@@ -529,7 +529,11 @@ class Epson extends Printer implements PrinterInterface
      */
     public function send()
     {
-        
+        //puxar o bufer em  array
+        $buffer = $buffer->getDataBinary(true);
+        foreach ($buffer as $command) {
+            $this->connector->write($command);
+        }
     }
     
     private function zSetMaxValues()

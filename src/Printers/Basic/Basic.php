@@ -29,6 +29,7 @@ abstract class Basic
     public $widthPrint = 72;//mm
     public $widthMaxdots = 576;//dots
     public $maxchars = 48;//max characters per line
+    public $buffer = '';
     
     //propriedades protegidas padrões
     protected $connector;
@@ -37,10 +38,13 @@ abstract class Basic
     protected $printerMode = 'normal';
     protected $codepage = 'WINDOWS-1250';
     protected $country = 'LATIN';
+    protected $bufferize = false;
     
     public function __construct($connector = null, $bufferize = true)
     {
-        if (isNull($connector) || $bufferize) {
+        $this->bufferize = $bufferize;
+        $this->buffer = new Connectors\Buffer();
+        if (isNull($connector)) {
             $this->connector = new Connectors\Buffer();
         }
     }
@@ -53,7 +57,11 @@ abstract class Basic
     
     public function text($text = '')
     {
-        $this->connector->write($text);
+        if ($this->bufferize) {
+            $this->buffer->write($text);
+        } else {
+            $this->connector->write($text);
+        }
     }
     
     public function line()
