@@ -80,23 +80,35 @@ class Epson extends Printer implements PrinterInterface
     
     /**
      * 
-     * @param type $connector
+     * @param bool $all
+     * @return mixed
      */
-    public function __construct($connector = null, $bufferize = true)
+    public function getCountries($all = true)
     {
-        if (isNull($connector) || $bufferize) {
-            $this->connector = new Connectors\Buffer();
+        if ($all) {
+            return $this->aCountry;
         }
+        return $this->country;
     }
     
     /**
      * 
+     * @param bool $all
+     * @return mixed
      */
-    public function setDevice()
+    public function getCodePages($all = true)
     {
-        
+        $keys = array_keys($this->aCodePage);
+        if ($all) {
+            return $keys;
+        }
+        return $this->codepage;
     }
     
+    /**
+     * 
+     * @param int $width
+     */
     public function setPaperWidth($width = 80)
     {
         // 72.1 mm (2.84"), 576 dots 52.6 mm (2.07"), 420 dots
@@ -107,29 +119,11 @@ class Epson extends Printer implements PrinterInterface
         //42 column mode
         // Font A (13 x 24) 42           42
         // Font B (9 x 17)  60           31
-
-        $widthMax = 72.1;
         if ($width != 80) {
             $width = 58;
-            $widthMax = 52.6;
         }
         $this->widthPaper = $width;
         $this->zSetMaxValues();
-    }
-    
-    private function zSetMaxValues()
-    {
-        //80mm -> wprintmax = 72.1 mm (2.84"), 576 dots
-        //58mm -> wprintmax = 52.6 mm (2.07"), 420 dots
-        
-        // normal
-        // Paper width        80mm         58mm
-        // Font A (12 x 24) 48 chars     35 chars
-        // Font B (9 x 17)  64 chars     46 chars
-        
-        // 42 Columns $this->printerMode
-        // Font A (13 x 24) 42 chars     42 chars
-        // Font B (9 x 17)  60 chars     31 chars
     }
     
     /**
@@ -144,9 +138,8 @@ class Epson extends Printer implements PrinterInterface
      * Set horizontal and vertical motion units
      * $horizontal => entre caracteres 1/x"
      * $vertical => entre linhas 1/y"
-     * 
-     * @param type $horizontal
-     * @param type $vertical
+     * @param int $horizontal
+     * @param int $vertical
      */
     public function setSpacing($horizontal = 30, $vertical = 30)
     {
@@ -177,6 +170,9 @@ class Epson extends Printer implements PrinterInterface
         $underline = false
     ) {
         ($font == 'A') ? $mode = 0: $mode = 1;
+        if ($mode == 1) {
+            $this->font = 'B';
+        }
         ($bold) ? $mode += 8 : $mode += 0;
         ($doubleH) ? $mode += 16 : $mode += 0;
         ($doubleW) ? $mode += 32 : $mode += 0;
@@ -308,41 +304,17 @@ class Epson extends Printer implements PrinterInterface
      * Clears the data in the print buffer and resets the printer modes to 
      * the modes that were in effect when the power was turned on
      * 
-     * @param string $mode 'normal' ou 42 colunas
+     * @param string $mode 'normal' ou '42' colunas
      */
     public function initialize($mode = 'normal')
     {
         $this->connector->write(self::ESC . "@");
         $this->characterTable = 0;
-        if ($mode != 'normal') {
+        if ($mode == '42') {
             $this->zSetTo42Col();
         }
     }
-    
-    private function zSetTo42Col()
-    {
-        //Veja abaixo as seqüências de comandos ESC/POS (comunicação direta)
-        // para configurar o modo de impressão (padrão ou 42 colunas):
-        // Entra no modo de configuração avançado da impressora
-        //029 040 069 003 000 001 073 078
-        //GS   (   E   pL pH  fn   d1   d2  Change into the user setting mode
-        $this->connector->write(self::GS.'(E'.chr(3).chr(0).chr(1).chr(73).chr(78));
-        // Configura o modo de emulação de colunas na impressora
-        //029 040 069 004 000 005 011 001 000
-        //GS   (   E   pL pH  fn   d1  d2  d3  Set the customized setting values
-        $this->connector->write(self::GS.'(E'.chr(4).chr(0).chr(5).chr(11).chr(1).chr(0));
-        //Os dois últimos bytes do comando acima, definem o modo de emulação
-        //de colunas devendo seguir à seguinte regra:
-        //000 000 - Modo Normal (Configuração Default)
-        //001 000 – Modo de 42 Colunas
-        // Sai e finaliza o modo de configuração avançado da impressora
-        //029 040 069 004 000 002 079 085 084
-        //GS   (   E   pL pH  fn  d1  d2  d3  End the user setting mode session
-        $this->connector->write(self::GS.'(E'.chr(4).chr(0).chr(2).chr(79).chr(85).chr(84));
-        //Obs.: esta configuração do modo de impressão ficará gravada na impressora,
-        //portanto o comando não precisa necessariamente ser executado mais de uma vez.
-        $this->printerMode = '42';
-    }
+
     
     /**
      * 
@@ -560,5 +532,58 @@ class Epson extends Printer implements PrinterInterface
         
     }
     
-  
+    private function zSetMaxValues()
+    {
+        $aMv = array(
+            'normal' => array(
+                'A'=> array('80'=>48,'58'=>35),
+                'B'=> array('80'=>64,'58'=>46)),
+            '42' => array(
+                'A'=> array('80'=>42,'58'=>42),
+                'B'=> array('80'=>60,'58'=>31))
+        );
+        //80mm -> wprintmax = 72.1 mm (2.84"), 576 dots
+        //58mm -> wprintmax = 52.6 mm (2.07"), 420 dots
+        // normal
+        // Paper width        80mm         58mm
+        // Font A (12 x 24) 48 chars     35 chars
+        // Font B (9 x 17)  64 chars     46 chars
+        //-------------------------------------------
+        // 42 Columns $this->printerMode
+        // Font A (13 x 24) 42 chars     42 chars
+        // Font B (9 x 17)  60 chars     31 chars
+        $widthPrint = 72.1;
+        $this->widthMaxdots = 576;
+        if ($this->widthPaper != 80) {
+            $widthPrint = 52.6;
+            $this->widthMaxdots = 420;
+        }
+        $this->widthPrint = $widthPrint;
+        $this->maxchars = $aMv[$this->printerMode][$this->font][$this->widthPaper];
+    }
+    
+    private function zSetTo42Col()
+    {
+        //Veja abaixo as seqüências de comandos ESC/POS (comunicação direta)
+        // para configurar o modo de impressão (padrão ou 42 colunas):
+        // Entra no modo de configuração avançado da impressora
+        //029 040 069 003 000 001 073 078
+        //GS   (   E   pL pH  fn   d1   d2  Change into the user setting mode
+        $this->connector->write(self::GS.'(E'.chr(3).chr(0).chr(1).chr(73).chr(78));
+        // Configura o modo de emulação de colunas na impressora
+        //029 040 069 004 000 005 011 001 000
+        //GS   (   E   pL pH  fn   d1  d2  d3  Set the customized setting values
+        $this->connector->write(self::GS.'(E'.chr(4).chr(0).chr(5).chr(11).chr(1).chr(0));
+        //Os dois últimos bytes do comando acima, definem o modo de emulação
+        //de colunas devendo seguir à seguinte regra:
+        //000 000 - Modo Normal (Configuração Default)
+        //001 000 – Modo de 42 Colunas
+        // Sai e finaliza o modo de configuração avançado da impressora
+        //029 040 069 004 000 002 079 085 084
+        //GS   (   E   pL pH  fn  d1  d2  d3  End the user setting mode session
+        $this->connector->write(self::GS.'(E'.chr(4).chr(0).chr(2).chr(79).chr(85).chr(84));
+        //Obs.: esta configuração do modo de impressão ficará gravada na impressora,
+        //portanto o comando não precisa necessariamente ser executado mais de uma vez.
+        $this->printerMode = '42';
+    }
 }
