@@ -27,12 +27,16 @@ abstract class Basic
     public $widthMaxmm = 80;//mm
     public $widthPaper = 80;//mm
     public $widthPrint = 72;//mm
+    public $widthMaxdots = 576;//dots
+    public $maxchars = 48;//max characters per line
     
     //propriedades protegidas padrões
     protected $connector;
     protected $charsetcode = 0;
-    protected $font = '';
+    protected $font = 'A';
     protected $printerMode = 'normal';
+    protected $codepage = 'WINDOWS-1250';
+    protected $country = 'LATIN';
     
     public function __construct($connector = null, $bufferize = true)
     {
@@ -47,11 +51,6 @@ abstract class Basic
         
     }
     
-    public function setPaperWidth()
-    {
-        
-    }
-        
     public function text($text = '')
     {
         $this->connector->write($text);
@@ -59,7 +58,7 @@ abstract class Basic
     
     public function line()
     {
-        $text = '---------------';
+        $text = str_repeat('-', $this->maxchars);
         $this->text($text);
     }
     
@@ -69,6 +68,7 @@ abstract class Basic
     }
     
     //métodos abstratos
+    abstract public function setPaperWidth($width = 80);
     abstract public function setMargins($left = 0, $right = 0);
     abstract public function setSpacing($horizontal = 30, $vertical = 30);
     abstract public function setCharSpacing($value = 3);

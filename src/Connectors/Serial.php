@@ -66,7 +66,6 @@ class Serial implements Connector
     public function close()
     {
         $this->deviceStatus = ! $this->resource->deviceClose();
-        
     }
 
     /**
