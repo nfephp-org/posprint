@@ -128,10 +128,10 @@ class Graphics
      * @param string $dataText dados do QRCode
      */
     public static function getImageQRCode(
+        $dataText = 'NADA NADA NADA',
         $width = 200,
         $padding = 10,
-        $errCorretion = 'low',
-        $dataText = 'NADA NADA NADA'
+        $errCorretion = 'low'
     ) {
         if ($dataText == '') {
             return;

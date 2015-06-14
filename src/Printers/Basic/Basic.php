@@ -29,6 +29,7 @@ abstract class Basic
     public $widthPrint = 72;//mm
     public $widthMaxdots = 576;//dots
     public $maxchars = 48;//max characters per line
+    public $buffer = array();
     
     //propriedades protegidas padrões
     protected $connector;
@@ -37,25 +38,22 @@ abstract class Basic
     protected $printerMode = 'normal';
     protected $codepage = 'WINDOWS-1250';
     protected $country = 'LATIN';
+    protected $bufferize = false;
     
     public function __construct($connector = null, $bufferize = true)
     {
-        if (isNull($connector) || $bufferize) {
+        $this->bufferize = $bufferize;
+        $this->buffer = new Connectors\Buffer();
+        if (isNull($connector)) {
             $this->connector = new Connectors\Buffer();
         }
     }
     
-    //metodos padrões
-    public function setDevice()
-    {
-        
-    }
-    
     public function text($text = '')
     {
-        $this->connector->write($text);
+        $this->zWriteToConn($text);
     }
-    
+
     public function line()
     {
         $text = str_repeat('-', $this->maxchars);
@@ -66,7 +64,23 @@ abstract class Basic
     {
         $this->connector->close();
     }
+
+    protected function zWriteToConn($text = '')
+    {
+        if ($this->bufferize) {
+            $this->buffer->write($text);
+        } else {
+            $this->connector->write($text);
+        }
+    }
     
+    protected function getWordLength($texto = '')
+    {
+        //k = (pL + pH × 256) – 3
+        $len = strlen($texto);
+    }
+
+
     //métodos abstratos
     abstract public function setPaperWidth($width = 80);
     abstract public function setMargins($left = 0, $right = 0);
