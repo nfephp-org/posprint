@@ -3,6 +3,7 @@
 namespace Posprint\Connectors;
 
 use Posprint\Connectors;
+use Exception;
 
 class File implements Connector
 {
