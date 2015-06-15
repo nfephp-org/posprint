@@ -65,6 +65,7 @@ abstract class Basic
     public function close()
     {
         $this->connector->close();
+        $this->buffer->close();
     }
     
     public function send($all = true)
