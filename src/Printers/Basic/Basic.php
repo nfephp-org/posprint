@@ -1,6 +1,6 @@
 <?php
 
-namespace Posprint\Printers;
+namespace Posprint\Printers\Basic;
 
 use Posprint\Connectors;
 
@@ -40,12 +40,14 @@ abstract class Basic
     protected $country = 'LATIN';
     protected $bufferize = false;
     
-    public function __construct($connector = null, $bufferize = true)
+    public function __construct($connector = null, $bufferize = false)
     {
         $this->bufferize = $bufferize;
         $this->buffer = new Connectors\Buffer();
-        if (isNull($connector)) {
+        if ($connector === null) {
             $this->connector = new Connectors\Buffer();
+        } else {
+            $this->connector = $connector;
         }
     }
     
@@ -63,6 +65,12 @@ abstract class Basic
     public function close()
     {
         $this->connector->close();
+    }
+    
+    public function send($all = true)
+    {
+        $text = $this->buffer->getDataBinary(false);
+        $this->connector->write($text);
     }
 
     protected function zWriteToConn($text = '')
@@ -104,5 +112,4 @@ abstract class Basic
     abstract public function feedReverse();
     abstract public function pulse();
     abstract public function cut();
-    abstract public function send();
 }

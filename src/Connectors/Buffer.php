@@ -2,7 +2,7 @@
 
 namespace Posprint\Connectors;
 
-use Posprint\Connectors;
+use Posprint\Connectors\Connector;
 
 class Buffer implements Connector
 {

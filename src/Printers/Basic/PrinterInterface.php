@@ -1,6 +1,6 @@
 <?php
 
-namespace Posprint\Printers;
+namespace Posprint\Printers\Basic;
 
 /**
  * Interface com os comandos básicos das impressoras POS
@@ -19,7 +19,6 @@ namespace Posprint\Printers;
 
 interface PrinterInterface
 {
-    public function setDevice();
     public function setPaperWidth();
     public function setMargins();
     public function setSpacing();
@@ -42,10 +41,6 @@ interface PrinterInterface
     public function line();
     public function barcodeEAN13();
     public function barcodeEAN8();
-    public function barcodeUPCA();
-    public function barcodeCODABAR();
-    public function barcodeMSI();
-    public function barcodeCODE11();
     public function barcode25();
     public function barcode39();
     public function barcode93();
