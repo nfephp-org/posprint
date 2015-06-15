@@ -1,6 +1,6 @@
 <?php
 
-namespace Posprint\Printers;
+namespace Posprint\Printers\Basic;
 
 use Posprint\Connectors;
 
@@ -44,7 +44,7 @@ abstract class Basic
     {
         $this->bufferize = $bufferize;
         $this->buffer = new Connectors\Buffer();
-        if (isNull($connector)) {
+        if ($connector == null) {
             $this->connector = new Connectors\Buffer();
         }
     }

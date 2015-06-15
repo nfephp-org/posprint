@@ -1,6 +1,6 @@
 <?php
 
-namespace Posprint\Printers;
+namespace Posprint\Printers\Basic;
 
 use Posprint\Printers\Basic\Basic;
 use Posprint\Printers\PrinterInterface;

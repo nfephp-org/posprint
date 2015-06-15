@@ -1,7 +1,7 @@
 <?php
 namespace Posprint\Connectors;
 
-use Posprint\Connectors;
+use Posprint\Connectors\Connector;
 use Exception;
 
 class Network implements Connector
