@@ -1,4 +1,7 @@
 <?php
+
+namespace PosprintTest\Connectors;
+
 /**
  * Class SerialTest
  * @author Roberto L. Machado <linux.rlm at gmail dot com>
@@ -6,7 +9,7 @@
 
 use Posprint\Connectors\Serial;
 
-class SerialTest extends PHPUnit_Framework_TestCase
+class SerialTest extends \PHPUnit_Framework_TestCase
 {
     const DEVICE    = '/dev/ttyS0';
     const BAUD_RATE = 9600;

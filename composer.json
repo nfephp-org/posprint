@@ -17,14 +17,15 @@
         "endroid/qrcode": "1.*@dev"
     },
     "require-dev": {
-	"phpunit/phpunit": "4.8.*@dev"
+	"phpunit/phpunit": "~4.0"
     },
     "autoload": {
         "psr-4": {
-          "Posprint\\": "src/"  
+          "Posprint\\": "src/",
+          "PosprintTest\\": "tests/"
         },
         "psr-0": {
-            "Posprint\\": ["src/", "test/"]
+            "": ["src/", "tests/"]
         },
         "classmap": [
             "./",

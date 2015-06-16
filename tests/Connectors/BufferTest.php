@@ -1,4 +1,7 @@
 <?php
+
+namespace PosprintTest\Connectors;
+
 /**
  * Class BufferTest
  * @author Roberto L. Machado <linux.rlm at gmail dot com>
@@ -6,7 +9,7 @@
 
 use Posprint\Connectors\Buffer;
 
-class BufferTest extends PHPUnit_Framework_TestCase
+class BufferTest extends \PHPUnit_Framework_TestCase
 {
     private $fakeData = array();
     private $connection;
