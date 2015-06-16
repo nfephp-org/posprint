@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4d8ecdbc15ab1a0c60b2383358b517cd",
+    "hash": "e0f56426718f38946119255e91bb884f",
     "packages": [
         {
             "name": "endroid/qrcode",
@@ -102,12 +102,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/instantiator.git",
-                "reference": "b70d22758c0813ea5fef9c22480caadd3a2b6a56"
+                "reference": "8e884e78f9f0eb1329e445619e04456e64d8051d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/b70d22758c0813ea5fef9c22480caadd3a2b6a56",
-                "reference": "b70d22758c0813ea5fef9c22480caadd3a2b6a56",
+                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/8e884e78f9f0eb1329e445619e04456e64d8051d",
+                "reference": "8e884e78f9f0eb1329e445619e04456e64d8051d",
                 "shasum": ""
             },
             "require": {
@@ -148,7 +148,7 @@
                 "constructor",
                 "instantiate"
             ],
-            "time": "2015-05-13 13:33:36"
+            "time": "2015-06-14 21:17:01"
         },
         {
             "name": "phpdocumentor/reflection-docblock",
@@ -508,12 +508,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "a7a4f2abbfab53d5de94d8adcac580e4e5a25aa6"
+                "reference": "19215e9a6cf90f46179aa7332dd9df05900cb78b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a7a4f2abbfab53d5de94d8adcac580e4e5a25aa6",
-                "reference": "a7a4f2abbfab53d5de94d8adcac580e4e5a25aa6",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/19215e9a6cf90f46179aa7332dd9df05900cb78b",
+                "reference": "19215e9a6cf90f46179aa7332dd9df05900cb78b",
                 "shasum": ""
             },
             "require": {
@@ -572,7 +572,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-06-13 07:43:27"
+            "time": "2015-06-15 07:51:22"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -1054,8 +1054,7 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "hyperthese/php-serial": 20,
-        "endroid/qrcode": 20,
-        "phpunit/phpunit": 20
+        "endroid/qrcode": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

@@ -1,4 +1,7 @@
 <?php
+
+namespace PosprintTest\Connectors;
+
 /**
  * Class FileTest
  * @author Roberto L. Machado <linux.rlm at gmail dot com>
@@ -6,7 +9,7 @@
 
 use Posprint\Connectors\File;
 
-class FileTest extends PHPUnit_Framework_TestCase
+class FileTest extends \PHPUnit_Framework_TestCase
 {
     private $folderBase = '';
     private $filename = 'newfixture.dat';
