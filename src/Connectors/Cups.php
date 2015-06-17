@@ -1,8 +1,22 @@
 <?php
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+namespace Posprint\Connectors;
+
+/**
+ * Classe Cups
+ * 
+ * @category   NFePHP
+ * @package    Posprint
+ * @copyright  Copyright (c) 2015
+ * @license    http://www.gnu.org/licenses/lesser.html LGPL v3
+ * @author     Roberto L. Machado <linux.rlm at gmail dot com>
+ * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
+use Posprint\Connectors\Connector;
+use Exception;
+
+class Cups implements Connector
+{
+    
+}
