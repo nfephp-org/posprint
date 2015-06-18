@@ -2,6 +2,17 @@
 
 namespace Posprint\Printers\Basic;
 
+/**
+ * Classe Basic das impressoras termicas.
+ * 
+ * @category   NFePHP
+ * @package    Posprint
+ * @copyright  Copyright (c) 2015
+ * @license    http://www.gnu.org/licenses/lesser.html LGPL v3
+ * @author     Roberto L. Machado <linux.rlm at gmail dot com>
+ * @link       http://github.com/nfephp-org/posprint for the canonical source repository
+ */
+
 use Posprint\Connectors;
 
 abstract class Basic
@@ -9,17 +20,27 @@ abstract class Basic
      //constantes padrões
     const NUL = "\x0"; //Nulo
     const EOT = "\x4"; //EOT fim da transmissão
-    const ENQ = "\x5"; //ENQ colocar na fila
+    const ENQ = "\x5"; //ENQ colocar na fila Pedido de status 1
     const HT = "\x9"; //tabulação horizontal
-    const LF = "\x0a"; //avança linha
+    const VT = "\xb"; //tabulação vertical
+    const LF = "\x0a"; //Inicia a impressão e avança uma linha
     const FF = "\x0c"; //avança pagina
     const CR = "\x0d"; //retorno de carro
     const DLE = "\x10"; //Data Link Escape
-    const DC4 = "\x14"; //DC4 Controle de dispositivo 4
-    const CAN = "\x18"; //CAN
+    const CAN = "\x18"; //CAN Cancela linha enviada
+    const BEL = "\x07"; //BEL sinal sonoro
     const ESC = "\x1b"; //escape
     const FS = "\x1c"; //FS
     const GS = "\x1d"; //GS
+    const SO = "\x0e"; //SO Inicia modo expandido
+    const DC1 = "\x11"; //DC1 Inicia modo enfatizado
+    const DC2 = "\x12"; //DC2 Cancela modo condensado
+    const DC3 = "\x13"; //DC3 Cancela modo enfatizado
+    const DC4 = "\x14"; //DC4 Controle de dispositivo 4 Inicia modo normal
+    const SI = "\x0f"; //Seleciona modo condensado
+    const EM = "\x19"; //Avança 4 linhas
+    const DEL = "\x7f"; //Cancela último caracter
+    const SYN = "\x16"; //Sincronismo
     
     //propriedades publicas padrões
     public $dpi = 203;
@@ -50,6 +71,34 @@ abstract class Basic
             $this->connector = $connector;
         }
     }
+    
+    /**
+     * 
+     * @param bool $all
+     * @return mixed
+     */
+    public function getCountries($all = true)
+    {
+        if ($all) {
+            return $this->aCountry;
+        }
+        return $this->country;
+    }
+    
+    /**
+     * 
+     * @param bool $all
+     * @return mixed
+     */
+    public function getCodePages($all = true)
+    {
+        $keys = array_keys($this->aCodePage);
+        if ($all) {
+            return $keys;
+        }
+        return $this->codepage;
+    }
+    
     
     public function text($text = '')
     {

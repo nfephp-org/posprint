@@ -80,33 +80,6 @@ class Epson extends Printer implements PrinterInterface
     
     /**
      * 
-     * @param bool $all
-     * @return mixed
-     */
-    public function getCountries($all = true)
-    {
-        if ($all) {
-            return $this->aCountry;
-        }
-        return $this->country;
-    }
-    
-    /**
-     * 
-     * @param bool $all
-     * @return mixed
-     */
-    public function getCodePages($all = true)
-    {
-        $keys = array_keys($this->aCodePage);
-        if ($all) {
-            return $keys;
-        }
-        return $this->codepage;
-    }
-    
-    /**
-     * 
      * @param int $width
      */
     public function setPaperWidth($width = 80)

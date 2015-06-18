@@ -9,7 +9,7 @@ namespace Posprint\Printers\Basic;
  * ou não funcionar devido a diferenças em seu firmware, mesmo entre impressoras
  * de mesmo modelo e marca. Portanto é importante garantir um firmware atualizado.
  * 
- * @category   API
+ * @category   NFePHP
  * @package    Posprint
  * @copyright  Copyright (c) 2015
  * @license    http://www.gnu.org/licenses/lesser.html LGPL v3
