@@ -11,7 +11,7 @@ use Posprint\Printers\ZebraEpl;
 //estabeleça os setups da conexão
 $usbport = '/dev/usb/lp0';
 //inicie a conexão
-//sim esyou usando a conexão tipo "File" isso funciona apenas em UNIX like
+//sim estou usando a conexão tipo "File" isso funciona apenas em UNIX like
 //em Ruindows é outra coisa 
 //TODO: montar a classe para conexões USB pelo UNIX ou pelo Windows
 //como derivada da classe File
