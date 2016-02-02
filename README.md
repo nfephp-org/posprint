@@ -1,6 +1,9 @@
 # posprint
 API para impressão em impressoras termicas POS (Point of Sales). Usadas em caixa de redes varejistas.
 
+## ATENÇÃO ESTE PACOTE AINDA ESTÁ EM FASE ALPHA E NÃO É FUNCIONAL.
+### Necessitamos de colaboradores !
+
 O modo de funcionamento desta API é pelo envio de comandos diretos (RAW) para a impressora, sem a necessidade de uso de drivers especificos.
 E está construída com base nos comandos Esc/Pos disponíveis para as impressoras de vários fabricantes (marcas e modelos escolhidos com foco no mercado Brasileiro dessas impressoras).
 
