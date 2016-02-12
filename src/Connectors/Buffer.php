@@ -20,7 +20,7 @@ namespace Posprint\Connectors;
 
 use Posprint\Connectors\ConnectorInterface;
 
-trait Buffer implements ConnectorInterface
+class Buffer implements ConnectorInterface
 {
     /**
      * Buffer of accumulated raw data.

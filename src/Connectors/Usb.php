@@ -28,7 +28,7 @@ use Posprint\Connectors\ConnectorInterface;
 use Posprint\Connectors\File;
 use Exception;
 
-trait Usb extends File implements ConnectorInterface
+class Usb extends File implements ConnectorInterface
 {
 
 }

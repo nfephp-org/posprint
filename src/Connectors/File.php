@@ -18,7 +18,7 @@ namespace Posprint\Connectors;
 use Posprint\Connectors\ConnectorInterface;
 use Exception;
 
-trait File implements ConnectorInterface
+class File implements ConnectorInterface
 {
     /**
      * @var resource The file pointer to send data to.
