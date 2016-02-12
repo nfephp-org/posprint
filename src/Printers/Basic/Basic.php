@@ -13,11 +13,11 @@ namespace Posprint\Printers\Basic;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-use Posprint\Connectors;
+use Posprint\Connectors\Buffer;
 
 abstract class Basic
 {
-     //constantes padrões
+    //set standards
     const NUL = "\x0"; //Nulo
     const EOT = "\x4"; //EOT fim da transmissão
     const ENQ = "\x5"; //ENQ colocar na fila Pedido de status 1
@@ -42,42 +42,112 @@ abstract class Basic
     const DEL = "\x7f"; //Cancela último caracter
     const SYN = "\x16"; //Sincronismo
     
-    //propriedades publicas padrões
+    //public property standards
+    /**
+     * Resolution in dpi
+     * @var int
+     */
     public $dpi = 203; //dots per inch
+    /**
+     * Resolution in dpmm
+     * @var int 
+     */
     public $dpmm = 8; //dots per mm
+    /**
+     * Maximum width paper
+     * @var int 
+     */
     public $widthMaxmm = 80;//mm
+    /**
+     * Selected Width paper
+     * @var int
+     */
     public $widthPaper = 80;//mm
+    /**
+     * Maximum width for printed area
+     * @var int
+     */
     public $widthPrint = 72;//mm
+    /**
+     * Maximum width for printed area in dots
+     * @var int
+     */
     public $widthMaxdots = 576;//dots
+    /**
+     * Maximum number of characters per line
+     * @var int
+     */
     public $maxchars = 48;//max characters per line
-    public $buffer = array();
     
-    //propriedades protegidas padrões
+    //protected property standards
+    /**
+     *
+     * @var type 
+     */
     protected $connector;
+    /**
+     * Selected Charset Code
+     * @var int
+     */
     protected $charsetcode = 0;
+    /**
+     * Selected internal font
+     * @var string
+     */
     protected $font = 'A';
+    /**
+     * Seleted printer mode
+     * @var string
+     */
     protected $printerMode = 'normal';
+    /**
+     * Seleted code page
+     * Defined in printer class
+     * @var string
+     */
     protected $codepage = 'WINDOWS-1250';
+    /**
+     * Selected Country page
+     * Defined in printer class
+     * @var type 
+     */
     protected $country = 'LATIN';
-    protected $bufferize = false;
+    /**
+     * Selected bold mode
+     * @var bool
+     */
+    protected $boldMode = false;
+    /**
+     * Selected italic mode
+     * @var bool
+     */
+    protected $italicMode = false;
+    /**
+     * Selected under lined mode
+     */
+    protected $underlineMode = false;
+    /**
+     * Buffer class
+     * @var Connectors\Buffer
+     */
+    protected $buffer = null;
     
-    public function __construct($connector = null, $bufferize = false)
+    /**
+     * Method builder
+     * Instantiates the data buffer
+     */
+    public function __construct()
     {
-        $this->bufferize = $bufferize;
         $this->buffer = new Connectors\Buffer();
-        if ($connector === null) {
-            $this->connector = new Connectors\Buffer();
-        } else {
-            $this->connector = $connector;
-        }
     }
     
     /**
-     * 
+     * Return selected country page
+     * or all available countries page for a especific printer 
      * @param bool $all
-     * @return mixed
+     * @return string|array
      */
-    public function getCountries($all = true)
+    public function getCountries($all = false)
     {
         if ($all) {
             return $this->aCountry;
@@ -86,11 +156,12 @@ abstract class Basic
     }
     
     /**
-     * 
+     * Return selected codepage 
+     * or all available code pages
      * @param bool $all
-     * @return mixed
+     * @return string|array
      */
-    public function getCodePages($all = true)
+    public function getCodePages($all = false)
     {
         $keys = array_keys($this->aCodePage);
         if ($all) {
@@ -99,47 +170,86 @@ abstract class Basic
         return $this->codepage;
     }
     
-    
+    /**
+     * Send message or command to buffer
+     * @param string $text
+     */
     public function text($text = '')
     {
-        $this->zWriteToConn($text);
+        $this->buffer->write($text);
     }
-
+    
+    /**
+     * Sends a separator line to buffer
+     */
     public function line()
     {
         $text = str_repeat('-', $this->maxchars);
         $this->text($text);
     }
     
+    /**
+     * Close and clean buffer
+     * All data will be lost
+     */
     public function close()
     {
-        $this->connector->close();
         $this->buffer->close();
     }
     
-    public function send($all = true)
+    /**
+     * Return all data buffer 
+     * @param string $type specifies the return format
+     */
+    public function send($type = '')
     {
-        $text = $this->buffer->getDataBinary(false);
-        $this->connector->write($text);
-    }
-
-    protected function zWriteToConn($text = '')
-    {
-        if ($this->bufferize) {
-            $this->buffer->write($text);
-        } else {
-            $this->connector->write($text);
+        switch ($type) {
+            case 'binA':
+                //returns a binary array of buffer
+                $resp = $this->buffer->getDataBinary(true);
+                break;
+            case 'binS':
+                //returns a binary string of buffer
+                $resp = $this->buffer->getDataBinary(false);
+                break;
+            case 'b64A':
+                //returns a base64 encoded array of buffer
+                $resp = $this->buffer->getDataBase64(true);
+                break;
+            case 'b64S':
+                //returns a base64 encoded string of buffer
+                $resp = $this->buffer->getDataBase64(false);
+                break;
+            case 'json':
+                //returns a json encoded of array buffer
+                $resp = $this->buffer->getDataJson();
+                break;
+            case 'readA':
+                //returns a human readable format of array buffer
+                //only for debug reasons
+                $resp = $this->buffer->getDataReadable(true);
+                break;
+            case 'readS':
+                //returns a human readable format of string buffer
+                //only for debug reasons
+                $resp = $this->buffer->getDataReadable(false);
+                break;
+            default :
+                $resp = $this->buffer->getDataReadable(true);
         }
     }
     
-    protected function getWordLength($texto = '')
+    /**
+     * Calculate the size of the word
+     * @param string $data
+     */
+    protected function getWordLength($data = '')
     {
         //k = (pL + pH × 256) – 3
         $len = strlen($texto);
     }
 
-
-    //métodos abstratos
+    //abstract methods
     abstract public function setPaperWidth($width = 80);
     abstract public function setMargins($left = 0, $right = 0);
     abstract public function setSpacing($horizontal = 30, $vertical = 30);

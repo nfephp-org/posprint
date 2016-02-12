@@ -3,7 +3,7 @@
 namespace Posprint\Printers\Basic;
 
 /**
- * Classe Printer extende a classe Basic
+ * Abstract Class Printer extends Basic class
  * 
  * @category   NFePHP
  * @package    Posprint
@@ -14,11 +14,10 @@ namespace Posprint\Printers\Basic;
  */
 
 use Posprint\Printers\Basic\Basic;
-use Posprint\Printers\PrinterInterface;
 
 abstract class Printer extends Basic
 {
-    //métodos abstratos
+    //abstract methods
     abstract public function barcodeEAN13();
     abstract public function barcodeEAN8();
     abstract public function barcode25();

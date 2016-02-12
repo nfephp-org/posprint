@@ -24,6 +24,10 @@ use Posprint\Printers\Basic\PrinterInterface;
 
 class Epson extends Printer implements PrinterInterface
 {
+    /**
+     * List all available countries pages
+     * @var array
+     */
     public $aCountry = array(
         'USA',
         'FRANCE',
@@ -45,6 +49,10 @@ class Epson extends Printer implements PrinterInterface
         'ARABIA'
     );
     
+    /**
+     * List all available code pages
+     * @var array
+     */
     public $aCodePage = array(
         'CP437' => array('conv'=>'437','table'=>'0','desc'=>'PC437: USA, Standard Europe'),
         'CP850' => array('conv'=>'850','table'=>'2','desc'=>'PC850: Multilingual'),
@@ -76,9 +84,10 @@ class Epson extends Printer implements PrinterInterface
         'WINDOWS-1257' => array('conv'=>' WINDOWS-1257','table'=>'51','desc'=>'WPC1257: Baltic Rim'),
         'WINDOWS-1258' => array('conv'=>' WINDOWS-1258','table'=>'52','desc'=>'WPC1258: Vietnamese')
     );
-    
+
     /**
-     * 
+     * Adjust Paper Width
+     * this adjustment has implications on the printable area and other printing details
      * @param int $width
      */
     public function setPaperWidth($width = 80)
@@ -99,17 +108,17 @@ class Epson extends Printer implements PrinterInterface
     }
     
     /**
-     * 
+     * This command does not exist for this printer
      */
     public function setMargins()
     {
-        
+        return '';
     }
     
     /**
      * Set horizontal and vertical motion units
-     * $horizontal => entre caracteres 1/x"
-     * $vertical => entre linhas 1/y"
+     * $horizontal => character spacing 1/x"
+     * $vertical => line spacing 1/y"
      * @param int $horizontal
      * @param int $vertical
      */
@@ -171,8 +180,8 @@ class Epson extends Printer implements PrinterInterface
     }
     
     /**
-     * 
-     * @param type $table
+     * Select a code page 
+     * @param int $table
      */
     public function setCharset($tableNum = 0)
     {
@@ -180,6 +189,10 @@ class Epson extends Printer implements PrinterInterface
         $this->charsetTableNum = $tableNum;
     }
     
+    /**
+     * Selects a country page
+     * @param string $country
+     */
     public function setInternational($country = 'LATIN')
     {
         $mode = array_keys($this->aCountry, $country, true);
@@ -187,26 +200,40 @@ class Epson extends Printer implements PrinterInterface
     }
     
     /**
-     * 
-     * @param type $active
+     * Set emphasys mode on or off
      */
-    public function setBold($active = true)
+    public function setBold()
     {
-        $this->text(self::ESC . "E". ($active ? chr(1) : chr(0)));
+        if ($this->boldMode) {
+            $this->boldMode = false;
+        } else {
+            $this->boldMode = true;
+        }
+        $this->text(self::ESC . "E". ($this->boldMode ? chr(1) : chr(0)));
     }
     
     /**
-     * 
-     * @param type $underline
+     * This command is not available for this printer
+     */
+    public function setItalic()
+    {
+    }
+    
+    /**
+     * Set underline mode on or off
      */
     public function setUnderlined($active = false)
     {
-        ($active) ? $mode = 1 : $mode = 0;
-        $this->text(self::ESC . "-". chr($mode));
+        if ($this->underlineMode) {
+            $this->underlineMode = false;
+        } else {
+            $this->underlineMode = true;
+        }
+        $this->text(self::ESC . "-". ($this->underlineMode ? chr(1) : chr(0)));
     }
     
     /**
-     * 
+     * Set expanded mode
      */
     public function setExpanded($doubleH = false, $doubleW = false)
     {
@@ -217,13 +244,17 @@ class Epson extends Printer implements PrinterInterface
     }
     
     /**
-     * 
+     * Set condensed mode
      */
     public function setCondensed()
     {
         $this->setFont('B');
     }
     
+    /**
+     * Set rotate 90 degrees
+     * @param bool $active
+     */
     public function setRotate90($active = false)
     {
         ($active) ? $mode = 1: $mode = 0;
@@ -231,26 +262,25 @@ class Epson extends Printer implements PrinterInterface
     }
     
     /**
-     * Espaçamento entre linhas
-     * O padrão é estabelecido com zero e é 30/180"
-     * qualuqer numero diferente de zero irá gerar multiplos de 
-     * 
-     * @param type $paragrafo
+     * Line spacing
+     * The default is set to zero and 30/180 "
+     * any different number of zero will generate multiples of
+     * @param int $paragraph
      */
-    public function setParagraf($paragrafo = 0)
+    public function setParagraph($paragraph = 0)
     {   //n * 1/180-inch vertical motion
         //normal paragrafo 30/180" => 4.23 mm
-        $paragrafo = round((int) $paragrafo);
-        if ($paragrafo == 0) {
+        $paragraph = round((int) $paragraph);
+        if ($paragraph == 0) {
             $this->text(self::ESC . "2");
             return;
         }
-        if ($paragrafo < 25) {
-            $paragrafo = 25;
-        } elseif ($paragrafo > 255) {
-            $paragrafo = 255;
+        if ($paragraph < 25) {
+            $paragraph = 25;
+        } elseif ($paragraph > 255) {
+            $paragraph = 255;
         }
-        $this->text(self::ESC . "3" . chr($paragrafo));
+        $this->text(self::ESC . "3" . chr($paragraph));
     }
     
     /**

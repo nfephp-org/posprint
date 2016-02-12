@@ -3,7 +3,7 @@
 namespace Posprint\Connectors;
 
 /**
- * Trait Buffer
+ * Trait Buffer 
  * In principle, the entire assembly of RAW commands must be made for this buffer
  * That will be used later for sending to the appropriate connector set by calling class
  * This is necessary to make to enable:
@@ -30,6 +30,7 @@ class Buffer implements ConnectorInterface
     
     /**
      * Create new print connector
+     * and set $buffer property as empty array
      */
     public function __construct()
     {
@@ -45,7 +46,7 @@ class Buffer implements ConnectorInterface
     }
 
     /**
-     * send data to printer
+     * send data to buffer porperty
      * @param string $data
      */
     public function write($data)
@@ -55,6 +56,7 @@ class Buffer implements ConnectorInterface
 
     /**
      * Finalize printer connection
+     * and clear buffer property
      */
     public function close()
     {
@@ -62,7 +64,7 @@ class Buffer implements ConnectorInterface
     }
 
     /**
-     * Get the accumulated raw data that has been sent to this buffer.
+     * Return the accumulated raw data that has been sent to this buffer.
      * @param bool $retArray Enable return as array, otherwise will return a string
      * @return string|array
      */
@@ -76,7 +78,7 @@ class Buffer implements ConnectorInterface
     
     /**
      * getDataBase64
-     * Return the data buffer in base64-encoded for transmission over TCP / IP,
+     * Return the data buffer in base64-encoded for transmission over TCP/IP,
      * specifically for use qz.io or other similar system.
      * @param boolean $retArray Enable return as array, otherwise will return a string
      * @return array|string
@@ -95,7 +97,9 @@ class Buffer implements ConnectorInterface
     /**
      * getDataJson
      * Returns the buffer data in JSON format
-     * for use with the java applet
+     * for use with the java ajax
+     * It must be tested because there may be binary data
+     * that can not travel on GET or POST requests over TCP/IP
      * @param bool $retArray Enable return as array, otherwise will return a string
      * @return string
      */
