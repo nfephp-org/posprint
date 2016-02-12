@@ -3,8 +3,13 @@
 namespace Posprint\Connectors;
 
 /**
- * Classe Buffer
- * 
+ * Trait Buffer
+ * In principle, the entire assembly of RAW commands must be made for this buffer
+ * That will be used later for sending to the appropriate connector set by calling class
+ * This is necessary to make to enable:
+ *    1 - debug the assembly of commands
+ *    2 - allow the use of qz.io for printing by using a browser and a cloud server
+ *
  * @category   NFePHP
  * @package    Posprint
  * @copyright  Copyright (c) 2015
@@ -13,12 +18,12 @@ namespace Posprint\Connectors;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-use Posprint\Connectors\Connector;
+use Posprint\Connectors\ConnectorInterface;
 
-class Buffer implements Connector
+trait Buffer implements ConnectorInterface
 {
     /**
-     * Buffer of accumulated data.
+     * Buffer of accumulated raw data.
      * @var array
      */
     private $buffer = null;
@@ -38,7 +43,16 @@ class Buffer implements Connector
     {
         $this->close();
     }
-    
+
+    /**
+     * send data to printer
+     * @param string $data
+     */
+    public function write($data)
+    {
+        $this->buffer[] = $data;
+    }
+
     /**
      * Finalize printer connection
      */
@@ -48,8 +62,8 @@ class Buffer implements Connector
     }
 
     /**
-     * Get the accumulated data that has been sent to this buffer.
-     * @param bool $retArray
+     * Get the accumulated raw data that has been sent to this buffer.
+     * @param bool $retArray Enable return as array, otherwise will return a string
      * @return string|array
      */
     public function getDataBinary($retArray = true)
@@ -62,8 +76,8 @@ class Buffer implements Connector
     
     /**
      * getDataJson
-     * Retorna os dados do buffer em formato json
-     * para uso junto com o applet jZebra
+     * Returns the buffer data in JSON format
+     * for use with the java applet
      * @param bool $retArray
      * @return string
      */
@@ -74,9 +88,9 @@ class Buffer implements Connector
     
     /**
      * getDataReadable
-     * Retorna os dados do buffer convertido em string que podem
-     * ser visualizadas. Pra efeito de testes, sem a impressora.
-     * @param bool $retArray
+     * Return buffer data converted into a readable string.
+     * For testing and debbuging only, this format should not be sent to printer
+     * @param bool $retArray Enable return as array, otherwise will return a string
      * @return string|array
      */
     public function getDataReadable($retArray = true)
@@ -93,18 +107,8 @@ class Buffer implements Connector
     }
 
     /**
-     * send data to printer
-     * @param string $data
-     */
-    public function write($data)
-    {
-        $this->buffer[] = $data;
-    }
-    
-    /**
      * friendlyBinary
-     * Converte os bytes não imprimiveis em tela para um formato 
-     * legível
+     * Converts unprintable characters in screen-printing characters
      * @param string $input
      * @return string
      */

@@ -47,7 +47,6 @@ interface PrinterInterface
     public function barcode128();
     public function barcodeQRCode();
     public function barcodePdf417();
-
     public function feed();
     public function feedReverse();
     public function pulse();

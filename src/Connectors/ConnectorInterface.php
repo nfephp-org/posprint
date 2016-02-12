@@ -13,7 +13,7 @@ namespace Posprint\Connectors;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-interface Connector
+interface ConnectorInterface
 {
     /**
      * Print connectors close

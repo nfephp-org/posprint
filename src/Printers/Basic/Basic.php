@@ -43,8 +43,8 @@ abstract class Basic
     const SYN = "\x16"; //Sincronismo
     
     //propriedades publicas padrões
-    public $dpi = 203;
-    public $dpmm = 8;
+    public $dpi = 203; //dots per inch
+    public $dpmm = 8; //dots per mm
     public $widthMaxmm = 80;//mm
     public $widthPaper = 80;//mm
     public $widthPrint = 72;//mm

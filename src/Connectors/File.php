@@ -3,7 +3,9 @@
 namespace Posprint\Connectors;
 
 /**
- * Classe File
+ * Trait File
+ * Create a binary file and writes the data line by line.
+ * And it can also be used to provide direct connections to USB ports.
  * 
  * @category   NFePHP
  * @package    Posprint
@@ -13,10 +15,10 @@ namespace Posprint\Connectors;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-use Posprint\Connectors\Connector;
+use Posprint\Connectors\ConnectorInterface;
 use Exception;
 
-class File implements Connector
+trait File implements ConnectorInterface
 {
     /**
      * @var resource The file pointer to send data to.
@@ -25,6 +27,7 @@ class File implements Connector
 
     /**
      * Construct new connector, given a filename
+     * If created a binary file must be granted the necessary permissions to create and write the system file
      * @param string $filename
      */
     public function __construct($filename)
@@ -38,6 +41,9 @@ class File implements Connector
         }
     }
 
+    /**
+     * Destruct conection closing the file
+     */
     public function __destruct()
     {
         if ($this->resource != false) {
