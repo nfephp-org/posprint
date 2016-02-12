@@ -75,10 +75,28 @@ class Buffer implements ConnectorInterface
     }
     
     /**
+     * getDataBase64
+     * Return the data buffer in base64-encoded for transmission over TCP / IP,
+     * specifically for use qz.io or other similar system.
+     * @param boolean $retArray Enable return as array, otherwise will return a string
+     * @return array|string
+     */
+    public function getDataBase64($retArray = true)
+    {
+        if (! $retArray) {
+            return base64_encode(implode($this->buffer));
+        }
+        foreach($this->buffer as $linha) {
+            $lbuff[] = base64_encode($linha);
+        }
+        return $lbuff;
+    }
+    
+    /**
      * getDataJson
      * Returns the buffer data in JSON format
      * for use with the java applet
-     * @param bool $retArray
+     * @param bool $retArray Enable return as array, otherwise will return a string
      * @return string
      */
     public function getDataJson($retArray = true)
@@ -112,7 +130,7 @@ class Buffer implements ConnectorInterface
      * @param string $input
      * @return string
      */
-    public function friendlyBinary($input)
+    protected function friendlyBinary($input)
     {
         // Print out binary data with PHP \x00 escape codes,
         // for builting test cases.
