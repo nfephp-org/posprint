@@ -14,7 +14,6 @@ namespace Posprint\Printers;
 
 use Posprint\Printers\Basic\Printer;
 use Posprint\Printers\Basic\PrinterInterface;
-use Posprint\Common\Graphics;
 
 class ZebraEpl extends Printer implements PrinterInterface
 {

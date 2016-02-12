@@ -3,13 +3,14 @@ error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 include_once '../bootstrap.php';
 
+/*
 use Posprint\Graphics\GdtoBMP;
 use Posprint\Graphics\Grf;
 use Posprint\Graphics\DitheredImageProvider;
 
 
 echo DitheredImageProvider::convertByteToGrayscale(231);
-
+*/
 /*
 $image = file_get_contents('logo.jpg');
 $img = imagecreatefromstring($image);
