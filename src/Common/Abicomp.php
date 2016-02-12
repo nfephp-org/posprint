@@ -3,12 +3,21 @@
 namespace Posprint\Common;
 
 /**
- * O mapa de caracteres ABICOMP são complementações do ASCII
+ * Class ABICOMP
+ * The map of ABICOMP characters are additions ASCII
+ *
+ * @category   NFePHP
+ * @package    Posprint
+ * @copyright  Copyright (c) 2015
+ * @license    http://www.gnu.org/licenses/lesser.html LGPL v3
+ * @author     Roberto L. Machado <linux.rlm at gmail dot com>
+ * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
+
 
 class ABICOMP
 {
-    public $char = array(
+    public static $abicompchar = array(
         //160 => ' ',
         161 => 'À',
         162 => 'Á',
@@ -77,21 +86,21 @@ class ABICOMP
     
     /**
      * convert
-     * Converte as letras em UTF8 para os codigos especiais da ABICOMP
+     * Converts the letters in UTF8 for the special codes of ABICOMP
      * @param string $text
      * @return string
      */
-    public function convert($text = '')
+    public static function convert($text = '')
     {
-        $chars = array_flip($this->chars);
+        $chars = array_flip(self::$abicompchars);
         $len = strlen($text);
-        for ($xPos = 0; $xPos <= ($len-1); $xPos++) {
+        $ntext = '';
+        for ($xPos = 0; $xPos < $len; $xPos++) {
             $letra = substr($text, $xPos, 1);
             if (isset($chars[$letra])) {
-                $ntext .= chr($chars[$letra]);
-            } else {
-                $ntext .= $letra;
+                $letra = chr($chars[$letra]);
             }
+            $ntext .= $letra;
         }
         return $ntext;
     }

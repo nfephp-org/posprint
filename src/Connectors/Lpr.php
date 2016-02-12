@@ -13,10 +13,10 @@ namespace Posprint\Connectors;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-use Posprint\Connectors\Connector;
+use Posprint\Connectors\ConnectorInterface;
 use Exception;
 
-class Lpr implements Connector
+class Lpr implements ConnectorInterface
 {
     /**
      *

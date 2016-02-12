@@ -1,8 +1,8 @@
 <?php
 
 /* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * A ideia por traz desse emulador é criar uma imagem da impressão real usando algo como 
+ * GD, html ou outro formato de modo a permitir prever o funcionamento da classe
+ * e mostar pelo browser
+ * 
  */
-

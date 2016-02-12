@@ -21,7 +21,6 @@ namespace Posprint\Printers;
 
 use Posprint\Printers\Basic\Printer;
 use Posprint\Printers\Basic\PrinterInterface;
-use Posprint\Common\Graphics;
 
 class Sweda extends Printer implements PrinterInterface
 {

@@ -25,7 +25,7 @@ namespace Posprint\Printers;
 
 use Posprint\Printers\Basic\Printer;
 use Posprint\Printers\Basic\PrinterInterface;
-use Posprint\Common\Graphics;
+
 
 class Daruma extends Printer implements PrinterInterface
 {

@@ -26,14 +26,23 @@ Esta API deve prover acesso as impressoras térmicas conectadas atraves de vári
 * Windows Printer Server
 * IPP
 * LPR
-* Web (jZebra java applet)
+* Web (qz.io java)
 
 Prerequisitos PHP
 
-* PHP > 5.3
-* ext-imagick (para tratamento das imagens e logos)
+* PHP >= 5.6
+* ext-gd (para tratamento das imagens e logos) 
+* estudando a possibilidade de uso de ext-imagick 
 
 Referencias 
 * [escpos-php](https://github.com/mike42/escpos-php)
 * [php-esc-pos](https://github.com/ronisaha/php-esc-pos)
 * [PHP:IPP](http://www.nongnu.org/phpprintipp/) (C) Thomas Harding
+
+
+## Funcionamento básico
+
+- Carrega classe do conector apropriado
+- Carrega classe da impressora apropriada
+- Envia a sequencia de comandos usando as funções básicas da interface e da classe de impressora
+- Envia os comandos para a impressora usando o conector escolhido

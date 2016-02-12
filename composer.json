@@ -1,5 +1,5 @@
 {
-    "name": "nfephp/posprint",
+    "name": "nfephp-org/posprint",
     "type": "library",
     "description": "Thermal POS printer library",
     "homepage": "https://github.com/nfephp/posprint",

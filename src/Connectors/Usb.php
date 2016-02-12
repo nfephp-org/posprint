@@ -3,8 +3,19 @@
 namespace Posprint\Connectors;
 
 /**
- * Classe USB
- * 
+ * trait USB
+ * Connects directly to the USB port set.
+ * Note: You should not be forgotten providing the appropriate permissions,
+ * otherwise the PHP will not have the necessary permissions for writing on that port.
+ *
+ *  In unix like systems will look something:
+ *      sudo chown www-data:lpadmin /dev/usb/lp0
+ *      sudo usermod -a -G lpadmin www-data
+ *  In windows system will look something:
+ *      net use LPT2 \\<machine>\<printer share> /yes
+ *      net use lpt2 \\acer-6e395d0925\LexmarkP /persistent:yes
+ *      net use LPT1: \\[Computer Name]\Printer /PERSISTENT:YES
+ *
  * @category   NFePHP
  * @package    Posprint
  * @copyright  Copyright (c) 2015
@@ -13,19 +24,11 @@ namespace Posprint\Connectors;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-use Posprint\Connectors\Connector;
+use Posprint\Connectors\ConnectorInterface;
 use Posprint\Connectors\File;
 use Exception;
 
-//sudo chown www-data:lpadmin /dev/usb/lp0
-//sudo usermod -a -G lpadmin www-data
-
-//net use LPT2 \\<machine>\<printer share> /yes
-//net use lpt2 \\acer-6e395d0925\LexmarkP /persistent:yes
-// NET USE LPT1: \\[Computer Name]\Printer /PERSISTENT:YES
-
-
-class Usb extends File implements Connector
+class Usb extends File implements ConnectorInterface
 {
 
 }

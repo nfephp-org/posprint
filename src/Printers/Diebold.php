@@ -17,7 +17,6 @@ namespace Posprint\Printers;
 
 use Posprint\Printers\Basic\Printer;
 use Posprint\Printers\Basic\PrinterInterface;
-use Posprint\Common\Graphics;
 
 class Diebold extends Printer implements PrinterInterface
 {
