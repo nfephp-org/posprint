@@ -81,16 +81,6 @@ abstract class Basic
     
     //protected property standards
     /**
-     *
-     * @var type 
-     */
-    protected $connector;
-    /**
-     * Selected Charset Code
-     * @var int
-     */
-    protected $charsetcode = 0;
-    /**
      * Selected internal font
      * @var string
      */
@@ -101,17 +91,37 @@ abstract class Basic
      */
     protected $printerMode = 'normal';
     /**
+     *
+     * @var array
+     */
+    public $aCountry = array();
+    /**
+     *
+     * @var array
+     */
+    public $aCodePage = array();
+    /**
+     * Selected Charset Code
+     * @var int
+     */
+    protected $charsetcode = 0;
+    /**
      * Seleted code page
      * Defined in printer class
      * @var string
      */
-    protected $codepage = 'WINDOWS-1250';
+    protected $codepage = '';
+    /**
+     * Number of codpage in printer memory
+     * @var int
+     */
+    protected $charsetTableNum = 0;
     /**
      * Selected Country page
      * Defined in printer class
      * @var type 
      */
-    protected $country = 'LATIN';
+    protected $country = '';
     /**
      * Selected bold mode
      * @var bool
@@ -138,7 +148,7 @@ abstract class Basic
      */
     public function __construct()
     {
-        $this->buffer = new Connectors\Buffer();
+        $this->buffer = new Buffer();
     }
     
     /**
@@ -159,10 +169,20 @@ abstract class Basic
      * Return selected codepage 
      * or all available code pages
      * @param bool $all
-     * @return string|array
+     * @return bool|string|array
      */
-    public function getCodePages($all = false)
+    public function getCodePages($all = false, $table = null)
     {
+        if (!is_null($table)) {
+            $respkey = false;
+            foreach ($this->aCodePage as $key => $code) {
+                if ($table == $code['table']) {
+                    $respkey = $key;
+                    break;
+                }
+            }
+            return $respkey;
+        }
         $keys = array_keys($this->aCodePage);
         if ($all) {
             return $keys;
@@ -235,8 +255,9 @@ abstract class Basic
                 $resp = $this->buffer->getDataReadable(false);
                 break;
             default :
-                $resp = $this->buffer->getDataReadable(true);
+                $resp = $this->buffer->getDataReadable(false);
         }
+        return $resp;
     }
     
     /**
@@ -254,7 +275,7 @@ abstract class Basic
     abstract public function setMargins($left = 0, $right = 0);
     abstract public function setSpacing($horizontal = 30, $vertical = 30);
     abstract public function setCharSpacing($value = 3);
-    abstract public function setParagraf($paragrafo = 0);
+    abstract public function setParagraph($value = 0);
     abstract public function setPrintMode();
     abstract public function setFont($font = 'A');
     abstract public function setCharset();
@@ -266,7 +287,7 @@ abstract class Basic
     abstract public function setCondensed();
     abstract public function setRotate90();
     abstract public function setReverseColors();
-    abstract public function setJustification();
+    abstract public function setJustification($value = 'L');
     abstract public function initialize();
     abstract public function feed();
     abstract public function feedReverse();

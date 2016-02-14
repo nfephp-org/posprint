@@ -11,6 +11,9 @@ namespace Posprint\Printers;
  * Largura de Impressão: Papel 80 mm (Máx. 72 mm) 48col/64col;
  * Largura de Impressão: Papel 58 mm (Máx. 54 mm) 35col/46col;
  * 
+ * CodePage default WINDOWS-1250  
+ * CountyPage default LATIN
+ * 
  * @category   NFePHP
  * @package    Posprint
  * @copyright  Copyright (c) 2015
@@ -75,15 +78,50 @@ class Epson extends Printer implements PrinterInterface
         'CP869' => array('conv'=>'869','table'=>'38','desc'=>'PC869: Greek'),
         'ISO8859-2' => array('conv'=>'ISO8859-2','table'=>'39','desc'=>'ISO8859-2: Latin2'),
         'ISO8859-15' => array('conv'=>'ISO8859-15','table'=>'40','desc'=>'ISO8859-15: Latin9'),
-        'WINDOWS-1250' => array('conv'=>' WINDOWS-1250','table'=>'45','desc'=>'WPC1250: Latin2'),
-        'WINDOWS-1251' => array('conv'=>' WINDOWS-1251','table'=>'46','desc'=>'WPC1251: Cyrillic'),
-        'WINDOWS-1252' => array('conv'=>' WINDOWS-1252','table'=>'47','desc'=>'WPC1253: Greek'),
-        'WINDOWS-1254' => array('conv'=>' WINDOWS-1254','table'=>'48','desc'=>'WPC1254: Turkish'),
-        'WINDOWS-1255' => array('conv'=>' WINDOWS-1255','table'=>'49','desc'=>'WPC1255: Hebrew'),
-        'WINDOWS-1256' => array('conv'=>' WINDOWS-1256','table'=>'50','desc'=>'WPC1256: Arabic'),
-        'WINDOWS-1257' => array('conv'=>' WINDOWS-1257','table'=>'51','desc'=>'WPC1257: Baltic Rim'),
-        'WINDOWS-1258' => array('conv'=>' WINDOWS-1258','table'=>'52','desc'=>'WPC1258: Vietnamese')
+        'WINDOWS-1250' => array('conv'=>'WINDOWS-1250','table'=>'45','desc'=>'WPC1250: Latin2'),
+        'WINDOWS-1251' => array('conv'=>'WINDOWS-1251','table'=>'46','desc'=>'WPC1251: Cyrillic'),
+        'WINDOWS-1252' => array('conv'=>'WINDOWS-1252','table'=>'47','desc'=>'WPC1253: Greek'),
+        'WINDOWS-1254' => array('conv'=>'WINDOWS-1254','table'=>'48','desc'=>'WPC1254: Turkish'),
+        'WINDOWS-1255' => array('conv'=>'WINDOWS-1255','table'=>'49','desc'=>'WPC1255: Hebrew'),
+        'WINDOWS-1256' => array('conv'=>'WINDOWS-1256','table'=>'50','desc'=>'WPC1256: Arabic'),
+        'WINDOWS-1257' => array('conv'=>'WINDOWS-1257','table'=>'51','desc'=>'WPC1257: Baltic Rim'),
+        'WINDOWS-1258' => array('conv'=>'WINDOWS-1258','table'=>'52','desc'=>'WPC1258: Vietnamese')
     );
+    
+    /**
+     * Selected Charset Code
+     * @var int
+     */
+    protected $charsetcode = 0;
+    /**
+     * Seleted code page
+     * Defined in printer class
+     * @var string
+     */
+    protected $codepage = 'WINDOWS-1250';
+    /**
+     * Number of codpage in printer memory
+     * @var int
+     */
+    protected $charsetTableNum = 45;
+    /**
+     * Selected Country page
+     * Defined in printer class
+     * @var type 
+     */
+    protected $country = 'LATIN';
+    
+    /**
+     * Send message or command to buffer
+     * @param string $text
+     */
+    public function text($text = '')
+    {
+        $indCode = $this->getCodePages();
+        $codep = $this->aCodePage[$indCode];
+        $ntext = iconv('UTF-8', $codep['conv'], $text);
+        parent::text($ntext);
+    }
 
     /**
      * Adjust Paper Width
@@ -110,7 +148,7 @@ class Epson extends Printer implements PrinterInterface
     /**
      * This command does not exist for this printer
      */
-    public function setMargins()
+    public function setMargins($left = 0, $right = 0)
     {
         return '';
     }
@@ -183,10 +221,11 @@ class Epson extends Printer implements PrinterInterface
      * Select a code page 
      * @param int $table
      */
-    public function setCharset($tableNum = 0)
+    public function setCharset($tableNum = 45)
     {
-        $this->text(self::ESC . "t" . chr($tableNum));
+        $this->codepage = $this->getCodePages('', $tableNum);
         $this->charsetTableNum = $tableNum;
+        $this->text(self::ESC . "t" . chr($tableNum));
     }
     
     /**
@@ -267,10 +306,10 @@ class Epson extends Printer implements PrinterInterface
      * any different number of zero will generate multiples of
      * @param int $paragraph
      */
-    public function setParagraph($paragraph = 0)
+    public function setParagraph($value = 0)
     {   //n * 1/180-inch vertical motion
         //normal paragrafo 30/180" => 4.23 mm
-        $paragraph = round((int) $paragraph);
+        $paragraph = ceil($value);
         if ($paragraph == 0) {
             $this->text(self::ESC . "2");
             return;
@@ -292,12 +331,29 @@ class Epson extends Printer implements PrinterInterface
     }
     
     /**
-     * 
-     * @param type $justification
+     * Aligns all data in one line to the selected layout in standard mode.
+     * @param string $value  L - left C - center or R - rigth
      */
-    public function setJustification($justification)
+    public function setJustification($value = 'L')
     {
-        $this->text(self::ESC . "a" . chr($justification));
+        //ESC a n
+        //Aligns all data in one line to the selected layout in
+        //standard mode.
+        //n = 0, "0": Left justification
+        //n = 1, "1": Centering
+        //n = 2, "2": Right justification
+        $value = strtoupper($value);
+        switch ($value) {
+            case 'C':
+               $nJust = 1;
+               break;
+            case 'R':
+               $nJust = 2;
+               break;
+            default:
+                $nJust = 0;
+        }
+        $this->text(self::ESC . "a" . chr($nJust));
     }
     
     /**
@@ -560,18 +616,7 @@ class Epson extends Printer implements PrinterInterface
         $this->text(self::GS . "V" . chr($mode) . chr($lines));
     }
     
-    /**
-     * Flush buffer data
-     */
-    public function send()
-    {
-        //puxar o bufer em  array
-        $buffer = $buffer->getDataBinary(true);
-        foreach ($buffer as $command) {
-            $this->text($command);
-        }
-    }
-    
+        
     private function zSetMaxValues()
     {
         $aMv = array(
