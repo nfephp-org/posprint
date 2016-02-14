@@ -85,11 +85,11 @@ class Buffer implements ConnectorInterface
      */
     public function getDataBase64($retArray = true)
     {
-        if (! $retArray) {
-            return base64_encode(implode($this->buffer));
-        }
         foreach($this->buffer as $linha) {
             $lbuff[] = base64_encode($linha);
+        }
+        if (! $retArray) {
+            return implode("\n",$lbuff);
         }
         return $lbuff;
     }
@@ -117,13 +117,12 @@ class Buffer implements ConnectorInterface
      */
     public function getDataReadable($retArray = true)
     {
-        if ($retArray) {
-            $ret = array();
-            foreach ($this->buffer as $data) {
-                $ret[] = $this->friendlyBinary($data);
-            }
-        } else {
-            $ret = $this->friendlyBinary(implode($this->buffer));
+        $ret = array();
+        foreach ($this->buffer as $data) {
+            $ret[] = $this->friendlyBinary($data);
+        }
+        if (! $retArray) {
+            $ret = implode("\n", $ret);
         }
         return $ret;
     }

@@ -23,7 +23,7 @@ interface PrinterInterface
     public function setMargins();
     public function setSpacing();
     public function setCharSpacing();
-    public function setParagraf();
+    public function setParagraph();
     public function setPrintMode();
     public function setFont();
     public function setCharset();
