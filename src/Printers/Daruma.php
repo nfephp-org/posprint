@@ -75,7 +75,7 @@ class Daruma extends Printer implements PrinterInterface
         $commandtable = 1; //1/2 = Tabela de comandos 1 ou 2
         $interchardelay = 0;
         $codepage = 0;
-        $this->connector->write(
+        $this->text(
             self::ESC
             . chr(198)
             . chr(0)
@@ -92,10 +92,13 @@ class Daruma extends Printer implements PrinterInterface
             . chr($commandtable)
             . chr($interchardelay)
             . 'XX'
-            . chr($codepage)
+            . chr($codepage),
+            self::NOTRANS
         );
     }
 
+    
+    
     //[ESC] 2 <32> 0 Espaçamento entre linhas padrão
     //Espaçamento entre linhas padrão
     //      ESC 2
