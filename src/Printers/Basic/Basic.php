@@ -42,6 +42,8 @@ abstract class Basic
     const DEL = "\x7f"; //Cancela último caracter
     const SYN = "\x16"; //Sincronismo
     
+    const NOTRANS = false; //not translate characters
+    const TRANS = true; //perform a character convertion to codepage
     //public property standards
     /**
      * Resolution in dpi
@@ -192,11 +194,35 @@ abstract class Basic
     
     /**
      * Send message or command to buffer
+     * when sending commands is not required to convert characters,
+     * so the variable may translate by false
+     * 
      * @param string $text
+     * @param bool $translate
      */
-    public function text($text = '')
+    public function text($text = '', $translate = true)
     {
+        if ($translate) {
+            $text = $this->translate($text);
+        }    
         $this->buffer->write($text);
+    }
+    
+    /**
+     * Translate the text from UTF-8 for the specified codepage
+     * @param string $text
+     * @return string
+     */
+    private function translate($text = '')
+    {
+        $indCode = $this->getCodePages();
+        if (! empty($indCode)) {
+            $codep = $this->aCodePage[$indCode];
+            if (! empty($codep)) {
+                $text = iconv('UTF-8', $codep['conv'], $text);
+            }
+        }
+        return $text;
     }
     
     /**
