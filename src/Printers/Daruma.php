@@ -209,17 +209,17 @@ class Daruma extends Printer implements PrinterInterface
     //Imprime código de barras horizontal
     //ESC b n1 n2 n3 n4 s1...sn NULL
     //n1 – tipo do código a ser impresso
-    //EAN13	1
-    //EAN8	2
-    //S2OF5	3
-    //I2OF5	4
+    //EAN13    1
+    //EAN8    2
+    //S2OF5    3
+    //I2OF5    4
     //CODE128   5
-    //CODE39	6
-    //CODE93	7
-    //UPC_A	8
+    //CODE39    6
+    //CODE93    7
+    //UPC_A    8
     //CODABAR   9
-    //MSI	10
-    //CODE11	11
+    //MSI    10
+    //CODE11    11
     //  n2 – largura da barra. De 2 a 5. Se 0, é usado 2.
     //  n3 – altura da barra. De 50 a 200. Se 0, é usado 50.
     //  n4 – se 1, imprime o código abaixo das barras
@@ -352,7 +352,7 @@ class Daruma extends Printer implements PrinterInterface
     //   m  dpi      dpi     col     col
     //   0  100      67      8      1 -> k = n1 + n2 × 256
     //   1  200      67      8      1
-    //   32 100	     200     24     3 -> k = (n1 + n2 × 256) × 3
+    //   32 100         200     24     3 -> k = (n1 + n2 × 256) × 3
     //   33 200      200     24     3
     //Obs.: 1. Compatível com EPSON e BEMATECH
     //2. Imprime gráficos linha a linha. Evitar utilizar para grandes imagens
@@ -373,9 +373,9 @@ class Daruma extends Printer implements PrinterInterface
     //yL, yH -> número de bytes de dados na direção vertical
     //m Mode         Vertical Dot Density   Horizontal Dot Density
     //0 Normal          200 dpi                 200 dpi
-    //1 Double-width	200 dpi                 100 dpi
+    //1 Double-width    200 dpi                 100 dpi
     //2 Double-height   100 dpi                 200 dpi
-    //3 Quadruple	100 dpi                 100 dpi
+    //3 Quadruple    100 dpi                 100 dpi
     //Obs.: 1. Utilizar esse comando para imagens grandes ou pequenas. O limite
     //de tamanho para k é de 8KB.
     //2. A imagem raster é uma imagem que vem varrida de cima para baixo e da
