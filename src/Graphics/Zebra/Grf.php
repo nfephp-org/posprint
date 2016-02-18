@@ -48,13 +48,13 @@ class Grf
         $pixeloffset = hexdec($origBytes[10])+hexdec($origBytes[11]) + hexdec($origBytes[12])+hexdec($origBytes[13]);
         if ($pixeloffset == 62) {
             echo "pixel offset: $pixeloffset <BR>";
-	} else {
+    } else {
             echo "pixel offset (WARNING! NOT THE DEFAULT OF 62): $pixeloffset <BR>";
-	}
+    }
         
         $byteW = ceil($width/8);
         $newByteIndex = 0;
-	for ($i=$lenBytes-1; $i>=$pixeloffset; $i--) {
+    for ($i=$lenBytes-1; $i>=$pixeloffset; $i--) {
             $tmp = $i-($byteW-1);
             $min = ($tmp+$byteW);
             for($j=$tmp; $j<$min; $j++) {
@@ -62,7 +62,7 @@ class Grf
                 $newByteIndex++;
             }
             $i = $tmp;
-	}
+    }
         echo "Bytes esperados : ".($lenBytes-$pixeloffset) ."  Bytes criados: $newByteIndex";
         $totWHB = count($withoutHeaderBytes);
         
@@ -79,24 +79,24 @@ class Grf
         if ($withLB) {
             $bytesAsCharArr = str_split($byteAsString, 2);
             $lineBreakCount = ceil($width/4);
-	    echo "Adding line break every: $lineBreakCount bytes";
+        echo "Adding line break every: $lineBreakCount bytes";
             $lineBreakedStr = "";
             $len = count($bytesAsCharArr);
             for ($i=0; $i<$len; $i++) {
                 if ($i%$lineBreakCount == 0) {
                     $lineBreakedStr .= "\n";
-		}
+        }
                 $lineBreakedStr .= $bytesAsCharArr[$i];
             }
             $byteAsString = $lineBreakedStr;
         }        
         $wInBytes = ceil($width/8);
-	$imageTemplate = "~DG" . $outputFileName . "," + $totWHB;
+    $imageTemplate = "~DG" . $outputFileName . "," + $totWHB;
         $imageTemplate .= "," . $wInBytes . "," . $byteAsString;
         $handle = fopen($outputFileName.'.grf', "wb");
-	fwrite($handle, $imageTemplate);
+    fwrite($handle, $imageTemplate);
         fclose($handle);
-	echo "Finished!  Check for file $outputFileName.grf in executing dir";
+    echo "Finished!  Check for file $outputFileName.grf in executing dir";
 
     }
 }
