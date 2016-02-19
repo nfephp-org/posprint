@@ -19,16 +19,9 @@ namespace Posprint\Printers;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-use Posprint\Printers\Basic\Printer;
-use Posprint\Printers\Basic\PrinterInterface;
+use Posprint\Printers\DefaultPrinter;
 
-class Sweda extends Printer implements PrinterInterface
+class Sweda extends DefaultPrinter
 {
-    
-    public function _construct()
-    {
-        $this->dpi = 180;
-        $this->dpmm = 7;
-    }
     
 }

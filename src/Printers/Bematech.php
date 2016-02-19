@@ -19,13 +19,11 @@ namespace Posprint\Printers;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-use Posprint\Printers\Basic\Printer;
-use Posprint\Printers\Basic\PrinterInterface;
+use Posprint\Printers\DefaultPrinter;
 
-
-class Bematech extends Printer implements PrinterInterface
+class Bematech extends DefaultPrinter
 {
-    public $mode = 'ESCBEMA';
+    public $mode = 'ESCPOS';
     
     public $charsetcode = 'ISO8859-1';
     
@@ -39,38 +37,18 @@ class Bematech extends Printer implements PrinterInterface
     /**
      * setPrinterMode
      * Seta o modo de impressão no caso da Bematech seleciona entre o 
-     * padão de comandos ESC/BEMA e ESC/POS alternativo
+     * padrão de comandos ESC/POS e alternativo ESC/BEMA
      * @param type $printerMode
      */
-    public function setPrinterMode($printerMode = 'ESCBEMA')
+    public function setPrinterMode($printerMode = 'ESCPOS')
     {
-        //padrão é ESC/BEMA
+        //padrão é ESC/POS
         $nmode = 0;
-        if ($printerMode != 'ESCBEMA') {
-            $this->printerMode = 'ESCPOS';
-            $nmode = 1;
+        if ($printerMode == 'ESCBEMA') {
+            $this->printerMode = 'ESCBEMA';
+            $nmode = 1; //???
         }
-        $this->connector->write(self::GS . chr(249) . chr(53) . $nmode);
+        //$this->buffer->write(self::GS . chr(249) . chr(53) . $nmode);
     }
-    
-    /**
-     * initialize
-     * Inicializa a impressora
-     * All printer settings, including character font, line spacing,
-     * left margin, right margin and inverted mode are canceled and 
-     * the printer returns to its initial state.
-     * 
-     * @param string $mode 
-     */
-    public function initialize($mode = 'ESCBEMA')
-    {
-        $this->connector->write(self::ESC . "@");
-        $this->characterTable = 0;
-        if ($mode != 'ESCBEMA') {
-            $this->setPrinterMode($mode);
-        }
-    }
-    
-    
     
 }
