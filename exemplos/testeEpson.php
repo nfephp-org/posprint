@@ -16,7 +16,8 @@ $epson->setBold(); //detativa bold
 $epson->text('Para imprimir essas linhas'); //imprime texto
 $epson->line(); //insere linha reparadora
 
-$resp = $epson->send(); //obtem o conjunto de comandos para impressão em tela DEBUG
-$resp = str_replace("\n", "<br>", $resp);
+$resp = $epson->send('binS'); //obtem o conjunto de comandos para impressão em tela DEBUG
+$fp = fopen('teste.prn', 'w+');
+$fp = fwrite()
 echo $resp; //apresenta comandos em tela
 
