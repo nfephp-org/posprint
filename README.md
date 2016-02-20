@@ -46,3 +46,33 @@ Referencias
 - Carrega classe da impressora apropriada
 - Envia a sequencia de comandos usando as funções básicas da interface e da classe de impressora
 - Envia os comandos para a impressora usando o conector escolhido
+
+
+## NOTAS DOS COLABORADORES
+
+O problema que encontramos, foi na classe PhpSerial, pois o autor resolveu executar os comandos do windows para alteração de porta separadamente. Porem no windows, toda vez que o comando "mode PORTA" é executado, se passado algum parametro, os outros voltam ao default. E a impressora deve funcionar com a porta da forma que está na imagem abaixo.
+
+![Alt CMD](images/wincmd.png?raw=true "CMD")
+​
+Para isso acontecer voce deve alterar as linhas do arquivo posprint-master/vendor/hyperthese/php-serial/src/PhpSerial.php
+
+```php
+    //$this->_device = "\\.com" . $matches[1];
+    $this->_device = "COM" . $matches[1];
+```
+
+Foi alterado essa linha pois o windows não abre porta serial com o comando "\\.com" e sim "COM"
+
+Depois fizemos outra alteração que é na linha abaixo.
+
+```php
+ "mode " . $this->_winDevice . " PARITY=" . $parity{0},
+ "mode " . $this->_winDevice . " DATA=8 PARITY=" . $parity{0},
+```
+A alteração foi necessária devido a explicação feita no inicio do e-mail.
+
+Pessoal, essas alterações foram feitas apenas para testes no windows utilizando a porta serial, lembrando que esse não é o intuito do projeto.
+
+Atenciosamente, 
+
+R Ribeiro Soares

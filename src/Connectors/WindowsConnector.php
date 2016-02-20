@@ -1,18 +1,23 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace Posprint\Connectors;
 
 /**
- * Description of WindowsConnector
+ * Class Connector 
+ * In principle, the entire assembly of RAW commands must be made for this buffer
+ * That will be used later for sending to the appropriate connector set by calling class
+ * This is necessary to make to enable:
+ *    1 - debug the assembly of commands
+ *    2 - allow the use of qz.io for printing by using a browser and a cloud server
  *
- * @author administrador
+ * @category   NFePHP
+ * @package    Posprint
+ * @copyright  Copyright (c) 2015
+ * @license    http://www.gnu.org/licenses/lesser.html LGPL v3
+ * @author     Michael Billington <michael.billington at gmail dot com>
+ * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
+
 class WindowsConnector
 {
     /**
@@ -127,7 +132,7 @@ class WindowsConnector
     }
     
     /**
-     * 
+     * Check if buffer is null otherelse trow a exception
      */
     public function __destruct() {
         if ($this->buffer !== null) {
@@ -136,7 +141,7 @@ class WindowsConnector
     }
     
     /**
-     * 
+     * Terminate send job to printer 
      */
     public function finalize() {
         $data = implode($this->buffer);
@@ -152,7 +157,6 @@ class WindowsConnector
     
     /**
      * Send job to printer -- platform-specific Linux code.
-     * 
      * @param string $data Print data
      * @throws Exception
      */
