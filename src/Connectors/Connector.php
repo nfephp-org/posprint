@@ -14,6 +14,14 @@
 
 namespace Posprint\Connectors;
 
+/*
+ * serial
+ * USB
+ * File
+ * IPP
+ * Samba
+ * Windows Share
+ */
 
 class Connector
 {
@@ -21,4 +29,10 @@ class Connector
     {
 
     }
+    
+    public function setPrinterPort()
+    {
+        
+    }
+            
 }

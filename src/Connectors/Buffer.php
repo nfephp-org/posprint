@@ -3,7 +3,7 @@
 namespace Posprint\Connectors;
 
 /**
- * Trait Buffer 
+ * Class Buffer 
  * In principle, the entire assembly of RAW commands must be made for this buffer
  * That will be used later for sending to the appropriate connector set by calling class
  * This is necessary to make to enable:
