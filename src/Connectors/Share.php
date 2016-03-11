@@ -18,7 +18,7 @@ namespace Posprint\Connectors;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-class WindowsConnector
+class SMBShare
 {
     /**
      * @var array Accumulated lines of output for later use.
@@ -222,18 +222,18 @@ class WindowsConnector
                 $user = "/user:" . ($this->workgroup != null ? ($this->workgroup . "\\") : "") . $this->userName;
                 if ($this->userPassword == null) {
                     $command = sprintf("net use %s %s",
-                            escapeshellarg($device),
-                            escapeshellarg($user));
+                        escapeshellarg($device),
+                        escapeshellarg($user));
                     $redactedCommand = $command;
                 } else {
                     $command = sprintf("net use %s %s %s",
-                            escapeshellarg($device),
-                            escapeshellarg($user),
-                            escapeshellarg($this->userPassword));
+                        escapeshellarg($device),
+                        escapeshellarg($user),
+                        escapeshellarg($this->userPassword));
                     $redactedCommand = sprintf("net use %s %s %s",
-                            escapeshellarg($device),
-                            escapeshellarg($user),
-                            escapeshellarg("*****"));
+                        escapeshellarg($device),
+                        escapeshellarg($user),
+                        escapeshellarg("*****"));
                 }
                 $retval = $this->runCommand($command, $outputStr, $errorStr);
                 if ($retval != 0) {

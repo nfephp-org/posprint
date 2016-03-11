@@ -16,8 +16,9 @@ namespace Posprint\Printers;
  */
 
 use Posprint\Printers\DefaultPrinter;
+use Posprint\Printers\PrinterInterface;
 
-class Diebold extends DefaultPrinter
+class Diebold extends DefaultPrinter implements PrinterInterface
 {
     public $charsetcode = 'ISO8859-1';
     
