@@ -88,7 +88,11 @@ class Graphics extends Basic
         //identify type of image and load with GD
         $tipo = $this->identifyImg($filename);
         if ($tipo == 'BMP') {
-            $this->img = $this->loadBMP($filename);
+            $img = $this->loadBMP($filename);
+            if ($img === false) {
+                throw new InvalidArgumentException("Image file is not a BMP");
+            }
+            $this->img = $img; 
         } else {
             $func = 'imagecreatefrom' . strtolower($tipo);
             if (! function_exists($func)) {
@@ -127,16 +131,13 @@ class Graphics extends Basic
         }
         //to remove alpha color and put white instead
         $img = $this->img;
-        //imagefilter($img, IMG_FILTER_GRAYSCALE);
-        //imagefilter($img, IMG_FILTER_CONTRAST, -10);
-        //
         $imageX = imagesx($img);
         $imageY = imagesy($img);
         $bmp = '';
-        for ($y = ($imageY - 1); $y >= 0; $y--) {
+        for ($yInd = ($imageY - 1); $yInd >= 0; $yInd--) {
             $thisline = '';
-            for ($x = 0; $x < $imageX; $x++) {
-                $argb = self::getPixelColor($img, $x, $y);
+            for ($xInd = 0; $xInd < $imageX; $xInd++) {
+                $argb = self::getPixelColor($img, $xInd, $yInd);
                 //change transparency to white color
                 if ($argb['alpha'] == 0 && $argb['blue'] == 0 && $argb['green'] == 0 && $argb['red'] == 0) {
                     $thisline .= chr(255).chr(255).chr(255);
@@ -289,14 +290,12 @@ class Graphics extends Basic
     }
     
     /**
-     * imageQRCode
      * Creates a  GD QRCode image
      * 
-     * @param int $size
-     * @param int $padding 
-     * @param string $errCorretion LOW, MEDIUM, QUARTILE, HIGH
-     * @param string $imageType PNG, GIF, JPEG, WBMP
-     * @param string $dataText QRCode data
+     * @param string $dataText
+     * @param int $width
+     * @param int $padding
+     * @param string $errCorretion
      */
     public function imageQRCode(
         $dataText = 'NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA',
@@ -304,9 +303,6 @@ class Graphics extends Basic
         $padding = 10,
         $errCorretion = 'medium'
     ) {
-        if ($dataText == '') {
-            return;
-        }
         //adjust width for a closest multiple of 8
         $width = $this->closestMultiple($width, 8);
         $qrCode = new QrCode();
@@ -370,8 +366,6 @@ class Graphics extends Basic
         $heightPixels = $this->getHeight();
         //get width in Bytes
         $widthBytes = $this->getWidthBytes();
-        //get height in Bytes
-        $heightBytes = $this->getHeightBytes();
         //initialize vars
         $xCount = $yCount = $bit = $byte = $byteVal = 0;
         //create a string for converted bytes
@@ -463,7 +457,7 @@ class Graphics extends Basic
      * 
      * @param resource $img
      * @param int $x
-     * @param intr $y
+     * @param int $y
      * @return array
      */
     private static function getPixelColor($img, $x, $y)
