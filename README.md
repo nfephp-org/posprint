@@ -1,3 +1,9 @@
+[![Build Status](https://travis-ci.org/nfephp-org/posprint.svg?branch=master)](https://travis-ci.org/nfephp-org/posprint)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/nfephp-org/posprint/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/nfephp-org/posprint/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/nfephp-org/posprint/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/nfephp-org/posprint/?branch=master)
+[![License](https://poser.pugx.org/nfephp-org/posprint/license.svg)](https://packagist.org/packages/nfephp-org/posprint)
+[![Latest Unstable Version](https://poser.pugx.org/nfephp-org/posprint/v/unstable.svg)](https://packagist.org/packages/nfephp-org/posprint)
+
 # posprint
 API para impressão em impressoras termicas POS (Point of Sales). Usadas em caixa de redes varejistas.
 

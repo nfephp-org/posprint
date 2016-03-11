@@ -311,14 +311,14 @@ class Graphics extends Basic
         $width = $this->closestMultiple($width, 8);
         $qrCode = new QrCode();
         $qrCode->setText($dataText)
-               ->setImageType('png')
-               ->setSize($width)
-               ->setPadding($padding)
-               ->setErrorCorrection($errCorretion)
-               ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
-               ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
-               ->setLabel('')
-               ->setLabelFontSize(8);
+            ->setImageType('png')
+            ->setSize($width)
+            ->setPadding($padding)
+            ->setErrorCorrection($errCorretion)
+            ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
+            ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
+            ->setLabel('')
+            ->setLabelFontSize(8);
         $this->img = $qrCode->getImage();
         $this->getDimImage();
     }
