@@ -57,7 +57,7 @@ tools:
                         one_class_per_file_sniff: false
         filter:
             excluded_paths:
-                - 'test/*'
+                - 'tests/*'
                 - 'vendor/*'
                 - 'examples/*'
 
@@ -65,7 +65,7 @@ tools:
     php_cpd:
         enabled: true
         excluded_dirs:
-            - test
+            - tests
             - vendor
             - examples
 
@@ -76,7 +76,7 @@ tools:
             level: psr2
         filter:
             excluded_paths:
-                - 'test/*'
+                - 'tests/*'
                 - 'vendor/*'
                 - 'examples/*'
 
@@ -84,7 +84,7 @@ tools:
     php_loc:
         enabled: true
         excluded_dirs:
-            - test
+            - tests
             - vendor
             - examples
 
@@ -109,7 +109,7 @@ tools:
     php_pdepend:
         enabled: true
         excluded_dirs:
-            - test
+            - tests
             - vendor
             - examples
 
@@ -130,7 +130,7 @@ tools:
                     isser_method_name: ^(?:[_a-zA-Z]|__)[a-zA-Z0-9]*$ #Allow underscores & caps
         filter:
             excluded_paths:
-                - 'test/*'
+                - 'tests/*'
                 - 'vendor/*'
                 - 'examples/*'
 
