@@ -1,307 +1,185 @@
 <?php
 
-namespace Posprint\Common;
+namespace Posprint\Graphics;
 
 /**
  * Classe Graphics
  * 
  * @category   NFePHP
  * @package    Posprint
- * @copyright  Copyright (c) 2015
+ * @copyright  Copyright (c) 2016
  * @license    http://www.gnu.org/licenses/lesser.html LGPL v3
- * @author     Roberto L. Machado <linux.rlm at gmail dot com>
+ * @author     Roberto L. Machado <linux dot rlm at gmail dot com>
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
+use Posprint\Graphics\Basic;
 use Endroid\QrCode\QrCode;
-use Exception;
+use RuntimeException;
+use InvalidArgumentException;
 
-class Graphics
+class Graphics extends Basic
 {
-    public static $img;
-    public static $imgHeight;
-    public static $imgWidth;
-
     /**
-     * Construtor 
-     * Carrega uma imagem, se for passada e ajusta suas dimensões
+     * Image prixels in BW
+     * @var string 
+     */
+    protected $imgData = null;
+    /**
+     * Image Raster bit
+     * @var string
+     */
+    protected $imgRasterData = null;
+  
+    /**
+     * Constructor 
+     * Load a image, if passed a path to file and adjust dimentions
      * 
      * @param string $filename
      * @param int $width
      * @param int $height
      */
-    public function __construct($filename = '', $width = null, $height = null)
+    public function __construct($filename = null, $width = null, $height = null)
     {
-        self::loadImage($filename, $width, $height);
+        // Include option to Imagick
+        if (! $this->isGdSupported()) {
+            throw new Exception("GD module not found.");
+        }
+        $this->imgHeight = 0;
+        $this->imgWidth = 0;
+        $this->imgData = null;
+        $this->imgRasterData = null;
+        // Load the image, if the patch was passed
+        if (! is_null($filename)) {
+            $this->load($filename, $width, $height);
+        }
+    }
+    
+    /**
+     * Return a string of bytes
+     * 
+     * @return string
+     */
+    public function getRasterImage()
+    {
+        $this->resizeImage($this->imgWidth);
+        $this->convertPixelBW();
+        $this->convertRaster();
+        return $this->imgRasterData;
     }
 
     /**
-     * loadImage
-     * Carrega uma imagem, se for passada e ajusta suas dimensões
-     * @param type $resource
-     * @param type $width
-     * @param type $height
-     */
-    public static function loadImage($filename, $width = null, $height = null)
+     * load
+     * Load image file and adjust dimentions
+     * @param string $filename path to image file
+     * @param float $width 
+     * @param float $height
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     */ 
+    public function load($filename, $width = null, $height = null)
     {
         if (! is_file($filename)) {
-            return;
+            throw new InvalidArgumentException("Image file not found.");
         }
         if (! is_readable($filename)) {
-            throw new Exception("Não é possivel ler esse arquivo '$filename' Permissões!!");
+            throw new RuntimeException("The file can not be read due to lack of permissions.");
         }
-        $tipo = self::zIdentifyImg($filename);
+        //identify type of image and load with GD
+        $tipo = $this->identifyImg($filename);
         if ($tipo == 'BMP') {
-            self::$img = self::imageCreateFrombmp($filename);
+            $this->img = $this->loadBMP($filename);
         } else {
             $func = 'imagecreatefrom' . strtolower($tipo);
             if (! function_exists($func)) {
-                throw new Exception("Não é possivel usar ou tratar esse tipo de imagem, com GD");
+                throw new RuntimeException("It is not possible to use or handle this type of image with GD");
             }
-            self::$img = $func($filename);
+            $this->img = $func($filename);
         }
-        if (! self::$img) {
-            throw new Exception("Falhou ao carregar a imagem '$filename'.");
+        if (! $this->img) {
+            throw new RuntimeException("Failed to load image '$filename'.");
         }
-        self::zLoadDimImage();
+        //get image dimentions
+        $this->getDimImage();
         if ($width != null || $height != null) {
-            self::resizeImage($width, $height);
+            $this->resizeImage($width, $height);
         }
     }
     
     /**
-     * getWidth
-     * Retorna a latgura em pixels
-     * @return int
+     * Save image to PNG file 
+     * @param string $filename
      */
-    public static function getWidth()
+    public function save($filename = null)
     {
-        return self::$imgWidth;
+        $this->saveImage($filename, $this->img);
     }
     
     /**
-     * getHeight
-     * Retorna a altura em pixels
-     * @return int
+     * Convert a GD image into a BMP string representation
+     * @param string $filename path to image BMP file
+     * @return string
      */
-    public static function getHeight()
+    public function convert2BMP($filename = null)
     {
-        return self::$imgHeight;
-    }
-    
-    /**
-     * getImageBinary
-     * Retorna a representação em Bytes da imagem
-     * @return type
-     */
-    public static function getImageBinary()
-    {
-        return self::zPixel2Byte();
-    }
-    
-    /**
-     * resizeImage
-     * Redimensiona uma imagem
-     * NOTA: a largura será sempre ajustada para o multiplo de 8 mais
-     * proximo, por que as impressoras tem uma resolução de 8 dots
-     * @param int $width
-     * @param int $height
-     */
-    public static function resizeImage($width = null, $height = null)
-    {
-        if ($width == null && $height == null) {
-            return;
+        if (! is_resource($this->img)) {
+            return '';
         }
-        if ($width != null && $height == null) {
-            $width = self::zAdjustMultiple($width);
-            $razao = $width / self::$imgWidth;
-            $height = (int) round($razao * self::$imgHeight);
-        } elseif ($width == null && $height != null) {
-            $razao = $height / self::$imgHeight;
-            $width = (int) round($razao * self::$imgWidth);
-            $width = self::zAdjustMultiple($width);
-        } elseif ($width != null && $height != null) {
-            $width = self::zAdjustMultiple($width);
-        }
-        $tempimg = imagecreatetruecolor($width, $height);
-        imagecopyresampled($tempimg, self::$img, 0, 0, 0, 0, $width, $height, self::$imgWidth, self::$imgHeight);
-        self::$img = $tempimg;
-        self::zLoadDimImage();
-    }
-    
-    /**
-     * getImageQRCode
-     * Gera uma imagem GD do QRCode 
-     * @param int $size
-     * @param type $padding
-     * @param type $errCorretion LOW, MEDIUM, QUARTILE, HIGH
-     * @param string $imageType PNG, GIF, JPEG, WBMP
-     * @param string $dataText dados do QRCode
-     */
-    public static function getImageQRCode(
-        $dataText = 'NADA NADA NADA',
-        $width = 200,
-        $padding = 10,
-        $errCorretion = 'low'
-    ) {
-        if ($dataText == '') {
-            return;
-        }
-        $width = self::zAdjustMultiple($width);
-        $qrCode = new QrCode();
-        $qrCode->setText($dataText)
-               ->setImageType('png')
-               ->setSize($width)
-               ->setPadding($padding)
-               ->setErrorCorrection($errCorretion)
-               ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
-               ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
-               ->setLabel('')
-               ->setLabelFontSize(8);
-        self::$img = $qrCode->getImage();
-        self::zLoadDimImage();
-    }
-    
-    /**
-     * getGDobj
-     * Retorna um objeto GD
-     * @return GD
-     */
-    public static function getGDobj()
-    {
-        return self::$img;
-    }
-    
-    /**
-     * zPixel2Byte
-     * Converte cada pixel da imagem em um byte,
-     * cada byte irão representar 8 dots 
-     * @return array
-     * @throws Exception
-     */
-    protected static function zPixel2Byte()
-    {
-        $widthPixels = self::$imgWidth;
-        $heightPixels = self::$imgHeight;
-        //numero de bytes da imagem
-        $widthBytes = (int)((self::$imgWidth + 7) / 8);
-        $imgData = self::zPixel2BitBW(self::$img, $widthPixels, $heightPixels);
-        $xPos = $yPos = $bit = $byte = $byteVal = 0;
-        $data = str_repeat("\0", $widthBytes * $heightPixels);
-        do {
-            $byteVal |= (int) $imgData[$yPos * $widthPixels + $xPos] << (7 - $bit);
-            $xPos++;
-            $bit++;
-            if ($xPos >= $widthPixels) {
-                $xPos = 0;
-                $yPos++;
-                $bit = 8;
-                if ($yPos >= $heightPixels) {
-                    $data[$byte] = chr($byteVal);
-                    break;
-                }
+        //to remove alpha color and put white instead
+        $img = $this->img;
+        //imagefilter($img, IMG_FILTER_GRAYSCALE);
+        //imagefilter($img, IMG_FILTER_CONTRAST, -10);
+        //
+        $imageX = imagesx($img);
+        $imageY = imagesy($img);
+        $bmp = '';
+        for ($y = ($imageY - 1); $y >= 0; $y--) {
+            $thisline = '';
+            for ($x = 0; $x < $imageX; $x++) {
+                $argb = self::getPixelColor($img, $x, $y);
+                //change transparency to white color
+                if ($argb['alpha'] == 0 && $argb['blue'] == 0 && $argb['green'] == 0 && $argb['red'] == 0) {
+                    $thisline .= chr(255).chr(255).chr(255);
+                } else {
+                    $thisline .= chr($argb['blue']).chr($argb['green']).chr($argb['red']);
+                }    
             }
-            if ($bit >= 8) {
-                $data[$byte] = chr($byteVal);
-                $byteVal = 0;
-                $bit = 0;
-                $byte++;
+            while (strlen($thisline) % 4) {
+                $thisline .= "\x00";
             }
-        } while (true);
+            $bmp .= $thisline;
+        }
+        $bmpSize = strlen($bmp) + 14 + 40;
+        // bitMapHeader [14 bytes] - http://msdn.microsoft.com/library/en-us/gdi/bitmaps_62uq.asp
+        $bitMapHeader  = 'BM'; // WORD bfType;
+        $bitMapHeader .= self::littleEndian2String($bmpSize, 4); // DWORD bfSize;
+        $bitMapHeader .= self::littleEndian2String(0, 2); // WORD bfReserved1;
+        $bitMapHeader .= self::littleEndian2String(0, 2); // WORD bfReserved2;
+        $bitMapHeader .= self::littleEndian2String(54, 4); // DWORD bfOffBits;
+        // bitMapInfoHeader - [40 bytes] http://msdn.microsoft.com/library/en-us/gdi/bitmaps_1rw2.asp
+        $bitMapInfoHeader  = self::littleEndian2String(40, 4); // DWORD biSize;
+        $bitMapInfoHeader .= self::littleEndian2String($imageX, 4); // LONG biWidth;
+        $bitMapInfoHeader .= self::littleEndian2String($imageY, 4); // LONG biHeight;
+        $bitMapInfoHeader .= self::littleEndian2String(1, 2); // WORD biPlanes;
+        $bitMapInfoHeader .= self::littleEndian2String(24, 2); // WORD biBitCount;
+        $bitMapInfoHeader .= self::littleEndian2String(0, 4); // DWORD biCompression;
+        $bitMapInfoHeader .= self::littleEndian2String(0, 4); // DWORD biSizeImage;
+        $bitMapInfoHeader .= self::littleEndian2String(2835, 4); // LONG biXPelsPerMeter;
+        $bitMapInfoHeader .= self::littleEndian2String(2835, 4); // LONG biYPelsPerMeter;
+        $bitMapInfoHeader .= self::littleEndian2String(0, 4); // DWORD biClrUsed;
+        $bitMapInfoHeader .= self::littleEndian2String(0, 4); // DWORD biClrImportant;
+        $data = $bitMapHeader.$bitMapInfoHeader.$bmp;
+        $this->saveImage($filename, $data);
         return $data;
     }
     
     /**
-     * zPixel2BitBW
-     * Converte a imagem em uma representação de seus bits com a 
-     * imagem convertida para BW
-     * @param GD $img
-     * @param int $widthPixels
-     * @param int $heightPixels
-     * @return array
-     */
-    private static function zPixel2BitBW($img, $widthPixels, $heightPixels)
-    {
-        //cria uma matriz com zeros hex que representa uma imagem em branco
-        $imgData = str_repeat("\0", $heightPixels * $widthPixels);
-        for ($yPos = 0; $yPos < $heightPixels; $yPos++) {
-            for ($xPos = 0; $xPos < $widthPixels; $xPos++) {
-                //pega a cor do pixel da imagem e converte em cinza
-                $colors = imagecolorsforindex($img, imagecolorat($img, $xPos, $yPos));
-                $greyness = (int)($colors['red'] + $colors['red'] + $colors['blue']) / 3;
-                $black = (255 - $greyness) >> (7 + ($colors['alpha'] >> 6));
-                //carrega a matriz com o tom de cinza
-                $imgData[$yPos * $widthPixels + $xPos] = $black;
-            }
-        }
-        return $imgData;
-    }
-
-    /**
-     * zLoadDimImage
-     * Obtêm a largura e a altura da imagem em pixels e 
-     * colo nas propriedades da classe
-     */
-    private static function zLoadDimImage()
-    {
-        self::$imgHeight = imagesy(self::$img);
-        self::$imgWidth = imagesx(self::$img);
-    }
-    
-    /**
-     * zIdentifyImg
-     * Identifica o tipo de imagem
-     * @param string $filename
-     * @return string
-     */
-    private static function zIdentifyImg($filename)
-    {
-        $imgtype = exif_imagetype($filename);
-        switch ($imgtype) {
-            case 1:
-                $typo = 'GIF';
-                break;
-            case 2:
-                $typo = 'JPEG';
-                break;
-            case 3:
-                $typo = 'PNG';
-                break;
-            case 15:
-                $typo = 'WBMP';
-                break;
-            case 6:
-                $typo = 'BMP';
-                break;
-            default:
-                $typo = 'none';
-        }
-        return $typo;
-    }
-    
-    /**
-     * zAdjustMultiple
-     * Ajusta o numero para o multipo mais proximo de 8
-     * @param int $num
-     * @return int
-     */
-    private static function zAdjustMultiple($num = 0, $base = 8)
-    {
-        //caso a largura da imagem em pixels não seja multiplo de $base
-        //converter no multiplo de 8 mais proximo
-        if ($num % $base != 0) {
-            $num = round($num/$base) * $base;
-        }
-        return $num;
-    }
-    
-    /**
-     * imageCreateFrombmp
+     * loadBMP
      * Create a GD image from BMP file
      * @param string $filename
      * @return GD object
      */
-    private static function imageCreateFrombmp($filename)
+    public function loadBMP($filename)
     {
         //Load the image into a string
         $file = fopen($filename, "rb");
@@ -375,7 +253,237 @@ class Graphics
         }
         //Unset the body / free the memory
         unset($body);
-        //Return image-object
+        //Return GD image-object
+        $this->img = $image;
         return $image;
     }
+    
+    /**
+     * resizeImage
+     * Resize an image
+     * NOTE: the width is always set to the multiple of 8 more 
+     * next, why? printers have a resolution of 8 dots per mm
+     * 
+     * @param float $width
+     * @param float $height
+     * @throws InvalidArgumentException
+     */
+    public function resizeImage($width = null, $height = null)
+    {
+        if ($width == null && $height == null) {
+            throw new InvalidArgumentException("No dimensions was passed.");
+        }
+        if ($width != null) {
+            $width = $this->closestMultiple($width);
+            $razao = $width / $this->imgWidth;
+            $height = (int) round($razao * $this->imgHeight);
+        } elseif ($width == null && $height != null) {
+            $razao = $height / $this->imgHeight;
+            $width = (int) round($razao * $this->imgWidth);
+            $width = $this->closestMultiple($width);
+        }
+        $tempimg = imagecreatetruecolor($width, $height);
+        imagecopyresampled($tempimg, $this->img, 0, 0, 0, 0, $width, $height, $this->imgWidth, $this->imgHeight);
+        $this->img = $tempimg;
+        $this->getDimImage();
+    }
+    
+    /**
+     * imageQRCode
+     * Creates a  GD QRCode image
+     * 
+     * @param int $size
+     * @param int $padding 
+     * @param string $errCorretion LOW, MEDIUM, QUARTILE, HIGH
+     * @param string $imageType PNG, GIF, JPEG, WBMP
+     * @param string $dataText QRCode data
+     */
+    public function imageQRCode(
+        $dataText = 'NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA',
+        $width = 200,
+        $padding = 10,
+        $errCorretion = 'medium'
+    ) {
+        if ($dataText == '') {
+            return;
+        }
+        //adjust width for a closest multiple of 8
+        $width = $this->closestMultiple($width, 8);
+        $qrCode = new QrCode();
+        $qrCode->setText($dataText)
+               ->setImageType('png')
+               ->setSize($width)
+               ->setPadding($padding)
+               ->setErrorCorrection($errCorretion)
+               ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
+               ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
+               ->setLabel('')
+               ->setLabelFontSize(8);
+        $this->img = $qrCode->getImage();
+        $this->getDimImage();
+    }
+    
+    /**
+     * Convert image from GD resource 
+     * into Black and White pixels image
+     * 
+     * @return string Representation of bytes image in BW 
+     */
+    protected function convertPixelBW()
+    {
+        // Make a string of 1's and 0's 
+        $this->imgData = str_repeat("\0", $this->imgHeight * $this->imgWidth);
+        for ($y = 0; $y < $this->imgHeight; $y++) {
+            for ($x = 0; $x < $this->imgWidth; $x++) {
+                //get colors from byte image
+                $cols = imagecolorsforindex($this->img, imagecolorat($this->img, $x, $y));
+                //convert to greyness color
+                $greyness = (int)(($cols['red'] + $cols['green'] + $cols['blue']) / 3) >> 7; // 1 for white, 0 for black
+                //switch to Black and white
+                //1 for black, 0 for white, taking into account transparency color
+                $black = (1 - $greyness) >> ($cols['alpha'] >> 6);
+                $this->imgData[$y * $this->imgWidth + $x] = $black;
+            }
+        }
+        return $this->imgData;
+    }
+
+    /**
+     * Output the image in raster (row) format.
+     * This can result in padding on the right of the image, 
+     * if its width is not divisible by 8.
+     * 
+     * @throws RuntimeException Where the generated data is unsuitable for the printer (indicates a bug or oversized image).
+     * @return string The image in raster format.
+     */
+    protected function convertRaster()
+    {
+        if (! is_null($this->imgRasterData)) {
+             return $this->imgRasterData;
+        }
+        if (is_null($this->imgData)) {
+            $this->convertPixelBW();
+        }
+        //get width in Pixels
+        $widthPixels = $this->getWidth();
+        //get heightin in Pixels
+        $heightPixels = $this->getHeight();
+        //get width in Bytes
+        $widthBytes = $this->getWidthBytes();
+        //get height in Bytes
+        $heightBytes = $this->getHeightBytes();
+        //initialize vars
+        $xCount = $yCount = $bit = $byte = $byteVal = 0;
+        //create a string for converted bytes
+        $data = str_repeat("\0", $widthBytes * $heightPixels);
+        if (strlen($data) == 0) {
+            return $data;
+        }
+        /* Loop through and convert format */
+        do {
+            $byteVal |= (int) $this->imgData[$yCount * $widthPixels + $xCount] << (7 - $bit);
+            $xCount++;
+            $bit++;
+            if ($xCount >= $widthPixels) {
+                $xCount = 0;
+                $yCount++;
+                $bit = 8;
+                if($yCount >= $heightPixels) {
+                    $data[$byte] = chr($byteVal);
+                    break;
+                }
+            }
+            if ($bit >= 8) {
+                $data[$byte] = chr($byteVal);
+                $byteVal = 0;
+                $bit = 0;
+                $byte++;
+            }
+        } while (true);
+         if (strlen($data) != ($this->getWidthBytes() * $this->getHeight())) {
+             throw new RuntimeException("Bug in " . __FUNCTION__ . ", wrong number of bytes.");
+         }
+         $this->imgRasterData = $data;
+         return $this->imgRasterData;
+    }
+    
+    /**
+     * Save safety binary image file
+     * 
+     * @param string $filename
+     * @param string $data
+     * @return boolean
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     */
+    private function saveImage($filename = null, $data = null)
+    {
+        if (is_null($filename) || is_null($data)) {
+            return false;
+        }
+        if (is_resource($data)) {
+            //use GD to save image to file
+            $result = imagepng($data, $filename);
+            if (!$result) {
+                throw new InvalidArgumentException("Fail to write in $filename.");
+            }
+            return true;
+        }
+        $handle = @fopen($filename, 'w');
+        if (!is_resource($handle)) {
+            throw new InvalidArgumentException("Cant open file $filename. Check permissions.");
+        }
+        $nbytes = fwrite($handle, $data);
+        fclose($handle);
+        if (!$nbytes) {
+            throw new RuntimeException("Fail to write in $filename.");
+        }
+        return true;    
+    }
+    
+    /**
+     * Converts Litte Endian Bytes do String
+     * 
+     * @param int $number
+     * @param int $minbytes
+     * @return string
+     */
+    private static function littleEndian2String($number, $minbytes=1)
+    {
+        $intstring = '';
+        while ($number > 0) {
+            $intstring = $intstring.chr($number & 255);
+            $number >>= 8;
+        }
+        return str_pad($intstring, $minbytes, "\x00", STR_PAD_RIGHT);
+    }
+    
+    /**
+     * Get pixel colors
+     * 
+     * @param resource $img
+     * @param int $x
+     * @param intr $y
+     * @return array
+     */
+    private static function getPixelColor($img, $x, $y)
+    {
+        return imageColorsForIndex($img, imageColorAt($img, $x, $y));
+    }
+    
+    /**
+     * Ajusta o numero para o multiplo mais proximo de base
+     * 
+     * @param float $num
+     * @param int $num
+     * @return int
+     */
+    private function closestMultiple($num = 0, $base = 8)
+    {
+        $iNum = ceil($num);
+        if (($iNum % $base) === 0) {
+            return $iNum;
+        }
+        return round($num/$base) * $base;
+    }    
 }

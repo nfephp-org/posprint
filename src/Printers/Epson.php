@@ -22,10 +22,16 @@ namespace Posprint\Printers;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-use Posprint\Printer\DefaultPrinter;
-use Posprint\Printers\Basic\PrinterInterface;
+use Posprint\Printers\DefaultPrinter;
 
-class Epson extends DefaultPrinter
+final class Epson extends DefaultPrinter
 {
-    
+    /**
+     * Select printer mode
+     * @param string $mode
+     */
+    public function setPrintMode($mode = null)
+    {
+        //not used for this printer
+    }
 }

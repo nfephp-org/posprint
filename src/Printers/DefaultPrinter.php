@@ -2,7 +2,7 @@
 
 namespace Posprint\Printers;
 
-/**
+/*
  * Classe Default das impressoras POS.
  * 
  * A partir dessa classe todas as demais serão estendidas
@@ -23,11 +23,12 @@ namespace Posprint\Printers;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
-use Posprint\Printers\PrinterInterface;
+use Posprint\Connectors\ConnectorInterface;
 use Posprint\Connectors\Buffer;
+use Posprint\Graphics\Graphics;
 use Exception;
 
-class DefaultPrinter implements PrinterInterface
+abstract class DefaultPrinter implements PrinterInterface
 {
     //set standards
     const NUL = "\x0"; //Nulo
@@ -55,16 +56,33 @@ class DefaultPrinter implements PrinterInterface
     const SYN = "\x16"; //Sincronismo
     const NOTRANS = false; //not translate characters codepage
     const TRANS = true; //perform a character convertion to codepage
-    
-    /* Cut types */
+
+    // Cut types 
     const CUT_FULL = 65;
     const CUT_PARTIAL = 66;
-    
-     /**
-     * List all available countries pages
+
+    //1D barcode types
+    const UPC_A = 'A';
+    const UPC_E = 'B';
+    const EAN13 = 'C';
+    const EAN8 = 'D';
+    const CODE39 = 'E';
+    const ITF = 'F';
+    const CODABAR = 'G';
+    const CODE93 = 'H';
+    const CODE128 = 'I';
+    const GS1_128 = 'J';
+    const GS1_DataBar_Omnidirectional = 'K';
+    const GS1_DataBar_Truncated = 'L';
+    const GS1_DataBar_Limited = 'M';
+    const GS1_DataBar_Expanded = 'N';
+
+    /**
+     * List all available region pages.
+     *
      * @var array
      */
-    public $aCountry = array(
+    protected $aRegion = array(
         'USA',
         'FRANCE',
         'GERMANY',
@@ -82,227 +100,719 @@ class DefaultPrinter implements PrinterInterface
         'SLOVENIA',
         'CHINA',
         'VIETNAM',
-        'ARABIA'
+        'ARABIA',
     );
-    
+
     /**
-     * List all available code pages
+     * List all available code pages.
+     *
      * @var array
      */
-    public $aCodePage = array(
-        'CP437' => array('conv'=>'437','table'=>'0','desc'=>'PC437: USA, Standard Europe'),
-        'CP850' => array('conv'=>'850','table'=>'2','desc'=>'PC850: Multilingual'),
-        'CP860' => array('conv'=>'860','table'=>'3','desc'=>'PC860: Portuguese'),
-        'CP863' => array('conv'=>'863','table'=>'4','desc'=>'PC863: Canadian-French'),
-        'CP865' => array('conv'=>'865','table'=>'5','desc'=>'PC865: Nordic'),
-        'CP851' => array('conv'=>'851','table'=>'11','desc'=>'PC851: Greek'),
-        'CP853' => array('conv'=>'853','table'=>'12','desc'=>'PC853: Turkish'),
-        'CP857' => array('conv'=>'857','table'=>'13','desc'=>'PC857: Turkish'),
-        'CP737' => array('conv'=>'737','table'=>'14','desc'=>'PC737: Greek'),
-        'ISO8859-7' => array('conv'=>'ISO8859-7','table'=>'15','desc'=>'ISO8859-7: Greek'),
-        'CP866' => array('conv'=>'866','table'=>'17','desc'=>'PC866: Cyrillic #2'),
-        'CP852' => array('conv'=>'852','table'=>'18','desc'=>'PC852: Latin2'),
-        'CP858' => array('conv'=>'858','table'=>'19','desc'=>'PC858: Euro'),
-        'CP720' => array('conv'=>'720','table'=>'32','desc'=>'PC720: Arabic'),
-        'CP855' => array('conv'=>'855','table'=>'34','desc'=>'PC855: Cyrillic'),
-        'CP861' => array('conv'=>'861','table'=>'35','desc'=>'PC861: Icelandic'),
-        'CP862' => array('conv'=>'862','table'=>'36','desc'=>'PC862: Hebrew'),
-        'CP864' => array('conv'=>'864','table'=>'37','desc'=>'PC864: Arabic'),
-        'CP869' => array('conv'=>'869','table'=>'38','desc'=>'PC869: Greek'),
-        'ISO8859-2' => array('conv'=>'ISO8859-2','table'=>'39','desc'=>'ISO8859-2: Latin2'),
-        'ISO8859-15' => array('conv'=>'ISO8859-15','table'=>'40','desc'=>'ISO8859-15: Latin9'),
-        'WINDOWS-1250' => array('conv'=>'WINDOWS-1250','table'=>'45','desc'=>'WPC1250: Latin2'),
-        'WINDOWS-1251' => array('conv'=>'WINDOWS-1251','table'=>'46','desc'=>'WPC1251: Cyrillic'),
-        'WINDOWS-1252' => array('conv'=>'WINDOWS-1252','table'=>'47','desc'=>'WPC1253: Greek'),
-        'WINDOWS-1254' => array('conv'=>'WINDOWS-1254','table'=>'48','desc'=>'WPC1254: Turkish'),
-        'WINDOWS-1255' => array('conv'=>'WINDOWS-1255','table'=>'49','desc'=>'WPC1255: Hebrew'),
-        'WINDOWS-1256' => array('conv'=>'WINDOWS-1256','table'=>'50','desc'=>'WPC1256: Arabic'),
-        'WINDOWS-1257' => array('conv'=>'WINDOWS-1257','table'=>'51','desc'=>'WPC1257: Baltic Rim'),
-        'WINDOWS-1258' => array('conv'=>'WINDOWS-1258','table'=>'52','desc'=>'WPC1258: Vietnamese')
+    protected $aCodePage = array(
+        'CP437' => array('conv' => '437', 'table' => '0', 'desc' => 'PC437: USA, Standard Europe'),
+        'CP850' => array('conv' => '850', 'table' => '2', 'desc' => 'PC850: Multilingual'),
+        'CP860' => array('conv' => '860', 'table' => '3', 'desc' => 'PC860: Portuguese'),
+        'CP863' => array('conv' => '863', 'table' => '4', 'desc' => 'PC863: Canadian-French'),
+        'CP865' => array('conv' => '865', 'table' => '5', 'desc' => 'PC865: Nordic'),
+        'CP851' => array('conv' => '851', 'table' => '11', 'desc' => 'PC851: Greek'),
+        'CP853' => array('conv' => '853', 'table' => '12', 'desc' => 'PC853: Turkish'),
+        'CP857' => array('conv' => '857', 'table' => '13', 'desc' => 'PC857: Turkish'),
+        'CP737' => array('conv' => '737', 'table' => '14', 'desc' => 'PC737: Greek'),
+        'ISO8859-7' => array('conv' => 'ISO8859-7', 'table' => '15', 'desc' => 'ISO8859-7: Greek'),
+        'CP866' => array('conv' => '866', 'table' => '17', 'desc' => 'PC866: Cyrillic #2'),
+        'CP852' => array('conv' => '852', 'table' => '18', 'desc' => 'PC852: Latin2'),
+        'CP858' => array('conv' => '858', 'table' => '19', 'desc' => 'PC858: Euro'),
+        'CP720' => array('conv' => '720', 'table' => '32', 'desc' => 'PC720: Arabic'),
+        'CP855' => array('conv' => '855', 'table' => '34', 'desc' => 'PC855: Cyrillic'),
+        'CP861' => array('conv' => '861', 'table' => '35', 'desc' => 'PC861: Icelandic'),
+        'CP862' => array('conv' => '862', 'table' => '36', 'desc' => 'PC862: Hebrew'),
+        'CP864' => array('conv' => '864', 'table' => '37', 'desc' => 'PC864: Arabic'),
+        'CP869' => array('conv' => '869', 'table' => '38', 'desc' => 'PC869: Greek'),
+        'ISO8859-2' => array('conv' => 'ISO8859-2', 'table' => '39', 'desc' => 'ISO8859-2: Latin2'),
+        'ISO8859-15' => array('conv' => 'ISO8859-15', 'table' => '40', 'desc' => 'ISO8859-15: Latin9'),
+        'WINDOWS-1250' => array('conv' => 'WINDOWS-1250', 'table' => '45', 'desc' => 'WPC1250: Latin2'),
+        'WINDOWS-1251' => array('conv' => 'WINDOWS-1251', 'table' => '46', 'desc' => 'WPC1251: Cyrillic'),
+        'WINDOWS-1252' => array('conv' => 'WINDOWS-1252', 'table' => '47', 'desc' => 'WPC1253: Greek'),
+        'WINDOWS-1254' => array('conv' => 'WINDOWS-1254', 'table' => '48', 'desc' => 'WPC1254: Turkish'),
+        'WINDOWS-1255' => array('conv' => 'WINDOWS-1255', 'table' => '49', 'desc' => 'WPC1255: Hebrew'),
+        'WINDOWS-1256' => array('conv' => 'WINDOWS-1256', 'table' => '50', 'desc' => 'WPC1256: Arabic'),
+        'WINDOWS-1257' => array('conv' => 'WINDOWS-1257', 'table' => '51', 'desc' => 'WPC1257: Baltic Rim'),
+        'WINDOWS-1258' => array('conv' => 'WINDOWS-1258', 'table' => '52', 'desc' => 'WPC1258: Vietnamese'),
     );
-    
-    /**
-     * Resolution in dpi
-     * @var int
-     */
-    public $dpi = 203; //dots per inch
-    /**
-     * Resolution in dpmm
-     * @var int 
-     */
-    public $dpmm = 8; //dots per mm
-    /**
-     * Maximum width paper
-     * @var int 
-     */
-    public $widthMaxmm = 80;//mm
-    /**
-     * Selected Width paper
-     * @var int
-     */
-    public $widthPaper = 80;//mm
-    /**
-     * Maximum width for printed area
-     * @var int
-     */
-    public $widthPrint = 72;//mm
-    /**
-     * Maximum width for printed area in dots
-     * @var int
-     */
-    public $widthMaxdots = 576;//dots
-    /**
-     * Maximum number of characters per line
-     * @var int
-     */
-    public $maxchars = 48;//max characters per line
-    
-    //protected property standards
-    /**
-     * Selected internal font
-     * @var string
-     */
-    protected $font = 'A';
-    /**
-     * Seleted printer mode
-     * @var string
-     */
-    protected $printerMode = 'normal';
-    /**
-     * Selected Charset Code
-     * @var int
-     */
-    protected $charsetcode = 0;
     /**
      * Seleted code page
-     * Defined in printer class
+     * Defined in printer class.
+     *
      * @var string
      */
-    protected $codepage = 'WINDOWS-1250';
+    protected $codepage = 'CP437';
     /**
-     * Number of codpage in printer memory
-     * @var int
-     */
-    protected $charsetTableNum = 45;
-    /**
-     * Selected Country page
-     * Defined in printer class
-     * @var type 
-     */
-    protected $country = 'LATIN';
-    /**
-     * Number of codpage in printer memory
+     * Number of codpage in printer memory.
+     *
      * @var int
      */
     protected $charsetTableNum = 0;
     /**
-     * Selected bold mode
+     * Selected Region character page
+     * Defined in printer class.
+     *
+     * @var string
+     */
+    protected $region = 'LATIN';
+    /**
+     * List all avaiable fonts
+     * @var array
+     */
+    protected $aFont = array(0 => 'A', 1 => 'B', 2 => 'C', 3 => 'D', 4 => 'E', 97 => 'SA', 98 => 'SB');
+    /**
+     * Selected internal font.
+     *
+     * @var string
+     */
+    protected $font = 'A';           
+    /**
+     * Resolution in dpi.
+     *
+     * @var int
+     */
+    public $dpi = 203; //dots per inch
+    /**
+     * Resolution in dpmm.
+     *
+     * @var int
+     */
+    public $dpmm = 8; //dots per mm
+    /**
+     * Maximum width paper.
+     *
+     * @var int
+     */
+    public $widthMaxmm = 80;//mm
+    /**
+     * Selected Width paper.
+     *
+     * @var int
+     */
+    public $widthPaper = 80;//mm
+    /**
+     * Maximum width for printed area.
+     *
+     * @var int
+     */
+    public $widthPrint = 72;//mm
+    /**
+     * Maximum width for printed area in dots.
+     *
+     * @var int
+     */
+    public $widthMaxdots = 576;//dots
+    /**
+     * Maximum number of characters per line.
+     *
+     * @var int
+     */
+    public $maxchars = 48;//max characters per line
+
+    //protected property standards
+    /**
+     * Connector to printer.
+     *
+     * @var ConnectosInterface
+     */
+    protected $connector = null;
+    /**
+     * Seleted printer mode.
+     *
+     * @var string
+     */
+    protected $printerMode = 'normal';
+    /**
+     * Selected bold mode.
+     *
      * @var bool
      */
     protected $boldMode = false;
     /**
-     * Selected reverse mode
+     * Selected reverse colors mode.
+     *
      * @var bool
      */
-    protected $reverseMode = false;
+    protected $reverseColors = false;
     /**
-     * Selected under lined mode
+     * Selected under lined mode.
+     * 
+     * @var bool
      */
     protected $underlineMode = false;
     /**
-     * Buffer class
+     * Selected rotate 90 degrees mode
+     * @var bool
+     */
+    protected $rotateMode = false;
+    /**
+     * Buffer class.
+     *
      * @var Connectors\Buffer
      */
     protected $buffer = null;
-    
+
     /**
-     * Method builder
-     * Instantiates the data buffer
+     * Class constructor
+     * Instantiates the data buffer.
+     *
+     * @param ConnectorInterface $conn
      */
-    public function __construct()
+    public function __construct(ConnectorInterface $conn = null)
     {
+        if (!is_null($conn)) {
+            $this->connector = $conn;
+        }
         $this->buffer = new Buffer();
     }
-    
+
     /**
-     * Return selected country page
-     * or all available countries page for a especific printer 
-     * @param bool $all
+     * Returns a default region for codepage
+     * if param $region is null will return actual default region from class
+     * if param $region is 'all' will return a array with all avaiable regions
+     * if param $region is a string will set the region parameter of class and returns it.
+     * 
+     * NOTE: This command do not set the printer, only class parameters
+     * 
+     * @param string $region
+     *
      * @return string|array
      */
-    public function getCountries($all = false)
+    public function defaultRegionPage($region = null)
     {
-        if ($all) {
-            return $this->aCountry;
+        if (!is_null($region)) {
+            $region = strtoupper(trim($region));
+            if ($region == 'ALL') {
+                //return array
+                return $this->aRegion;
+            }
+            //set $this->region
+            $reg = array_search($region, $this->aRegion, true);
+            if ($reg !== false) {
+                $this->region = $region;
+            }
         }
-        return $this->country;
+
+        return $this->region;
+    }
+
+    /**
+     * Returns a default codepage
+     * if param $codepage is null will return actual default codepage from class
+     * if param $codepage is 'all' will return a array with all avaiable codepages
+     * if param $codepage is a string will set the codepage parameter of class and returns it.
+     * 
+     * NOTE: This command do not set the printer, only class parameters
+     * 
+     * @param string $codepage
+     *
+     * @return string|array
+     */
+    public function defaultCodePage($codepage = null)
+    {
+        if (!is_null($codepage)) {
+            $codepage = strtoupper(trim($codepage));
+            if ($codepage == 'ALL') {
+                //return array
+                return array_keys($this->aCodePage);
+            }
+            //set $this->codepage
+            $reg = array_search($codepage, $this->aCodePage, true);
+            if ($reg !== false) {
+                $this->codepage = $codepage;
+                $table = $this->aCodePage[$codepage];
+                $this->charsetTableNum = $table['table'];
+            }
+        }
+
+        return $this->codepage;
+    }
+
+    /**
+     * Set a codepage table in printer.
+     *
+     * @param string $codepage
+     */
+    public function setCodePage($codepage = null)
+    {
+        $codepage = $this->defaultCodePage($codepage);
+        $this->buffer->write(self::ESC.'t'.chr($this->tableNum));
+    }
+
+    /**
+     * Set a region page.
+     * The numeric key of array $this->aRegion is the command parameter.
+     *
+     * @param string $region
+     */
+    public function setRegionPage($region = null)
+    {
+        $region = $this->defaultRegionPage($region);
+        $mode = array_keys($this->aRegion, $region, true);
+        $this->buffer->write(self::ESC.'R'.chr($mode));
     }
     
     /**
-     * Return selected codepage 
-     * or all available code pages
-     * @param bool $all
-     * @return bool|string|array
+     * Returns the default printer font 
+     * A - Font A (12 x 24)
+     * B - Font B (9 x 17)
+     * C - Font C
+     * D - Font D
+     * E - Font E
+     * Special A
+     * Special B
+     * Default Font A.
+     * if param $font is null will return actual default font from class
+     * if param $font is 'all' will return a array with all avaiable printer fonts
+     * if param $font is a string will set the font parameter of class and returns it.
+     * 
+     * NOTE: This command do not set the printer, only class parameters
+     * 
+     * @param string $font
+     * @return array|string
      */
-    public function getCodePages($all = false, $table = null)
+    public function defaultFont($font = null)
     {
-        if (!is_null($table)) {
-            $respkey = false;
-            foreach ($this->aCodePage as $key => $code) {
-                if ($table == $code['table']) {
-                    $respkey = $key;
-                    break;
-                }
+        if (!is_null($font)) {
+            $font = strtoupper(trim($font));
+            if ($font == 'ALL') {
+                //return array
+                return $this->aFont;
             }
-            return $respkey;
+            //set $this->font
+            $fonts = array_flip($this->aFont);
+            $keys = array_keys($fonts);
+            $reg = array_search($font, $keys, true);
+            if ($reg !== false) {
+                $this->font = $font;
+            }
         }
-        $keys = array_keys($this->aCodePage);
-        if ($all) {
-            return $keys;
+
+        return $this->font;
+    }
+    
+    /**
+     * Set a printer font 
+     * If send a valid font name will set the printer otherelse a default font is selected
+     * @param string $font
+     */
+    public function setFont($font = null)
+    {
+        $font = $this->defaultFont($font);
+        $mode = array_keys($this->aFont, $font, true);
+        $this->buffer->write(self::ESC.'M'.chr($mode));
+    }
+
+    /**
+     * Set emphasys mode on or off.
+     */
+    public function setBold()
+    {
+        if ($this->boldMode) {
+            $this->boldMode = false;
+            $mode = 0;
+        } else {
+            $this->boldMode = true;
+            $mode = 1;
         }
-        return $this->codepage;
+        $this->buffer->write(self::ESC . 'E' . chr($mode));
+    }
+
+    /**
+     * Set underline mode on or off.
+     */
+    public function setUnderlined()
+    {
+        if ($this->underlineMode) {
+            $this->underlineMode = false;
+            $mode = 0;
+        } else {
+            $this->underlineMode = true;
+            $mode = 1;
+        }
+        $this->buffer->write(self::ESC . '-' . chr($mode));
+    }
+
+    /**
+     * Aligns all data in one line to the selected layout in standard mode.
+     * L - left
+     * C - center 
+     * R - rigth
+     * @param string $align 
+     */
+    public function setAlign($align = null)
+    {
+        if (is_null($align)) {
+            $align = 'L';
+        }
+        $value = strtoupper($value);
+        switch ($value) {
+            case 'C':
+               $mode = 1;
+               break;
+            case 'R':
+               $mode = 2;
+               break;
+            default:
+                $mode = 0;
+        }
+        $this->buffer->write(self::ESC . 'a' . chr($mode));
+    }
+    
+    /**
+     * Turns white/black reverse print On or Off for characters.
+     * n = odd: On, n = even: Off.
+     */
+    public function setReverseColors()
+    {
+        if ($this->reverseColors) {
+            $this->reverseColors = false;
+            $mode = 0;
+        } else {
+            $this->reverseColors = true;
+            $mode = 1;
+        }
+        $this->buffer->write(self::GS.'B'.chr($mode));
+    }
+    
+    /**
+     * Set expanded mode.
+     * @param int $size multiplies normal size 1 - 8 
+     */
+    public function setExpanded($size = null)
+    {
+        if (is_null($size)) {
+            $size = 1;
+        }
+        $aSize = [
+            [0, 0],
+            [16, 1],
+            [32, 2],
+            [48, 3],
+            [64, 4],
+            [80, 5],
+            [96, 6],
+            [112, 7]
+        ];
+        self::validateInteger($size, 1, 8, __FUNCTION__);
+        $mode = $aSize[$size-1][0] + $aSize[$size-1][1];
+        $this->buffer->write(self::ESC.'!'.chr($mode));
+    }
+
+    /**
+     * Set condensed mode.
+     */
+    public function setCondensed()
+    {
+        $this->setExpanded(1);
+        $this->setFont('B');
+    }
+    
+
+    /**
+     * Set the printer mode.
+     */
+    abstract public function setPrintMode($mode = null);
+    
+
+    /**
+     * Set rotate 90 degrees.
+     */
+    public function setRotate90()
+    {
+        if ($this->rotateMode) {
+            $this->rotateMode = false;
+            $mode = 0;
+        } else {
+            $this->rotateMode = true;
+            $mode = 1;
+        }
+        $this->buffer->write(self::ESC.'V'.chr($mode));
+    }
+    
+    /**
+     * initialize printer
+     * Clears the data in the print buffer and resets the printer modes to 
+     * the modes that were in effect when the power was turned on.
+     */
+    public function initialize()
+    {
+        $this->buffer->write(self::ESC.'@');
+        $this->rotateMode = false;
+        $this->defaultCodePage('CP437');
+        $this->underlineMode = false;
+        $this->boldMode = false;
+        $this->printerMode = 'normal';
+        $this->font = 'A';
     }
     
     /**
      * Send message or command to buffer
      * when sending commands is not required to convert characters,
-     * so the variable may translate by false
+     * so the variable may translate by false.
      * 
      * @param string $text
-     * @param bool $translate
      */
-    public function text($text = '', $translate = true)
+    public function text($text = '')
     {
-        if ($translate) {
-            $text = $this->zTranslate($text);
-        }    
+        self::validateString($text, __FUNCTION__);
+        $text = $this->zTranslate($text);
         $this->buffer->write($text);
     }
-    
-    
+
     /**
-     * Sends a separator line to buffer
+     * Set horizontal and vertical motion units
+     * $horizontal => character spacing 1/x"
+     * $vertical => line spacing 1/y".
+     *
+     * @param int $horizontal
+     * @param int $vertical
      */
-    public function line()
+    public function setSpacing($horizontal = 30, $vertical = 30)
     {
-        $text = str_repeat('-', $this->maxchars);
-        $this->text($text);
+        $this->buffer->write(self::GS.'P'.chr($horizontal).chr($vertical));
+    }
+
+    /**
+     * Set right-side character spacing
+     * 0 ≤ n ≤ 255 => 1/x".
+     * 
+     * @param int $value
+     */
+    public function setCharSpacing($value = 3)
+    {
+        $this->buffer->write(self::ESC.' '.chr($value));
+    }
+
+    /**
+     * Line spacing
+     * The default is set to zero and 30/180 "
+     * any different number of zero will generate multiples of.
+     *
+     * @param int $paragraph
+     */
+    public function setParagraph($value = 0)
+    {   //n * 1/180-inch vertical motion
+        //normal paragrafo 30/180" => 4.23 mm
+        $paragraph = ceil($value);
+        if ($paragraph == 0) {
+            $this->buffer->write(self::ESC.'2');
+            return;
+        }
+        if ($paragraph < 25) {
+            $paragraph = 25;
+        } elseif ($paragraph > 255) {
+            $paragraph = 255;
+        }
+        $this->buffer->write(self::ESC.'3'.chr($paragraph));
+    }
+
+
+
+
+    /**
+     * Prints data and feeds paper n lines
+     * ESC d n Prints data and feeds paper n lines.
+     *
+     * @param type $lines
+     */
+    public function lineFeed($lines = 1)
+    {
+        if ($lines <= 1) {
+            $this->buffer->write(self::LF);
+        } else {
+            $this->buffer->write(self::ESC.'d'.chr($lines));
+        }
+    }
+
+    /**
+     * Prints data and feeds paper n dots
+     * ESC J n Prints data and feeds paper n dots.
+     *
+     * @param int $dots
+     */
+    public function dotFeed($dots = 1)
+    {
+        self::validateInteger($lines, 1, 80, __FUNCTION__);
+        $this->buffer->write(self::ESC.'J'.chr($dots));
+    }
+
+    /**
+     * Generate a pulse, for opening a cash drawer if one is connected.
+     * The default settings should open an Epson drawer.
+     *
+     * @param int $pin    0 or 1, for pin 2 or pin 5 kick-out connector respectively.
+     * @param int $on_ms  pulse ON time, in milliseconds.
+     * @param int $off_ms pulse OFF time, in milliseconds.
+     */
+    public function pulse($pin = 0, $on_ms = 120, $off_ms = 240)
+    {
+        self::validateInteger($pin, 0, 1, __FUNCTION__);
+        self::validateInteger($on_ms, 1, 511, __FUNCTION__);
+        self::validateInteger($off_ms, 1, 511, __FUNCTION__);
+        $this->buffer->write(self::ESC.'p'.chr($pin + 48).chr($on_ms / 2).chr($off_ms / 2));
+    }
+
+    /**
+     * Cut the paper.
+     *
+     * @param int $mode  FULL or PARTIAL. If not specified, FULL will be used. 
+     * @param int $lines Number of lines to feed after cut
+     */
+    public function cut($mode = 'FULL', $lines = 3)
+    {
+        self::validateInteger($lines, 1, 10, __FUNCTION__);
+        if ($mode == 'FULL') {
+            $mode = self::CUT_FULL;
+        } else {
+            $mode = self::CUT_PARTIAL;
+        }
+        $this->buffer->write(self::GS.'V'.chr($mode).chr($lines));
+    }
+
+    /**
+     * Implements barcodes
+     * GS k m n d1...dn
+     * Prints bar code. n specifies the data length.
+     *   m    bar code system             number of d (=k)
+     *  "A"     UPC-A                       11 or 12
+     *  "B"     UPC-E                       6, 7, 8, 11 or 12
+     *  "C"     JAN13 / EAN13               12 or 13
+     *  "D"     JAN8 / EAN8                 7 or 8
+     *  "E"     CODE39                      1 or more
+     *  "F"     ITF                         even
+     *  "G"     CODABAR (NW-7)              2 or more
+     *  "H"     CODE93                      1–255
+     *  "I"     CODE128                     2–255    
+     *  "J"     GS1-128                     2–255    
+     *  "K"     GS1 DataBar Omnidirectional 13
+     *  "L"     GS1 DataBar Truncated       13
+     *  "M"     GS1 DataBar Limited         13
+     *  "N"     GS1 DataBar Expanded        2–255.
+     * 
+     *  GS h n Sets bar code height to n dots.
+     *  GS w n Sets bar width of bar code. n = 2–6 (thin–thick)
+     *  GS H n Selects print position of HRI characters.
+     *           n = 0, "0": Not printed
+     *           n = 1, "1": Above the bar code
+     *           n = 2, "2": Below the bar code
+     *           n = 3, "3": Both above and below the bar code
+     *  GS f n Selects font for the HRI characters.
+     *           n = 0, "0": Font A,
+     *           n = 1, "1": Font B
+     *
+     * @param int    $type        Default CODE128
+     * @param int    $height
+     * @param int    $lineWidth
+     * @param string $txtPosition
+     * @param string $txtFont
+     * @param string $data
+     */
+    public function barcode(
+        $type = self::CODE128,
+        $height = 162,
+        $lineWidth = 3,
+        $txtPosition = 'none',
+        $txtFont = '',
+        $data = '123456'
+    ) {
+        switch ($txtPosition) {
+            case 'Above':
+                $tPos = 1;
+                break;
+            case 'Below':
+                $tPos = 2;
+                break;
+            case 'Both':
+                $tPos = 3;
+                break;
+            default:
+                //none
+                $tPos = 0;
+        }
+        $font = 0;
+        if ($txtFont === 'B') {
+            $font = 1;
+        }
+        self::validateBarcodeData($type, $data, __FUNCTION__);
+        self::validateInteger($lineWidth, 2, 6, __FUNCTION__);
+        $nlen = len($data);
+        //set barcode height
+        $this->buffer->write(self::GS.'h'.chr($height));
+        //set barcode bar width
+        $this->buffer->write(self::GS.'w'.chr($lineWidth));
+        //Selects print position of HRI characters.
+        $this->buffer->write(self::GS.'H'.chr($tPos));
+        //Selects font for the HRI characters.
+        $this->buffer->write(self::GS.'f'.chr($font));
+        //Print barcode
+        $this->buffer->write(self::GS.'k'.chr($type).chr($nlen).$data);
     }
     
     /**
+     * Imprime o QR Code
+     * @param string $texto Dados a serem inseridos no QRCode
+     * @param string $level Nivel de correção L,M,Q ou H
+     * @param int $modelo modelo de QRCode 1, 2 ou 0 Micro
+     * @param int $wmod largura da barra 3 ~ 16
+     */
+    public function barcodeQRCode($texto = '', $level = 'L', $modelo = 2, $wmod = 4)
+    {
+        //set model of QRCode
+        $n1 = 50;
+        if ($modelo == 1) {
+            $n1 = 49;
+        }
+        $this->buffer->write(self::GS . "(k" . chr(4) . $chr(0) . chr(49) . chr(65) . chr($n1) .chr(0));
+        //set module bar width
+        $this->buffer->write(self::GS . "(k" . chr(3) . $chr(0) . chr(49) . chr(67) . chr($wmod));
+        //set error correction level
+        $level = strtoupper($level);
+        switch ($level) {
+            case 'L':
+                $n = 48;
+                break;
+            case 'M':
+                $n = 49;
+                break;
+            case 'Q':
+                $n = 50;
+                break;
+            case 'H':
+                $n = 51;
+                break;
+            default:
+                $n = 49;
+        }
+        $this->buffer->write(self::GS . "(k" . chr(3) . $chr(0) . chr(49) . chr(69) . chr($n));
+        //set data for QR Code assuming print only alphanumeric data
+        $len = strlen($texto)+3;
+        $pH = ($len/256);
+        $pL = $len%256;
+        $this->buffer->write(self::GS . "(k" . chr($pL) . $chr($pH) . chr(49) . chr(80) . chr(48) . $texto);
+        //Print QR Code
+        $this->buffer->write(self::GS . "(k" . chr(3) . $chr(0) . chr(49) . chr(81) . chr(48));
+    }
+
+    /**
      * Close and clean buffer
-     * All data will be lost
+     * All data will be lost.
      */
     public function close()
     {
         $this->buffer->close();
     }
-    
+
     /**
-     * Return all data buffer 
+     * Return all data buffer.
+     *
      * @param string $type specifies the return format
      */
-    public function send($type = '')
+    public function getBuffer($type = '')
     {
         switch ($type) {
             case 'binA':
@@ -330,19 +840,106 @@ class DefaultPrinter implements PrinterInterface
                 //only for debug reasons
                 $resp = $this->buffer->getDataReadable(true);
                 break;
-            case 'readS':
+            default :
                 //returns a human readable format of string buffer
                 //only for debug reasons
                 $resp = $this->buffer->getDataReadable(false);
-                break;
-            default :
-                $resp = $this->buffer->getDataReadable(false);
         }
+
         return $resp;
     }
+
+    /**
+     * Send commands from buffer to connector printer.
+     */
+    public function send(ConnectorInterface $conn = null)
+    {
+        if (!is_null($conn)) {
+            $this->connector = $conn;
+        }
+        if (is_null($this->connector)) {
+            return $this->getBuffer();
+        }
+        $aCmds = $this->getBuffer('binA');
+        foreach ($aCmds as $cmd) {
+            $this->connector->write($cmd);
+        }
+    }
+
+    /**
+     * 
+     * @param type $type
+     * @param type $data
+     * @param type $source
+     * @throws InvalidArgumentException
+     */
+    protected static function validateBarcodeData($type, $data, $source)
+    {
+        $aTypes = [
+            'A' => ['desc' => 'UPC-A', 'len' => '11;12', 'type' => 'N'],
+            'B' => ['desc' => 'UPC-E', 'len' => '6;7;8;11;12', 'type' => 'N'],
+            'C' => ['desc' => 'EAN13', 'len' => '12;13', 'type' => 'N'],
+            'D' => ['desc' => 'EAN8', 'len' => '7;8', 'type' => 'N'],
+            'E' => ['desc' => 'CODE39', 'len' => '1-', 'type' => 'C'],
+            'F' => ['desc' => 'ITF (i25)', 'len' => '1-even ', 'type' => 'N'],
+            'G' => ['desc' => 'CODABAR', 'len' => '2-more', 'type' => 'C'],
+            'H' => ['desc' => 'CODE93', 'len' => '1-255', 'type' => 'C'],
+            'I' => ['desc' => 'CODE128', 'len' => '2-255', 'type' => 'C'],
+            'J' => ['desc' => 'GS1-128', 'len' => '2-255', 'type' => 'C'],
+            'K' => ['desc' => 'GS1 DataBar Omnidirectional', 'len' => '13', 'type' => 'N'],
+            'L' => ['desc' => 'GS1 DataBar Truncated', 'len' => '13', 'type' => 'N'],
+            'M' => ['desc' => 'GS1 DataBar Limited', 'len' => '13', 'type' => 'N'],
+            'N' => ['desc' => 'GS1 DataBar Expanded', 'len' => '2-255', 'type' => 'C'],
+        ];
+        $barType = $aTypes[$type];
+        if (empty($barType)) {
+            throw new InvalidArgumentException("Argument $type to $source is not a valid type of barcode");
+        }
+    }
+
+
+    /**
+     * Insert a image.
+     *
+     * @param string $filename Path to image file
+     * @param float  $width
+     * @param float  $height
+     */
+    public function putImage($filename = '', $width = null, $height = null)
+    {
+        $img = new Graphics($filename, $width, $height);
+        $imgHeader = self::dataHeader(array($img->getWidth(), $img->getHeight()), true);
+        $tone = '0';
+        $colors = '1';
+        $xm = (($size & self::IMG_DOUBLE_WIDTH) == self::IMG_DOUBLE_WIDTH) ? chr(2) : chr(1);
+        $ym = (($size & self::IMG_DOUBLE_HEIGHT) == self::IMG_DOUBLE_HEIGHT) ? chr(2) : chr(1);
+        $header = $tone.$xm.$ym.$colors.$imgHeader;
+        $this->zSendGraphicsData('0', 'p', $header.$img->getImage());
+        $this->zSendGraphicsData('0', '2');
+    }
+
+    /**
+     * Wrapper for GS ( L, to calculate and send correct data length.
+     *
+     * @param string $m    Modifier/variant for function. Usually '0'.
+     * @param string $fn   Function number to use, as character.
+     * @param string $data Data to send.
+     *
+     * @throws InvalidArgumentException Where the input lengths are bad.
+     */
+    private function zSendGraphicsData($m, $fn, $data = '')
+    {
+        if (strlen($m) != 1 || strlen($fn) != 1) {
+            throw new InvalidArgumentException('wrapperSendGraphicsData: m and fn must be one character each.');
+        }
+        $header = $this->intLowHigh(strlen($data) + 2, 2);
+        $this->buffer->write(self::GS.'(L'.$header.$m.$fn.$data);
+    }
+
     
     /**
-     * Calculate the size of the word
+     * Calculate the size of the word.
+     *
      * @param string $data
      */
     protected function getWordLength($data = '')
@@ -350,555 +947,110 @@ class DefaultPrinter implements PrinterInterface
         //k = (pL + pH × 256) – 3
         $len = strlen($texto);
     }
-
-   /**
-     * Adjust Paper Width
-     * this adjustment has implications on the printable area and other printing details
-     * @param int $width
-     */
-    public function setPaperWidth($width = 80)
-    {
-        // 72.1 mm (2.84"), 576 dots 52.6 mm (2.07"), 420 dots
-        //Normal mode (initial setting)
-        //                  80mm         58mm
-        // Font A (12 x 24) 48 chars     35 chars
-        // Font B (9 x 17)  64 chars     46 chars
-        //42 column mode
-        // Font A (13 x 24) 42           42
-        // Font B (9 x 17)  60           31
-        if ($width != 80) {
-            $width = 58;
-        }
-        $this->widthPaper = $width;
-        $this->zSetMaxValues();
-    }
     
-    /**
-     * Set horizontal and vertical motion units
-     * $horizontal => character spacing 1/x"
-     * $vertical => line spacing 1/y"
-     * @param int $horizontal
-     * @param int $vertical
-     */
-    public function setSpacing($horizontal = 30, $vertical = 30)
-    {
-        $this->buffer->write(self::GS . "P" . chr($horizontal) . chr($vertical));
-    }
-    
-    /**
-     * Set right-side character spacing
-     * 0 ≤ n ≤ 255 => 1/x"
-     * 
-     * @param int $value
-     */
-    public function setCharSpacing($value = 3)
-    {
-        $this->buffer->write(self::ESC . " " . chr($value));
-    }
-    
-    /**
-     * Line spacing
-     * The default is set to zero and 30/180 "
-     * any different number of zero will generate multiples of
-     * @param int $paragraph
-     */
-    public function setParagraph($value = 0)
-    {   //n * 1/180-inch vertical motion
-        //normal paragrafo 30/180" => 4.23 mm
-        $paragraph = ceil($value);
-        if ($paragraph == 0) {
-            $this->buffer->write(self::ESC . "2");
-            return;
-        }
-        if ($paragraph < 25) {
-            $paragraph = 25;
-        } elseif ($paragraph > 255) {
-            $paragraph = 255;
-        }
-        $this->buffer->write(self::ESC . "3" . chr($paragraph));
-    }
-    
-    /**
-     * Set the printer mode
-     */
-    public function setPrintMode($mode = null)
-    {
-        //not set for this printer
-    }        
-    
-    /**
-     * setFont
-     * Seleciona a fonte interna a ser usada 
-     * A - Font A (12 x 24)
-     * B - Font B (9 x 17)
-     * Default Font A
-     * @param string $font
-     */
-    public function setFont($font = 'A')
-    {
-        $num = 0;
-        if ($font != 'A') {
-            $num = 1;
-        }
-        $this->buffer->write(self::ESC . "M" . chr($num));
-        //salva os parametros máximos de largura para a fonte escolhida
-        $this->zSaveMaxParams();
-    }
-    
-    /**
-     * Select a code page 
-     * @param int $table
-     */
-    public function setCharset($tableNum = 45)
-    {
-        $this->codepage = $this->getCodePages('', $tableNum);
-        $this->charsetTableNum = $tableNum;
-        $this->buffer->write(self::ESC . "t" . chr($tableNum));
-    }
-    /**
-     * Selects a country page
-     * @param string $country
-     */
-    public function setInternational($country = 'LATIN')
-    {
-        $mode = array_keys($this->aCountry, $country, true);
-        $this->buffer->write(self::ESC . "R" . chr($mode));
-    }
-    
-    /**
-     * Set emphasys mode on or off
-     */
-    public function setBold()
-    {
-        if ($this->boldMode) {
-            $this->boldMode = false;
-        } else {
-            $this->boldMode = true;
-        }
-        $this->buffer->write(self::ESC . "E". ($this->boldMode ? chr(1) : chr(0)));
-    }    
-
-    /**
-     * Set underline mode on or off
-     */
-    public function setUnderlined($active = false)
-    {
-        if ($this->underlineMode) {
-            $this->underlineMode = false;
-        } else {
-            $this->underlineMode = true;
-        }
-        $this->buffer->write(self::ESC . "-". ($this->underlineMode ? chr(1) : chr(0)));
-    }       
-
-    /**
-     * Set expanded mode
-     */
-    public function setExpanded($doubleH = false, $doubleW = false)
-    {
-        $mode = 0;
-        ($doubleH) ? $mode += 16 : $mode += 0;
-        ($doubleW) ? $mode += 32 : $mode += 0;
-        $this->buffer->write(self::ESC . "!" . chr($mode));
-    }
-    
-    /**
-     * Set condensed mode
-     */
-    public function setCondensed()
-    {
-        $this->setFont('B');
-    }      
-
-    /**
-     * Set rotate 90 degrees
-     * @param bool $active
-     */
-    public function setRotate90($active = false)
-    {
-        ($active) ? $mode = 1: $mode = 0;
-        $this->buffer->write(self::ESC . "V" . chr($mode));
-    }
-         
-    /**
-     * Turns white/black reverse print On or Off for characters.
-     * n = odd: On, n = even: Off
-     */        
-    public function setReverseColors()
-    {
-        $mode = 1;
-        if ($this->reverseMode) {
-            $mode = 2;
-            $this->reverseMode = true;
-        }
-        $this->buffer->write(self::GS . "b" . chr($mode));
-    }
-    
-    /**
-     * Aligns all data in one line to the selected layout in standard mode.
-     * @param string $value  L - left C - center or R - rigth
-     */
-    public function setJustification($value = 'L')
-    {
-        //ESC a n
-        //Aligns all data in one line to the selected layout in
-        //standard mode.
-        //n = 0, "0": Left justification
-        //n = 1, "1": Centering
-        //n = 2, "2": Right justification
-        $value = strtoupper($value);
-        switch ($value) {
-            case 'C':
-               $nJust = 1;
-               break;
-            case 'R':
-               $nJust = 2;
-               break;
-            default:
-                $nJust = 0;
-        }
-        $this->buffer->write(self::ESC . "a" . chr($nJust));
-    }
-           
-    /**
-     * initialize
-     * Inicializa a impressora
-     * Clears the data in the print buffer and resets the printer modes to 
-     * the modes that were in effect when the power was turned on
-     * 
-     * @param string $mode 'normal' ou '42' colunas
-     */
-    public function initialize($mode = 'normal')
-    {
-        $this->buffer->write(self::ESC . "@");
-        $this->characterTable = 0;
-        if ($mode == '42') {
-            $this->zSetTo42Col();
-        }
-    }      
-
-    /**
-     * Prints data and feeds paper n lines
-     * ESC J n Prints data and feeds paper n dots.
-     * ESC d n Prints data and feeds paper n lines.
-     * @param type $lines
-     */
-    public function lineFeed($lines = 1)
-    {
-        if ($lines <= 1) {
-            $this->buffer->write(self::LF);
-        } else {
-            $this->buffer->write(self::ESC . "d" . chr($lines));
-        }
-    }    
-
-    /**
-     * Prints data and feeds paper n dots
-     * ESC J n Prints data and feeds paper n dots.
-     * @param type $lines
-     */
-    public function dotFeed($dots = 1)
-    {
-        $this->buffer->write(self::ESC . "J" . chr($dots));
-    }    
-    
-    /**
-     * Generate a pulse, for opening a cash drawer if one is connected.
-     * The default settings should open an Epson drawer.
-     *
-     * @param int $pin 0 or 1, for pin 2 or pin 5 kick-out connector respectively.
-     * @param int $on_ms pulse ON time, in milliseconds.
-     * @param int $off_ms pulse OFF time, in milliseconds.
-     */
-    public function pulse($pin = 0, $on_ms = 120, $off_ms = 240)
-    {
-        self::validateInteger($pin, 0, 1, __FUNCTION__);
-        self::validateInteger($on_ms, 1, 511, __FUNCTION__);
-        self::validateInteger($off_ms, 1, 511, __FUNCTION__);
-        $this->buffer->write(self::ESC . "p" . chr($pin + 48) . chr($on_ms / 2) . chr($off_ms / 2));
-    }   
-            
-    /**
-     * Cut the paper
-     * @param int $mode CUT_FULL or CUT_PARTIAL. If not specified, CUT_FULL will be used. 
-     * @param int $lines Number of lines to feed after cut
-     */
-    public function cut($mode = 65, $lines = 3)
-    {
-        $this->buffer->write(self::GS . "V" . chr($mode) . chr($lines));
-    }
-    
-    /**
-     * Prints EAN13 barcode
-     * @param int $height
-     * @param int $lineWidth
-     * @param string $txtPosition
-     * @param string $txtFont
-     * @param string $data
-     */
-    public function barcodeEAN13(
-        $height = 162,
-        $lineWidth = 3,
-        $txtPosition = '',
-        $txtFont = '',
-        $data = '123456789012'
-    ) {
-        $type = 2;
-        $this->zBarcode($type, $height, $lineWidth, $txtPosition, $txtFont, $data);
-    }     
-    
-    /**
-     * Prints EAN8 barcode
-     * @param int $height
-     * @param int $lineWidth
-     * @param string $txtPosition
-     * @param string $txtFont
-     * @param string $data
-     */
-    public function barcodeEAN8(
-        $height = 162,
-        $lineWidth = 3,
-        $txtPosition = '',
-        $txtFont = '',
-        $data = '1234567'
-    ) {
-        $type = 3;
-        $this->zBarcode($type, $height, $lineWidth, $txtPosition, $txtFont, $data);
-    }
-         
-    /**
-     * Prints 25 barcode
-     * @param int $height
-     * @param int $lineWidth
-     * @param string $txtPosition
-     * @param string $txtFont
-     * @param string $data
-     */
-    public function barcode25(
-        $height = 162,
-        $lineWidth = 3,
-        $txtPosition = '',
-        $txtFont = '',
-        $data = '123456'
-    ) {
-        $type = 'none';
-        $this->zBarcode($type, $height, $lineWidth, $txtPosition, $txtFont, $data);
-    }
-
-    /**
-     * Prints 39 barcode
-     * @param int $height
-     * @param int $lineWidth
-     * @param string $txtPosition
-     * @param string $txtFont
-     * @param string $data
-     */
-    public function barcode39(
-        $height = 162,
-        $lineWidth = 3,
-        $txtPosition = 0,
-        $txtFont = 0,
-        $data = '123456'
-    ) {
-        $type = 4;
-        $this->zBarcode($type, $height, $lineWidth, $txtPosition, $txtFont, $data);
-    }
-            
-    /**
-     * Prints 93 barcode
-     * @param int $height
-     * @param int $lineWidth
-     * @param string $txtPosition
-     * @param string $txtFont
-     * @param string $data
-     */
-    public function barcode93(
-        $height = 162,
-        $lineWidth = 3,
-        $txtPosition = '',
-        $txtFont = '',
-        $data = '123456'
-    ) {
-        $type = 'none';
-        $this->zBarcode($type, $height, $lineWidth, $txtPosition, $txtFont, $data);
-    }       
-            
-    /**
-     * Prints 128 barcode
-     * @param int $height
-     * @param int $lineWidth
-     * @param string $txtPosition
-     * @param string $txtFont
-     * @param string $data
-     */
-    public function barcode128(
-        $height = 162,
-        $lineWidth = 3,
-        $txtPosition = '',
-        $txtFont = '',
-        $data = '123456'
-    ) {
-        $type = 'none';
-        $this->zBarcode($type, $height, $lineWidth, $txtPosition, $txtFont, $data);
-    }      
-    
-    /**
-     * Prints QR barcode
-     * @param string $texto
-     * @param string $level
-     * @param string $modelo
-     * @param string $wmod
-     */
-    public function barcodeQRCode($texto = '', $level = 'L', $modelo = '1', $wmod = 1)
-    {
-        $b2dtype = chr(49);
-        $pLower = chr(3);
-        $pHigher = chr(0);
-        $errlevel = chr(48);
-        //set QRCode model
-        $func = chr(65);
-        $qrmod = 49;
-        if ($modelo == 2) {
-            $qrmod = 50;
-        }
-        $this->buffer->write(self::GS . "(k" . $pLower . $pHigher . $b2dtype . $func . $qrmod . chr(0));
-        //set module size in dots
-        $func = chr(67);
-        $this->buffer->write(self::GS . "(k" . $pLower . $pHigher . $b2dtype . $func . $wmod);
-        //set error correction level
-        $func = chr(69);
-        $this->buffer->write(self::GS . "(k" . $pLower . $pHigher . $b2dtype . $func . $errlevel);
-        //print QR Code
-        //k = (pL + pH × 256) – 3
-        $func = chr(80);
-        $metodo = chr(48);
-        $this->buffer->write(self::GS . "(k" . $pLower . $pHigher . $b2dtype . $func . $metodo . $texto);
-    }    
-            
-    public function barcodePdf417()
-    {
-        
-    }        
-            
-    public function putImage()
-    {
-        
-    }
-    
-    /**
-     * Implements barcodes
-     * @param int $type
-     * @param int $height
-     * @param int $lineWidth
-     * @param string $txtPosition
-     * @param string $txtFont
-     * @param string $data
-     */
-    protected function zBarcode(
-        $type = 0,
-        $height = 162,
-        $lineWidth = 3,
-        $txtPosition = '',
-        $txtFont = '',
-        $data = '123456'
-    ) {
-        if ($type != 'none') {
-            $this->buffer->write(self::GS . "h" . chr($height));
-            $this->buffer->write(self::GS . 'w' . chr($lineWidth));
-            $this->buffer->write(self::GS . 'H' . chr($txtPosition));
-            $this->buffer->write(self::GS . 'f' . chr($txtFont));
-            $this->buffer->write(self::GS . "k" . chr($type) . $data . self::NUL);
-        }
-    }    
-
     /**
      * Translate the text from UTF-8 for the specified codepage
-     * this translation uses "iconv" and admits texts ONLY in UTF-8
+     * this translation uses "iconv" and admits texts ONLY in UTF-8.
+     *
      * @param string $text
+     *
      * @return string
      */
-    private function zTranslate($text = '')
+    protected function zTranslate($text = '')
     {
         $indCode = $this->getCodePages();
-        if (! empty($indCode)) {
+        if (!empty($indCode)) {
             $codep = $this->aCodePage[$indCode];
-            if (! empty($codep)) {
+            if (!empty($codep)) {
                 $text = iconv('UTF-8', $codep['conv'], $text);
             }
         }
+
         return $text;
     }
 
+
     /**
-     * Salva os parametros referentes a larguras maximas 
-     * referentes a impresção para uso em outros métodos
+     * Generate two characters for a number: 
+     * In lower and higher parts, or more parts as needed.
+     *
+     * @param int $int    Input number
+     * @param int $length The number of bytes to output (1 - 4).
      */
-    private function zSaveMaxParams()
+    protected static function intLowHigh($input, $length)
     {
-        $aMv = array(
-            'normal' => array(
-                'A'=> array('80'=>48,'58'=>35),
-                'B'=> array('80'=>64,'58'=>46)),
-            '42' => array(
-                'A'=> array('80'=>42,'58'=>42),
-                'B'=> array('80'=>60,'58'=>31))
-        );
-        //80mm -> wprintmax = 72.1 mm (2.84"), 576 dots
-        //58mm -> wprintmax = 52.6 mm (2.07"), 420 dots
-        // normal
-        // Paper width        80mm         58mm
-        // Font A (12 x 24) 48 chars     35 chars
-        // Font B (9 x 17)  64 chars     46 chars
-        //-------------------------------------------
-        // 42 Columns $this->printerMode
-        // Font A (13 x 24) 42 chars     42 chars
-        // Font B (9 x 17)  60 chars     31 chars
-        $widthPrint = 72.1;
-        $this->widthMaxdots = 576;
-        if ($this->widthPaper != 80) {
-            $widthPrint = 52.6;
-            $this->widthMaxdots = 420;
+        $maxInput = (256 << ($length * 8) - 1);
+        $outp = '';
+        for ($i = 0; $i < $length; ++$i) {
+            $outp .= chr($input % 256);
+            $input = (int) ($input / 256);
         }
-        $this->widthPrint = $widthPrint;
-        $this->maxchars = $aMv[$this->printerMode][$this->font][$this->widthPaper];
+
+        return $outp;
     }
-    
+
     /**
-     * Throw an exception if the argument given is not a boolean
-     * @param boolean $test the input to test
+     * Convert widths and heights to characters.
+     * Used before sending graphics to set the size.
+     *
+     * @param array $inputs
+     * @param bool  $long   True to use 4 bytes, false to use 2
+     *
+     * @return string
+     */
+    protected static function dataHeader(array $inputs, $long = true)
+    {
+        $outp = array();
+        foreach ($inputs as $input) {
+            if ($long) {
+                $outp[] = self::intLowHigh($input, 2);
+            } else {
+                self::validateInteger($input, 0, 255, __FUNCTION__);
+                $outp[] = chr($input);
+            }
+        }
+
+        return implode('', $outp);
+    }
+
+    /**
+     * Throw an exception if the argument given is not a boolean.
+     * 
+     * @param bool   $test   the input to test
      * @param string $source the name of the function calling this
      */
     protected static function validateBoolean($test, $source)
     {
         if (!($test === true || $test === false)) {
-            throw new InvalidArgumentException("O argumento para $source deve ser um booleano");
+            throw new InvalidArgumentException("Argument to $source must be a boolean");
         }
     }
-    
+
     /**
-     * Throw an exception if the argument given is not an integer within the specified range
+     * Throw an exception if the argument given is not an integer within the specified range.
      * 
-     * @param int $test the input to test
-     * @param int $min the minimum allowable value (inclusive)
-     * @param int $max the maximum allowable value (inclusive)
+     * @param int    $test   the input to test
+     * @param int    $min    the minimum allowable value (inclusive)
+     * @param int    $max    the maximum allowable value (inclusive)
      * @param string $source the name of the function calling this
      */
     protected static function validateInteger($test, $min, $max, $source)
     {
         if (!is_integer($test) || $test < $min || $test > $max) {
-            throw new InvalidArgumentException("O argumento para $source deve ser um numero entre $min e $max, mas $test foi fornecido.");
+            throw new InvalidArgumentException("Argument to $source must be a number between $min and $max, but $test was given.");
         }
     }
-    
+
     /**
-     * Throw an exception if the argument given can't be cast to a string
-     * @param string $test the input to test
+     * Throw an exception if the argument given can't be cast to a string.
+     *
+     * @param string $test   the input to test
      * @param string $source the name of the function calling this
      */
     protected static function validateString($test, $source)
     {
         if (is_object($test) && !method_exists($test, '__toString')) {
-            throw new InvalidArgumentException("O argumento para $source deve ser uma string");
+            throw new InvalidArgumentException("Argument to $source must be a string");
         }
-    }    
+    }
 }

@@ -19,32 +19,35 @@ namespace Posprint\Printers;
 
 interface PrinterInterface
 {
-    public function setPaperWidth();
+    //SET UP
+    public function defaultRegionPage();
+    public function defaultCodePage();
+    public function setCodePage();
+    public function setRegionPage();
+    public function defaultFont();
+    public function setFont();
+    public function setBold();
+    public function setUnderlined();
+    public function setAlign();
+    public function setReverseColors();
+    public function setRotate90();
+    public function setExpanded();
+    public function setCondensed();
+    
     public function setSpacing();
     public function setCharSpacing();
     public function setParagraph();
     public function setPrintMode();
-    public function setFont();
-    public function setCharset();
-    public function setInternational();
-    public function setBold();
-    public function setUnderlined();
-    public function setExpanded();
-    public function setCondensed();
-    public function setRotate90();
-    public function setReverseColors();
-    public function setJustification();
+    
+    
+    
+    
+    //ACTIONS
     public function initialize();
     public function text();
-    public function line();
-    public function barcodeEAN13();
-    public function barcodeEAN8();
-    public function barcode25();
-    public function barcode39();
-    public function barcode93();
-    public function barcode128();
+    public function barcode();
     public function barcodeQRCode();
-    public function barcodePdf417();
+    
     public function lineFeed();
     public function dotFeed();
     public function pulse();
