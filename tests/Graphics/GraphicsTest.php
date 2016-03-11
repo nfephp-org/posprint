@@ -65,12 +65,13 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
     {
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
         $graphics = new Graphics($imagePath);
-        $filename = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'new.bmp';
-        $graphics->convert2BMP($filename);
-        $result = file_get_contents($filename);
-        $filename = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'tux.bmp';
-        $expected = file_get_contents($filename);
+        $filename1 = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'new.bmp';
+        $graphics->convert2BMP($filename1);
+        $result = file_get_contents($filename1);
+        $filename2 = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'tux.bmp';
+        $expected = file_get_contents($filename2);
         $this->assertEquals($result, $expected);
+        unlink($filename1);
     }
 
     /**
@@ -92,7 +93,7 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
         $result = $graphics->getRasterImage();
         $filename = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'tux.raw';
         $expected = file_get_contents($filename);
-        //$this->assertEquals($result, $expected);
+        $this->assertEquals($result, $expected);
     }
     
     public function testQRCode()

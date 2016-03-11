@@ -92,8 +92,8 @@ abstract class Basic
      */
     protected function isGdLoaded()
     {
-        $this->gdImgProcessing = extension_loaded('gd');
-        return $this->gdImgProcessing;
+        $gdImgProcessing = extension_loaded('gd');
+        return $gdImgProcessing;
     }
     
     /**

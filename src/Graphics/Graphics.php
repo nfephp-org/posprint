@@ -38,12 +38,13 @@ class Graphics extends Basic
      * @param string $filename
      * @param int $width
      * @param int $height
+     * @throws RuntimeException
      */
     public function __construct($filename = null, $width = null, $height = null)
     {
         // Include option to Imagick
         if (! $this->isGdSupported()) {
-            throw new Exception("GD module not found.");
+            throw new RuntimeException("GD module not found.");
         }
         $this->imgHeight = 0;
         $this->imgWidth = 0;
@@ -329,16 +330,16 @@ class Graphics extends Basic
     {
         // Make a string of 1's and 0's 
         $this->imgData = str_repeat("\0", $this->imgHeight * $this->imgWidth);
-        for ($y = 0; $y < $this->imgHeight; $y++) {
-            for ($x = 0; $x < $this->imgWidth; $x++) {
+        for ($yInd = 0; $yInd < $this->imgHeight; $yInd++) {
+            for ($xInd = 0; $xInd < $this->imgWidth; $xInd++) {
                 //get colors from byte image
-                $cols = imagecolorsforindex($this->img, imagecolorat($this->img, $x, $y));
-                //convert to greyness color
-                $greyness = (int)(($cols['red'] + $cols['green'] + $cols['blue']) / 3) >> 7; // 1 for white, 0 for black
+                $cols = imagecolorsforindex($this->img, imagecolorat($this->img, $xInd, $yInd));
+                //convert to greyness color 1 for white, 0 for black
+                $greyness = (int)(($cols['red'] + $cols['green'] + $cols['blue']) / 3) >> 7;
                 //switch to Black and white
                 //1 for black, 0 for white, taking into account transparency color
                 $black = (1 - $greyness) >> ($cols['alpha'] >> 6);
-                $this->imgData[$y * $this->imgWidth + $x] = $black;
+                $this->imgData[$yInd * $this->imgWidth + $xInd] = $black;
             }
         }
         return $this->imgData;
@@ -405,7 +406,7 @@ class Graphics extends Basic
      * Save safety binary image file
      * 
      * @param string $filename
-     * @param string $data
+     * @param resource|string|null $data
      * @return boolean
      * @throws InvalidArgumentException
      * @throws RuntimeException
@@ -442,7 +443,7 @@ class Graphics extends Basic
      * @param int $minbytes
      * @return string
      */
-    private static function littleEndian2String($number, $minbytes=1)
+    private static function littleEndian2String($number, $minbytes = 1)
     {
         $intstring = '';
         while ($number > 0) {
