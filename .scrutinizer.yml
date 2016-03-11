@@ -3,6 +3,13 @@ build:
         php: '5.6.0'
         php: '7.0.0'
 
+    tests:
+        override:
+            -
+                command: 'phpunit --coverage-clover=posprint-file'
+                coverage:
+                    file: 'posprint-file'
+                    format: 'php-clover'
 
 before_commands:
     - "composer install --prefer-source"
