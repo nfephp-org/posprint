@@ -319,7 +319,7 @@ class PhpSerial
      * Set automatic send massage to serial
      * 
      * @param bool $auto
-     * @param float $time
+     * @param float $waittime
      */
     public function setAuto($auto, $waittime)
     {
@@ -327,7 +327,7 @@ class PhpSerial
             $data = false;
         }
         if (! is_float($waittime)) {
-            $time = 0.1;
+            $waittime = 0.1;
         }
         $this->waittime = $waittime;
         $this->autoflush = $auto;
@@ -691,20 +691,21 @@ class PhpSerial
      */
     protected function getOs()
     {
-        switch (true) {
-            case stristr(PHP_OS, 'DAR'):
+        $oss = strtoupper(substr(PHP_OS, 0, 3));
+        switch ($oss) {
+            case 'DAR':
                 return self::OS_OSX;
-            case stristr(PHP_OS, 'WIN'):
+            case 'WIN':
                 return self::OS_WIN;
-            case stristr(PHP_OS, 'LINUX'):
+            case 'LIN':
                 return self::OS_LINUX;
-            case stristr(PHP_OS, 'CYGWIN'):
+            case 'CYG':
                 return self::OS_CYGWIN;
-            case stristr(PHP_OS, 'HPUX'):
+            case 'HPU':
                 return self::OS_HPUX;
-            case stristr(PHP_OS, 'BSD'):
-                return self::OS_BSD;
-            case stristr(PHP_OS, 'UNIX'):
+            case 'BSD':
+                return self::OS_BSD; //este esta incorreto
+            case 'UNI':
                 return self::OS_UNIX;
             default:
                 return self::OS_UNKNOWN;
