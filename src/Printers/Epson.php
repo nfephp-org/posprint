@@ -14,8 +14,9 @@ namespace Posprint\Printers;
  */
 
 use Posprint\Printers\DefaultPrinter;
+use Posprint\Printers\PrinterInterface;
 
-final class Epson extends DefaultPrinter
+final class Epson extends DefaultPrinter implements PrinterInterface
 {
     /**
      * Select printer mode
