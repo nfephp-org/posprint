@@ -3,7 +3,7 @@
 namespace Posprint\Tests\Connectors;
 
 /**
- * Unit Tests form Buffer Class
+ * Unit Tests for Buffer Class
  * 
  * @author Roberto L. Machado <linux dot rlm at gmail dot com>
  */
