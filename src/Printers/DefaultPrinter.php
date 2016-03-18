@@ -289,7 +289,6 @@ abstract class DefaultPrinter implements PrinterInterface
             if ($region == 'ALL') {
                 return $this->aRegion;
             }
-            //set $this->region
             $reg = array_search($region, $this->aRegion, true);
             if ($reg !== false) {
                 $this->region = $region;
@@ -315,9 +314,7 @@ abstract class DefaultPrinter implements PrinterInterface
             if ($codepage == 'ALL') {
                 return array_keys($this->aCodePage);
             }
-            //set $this->codepage
-            $reg = array_search($codepage, $this->aCodePage, true);
-            if ($reg !== false) {
+            if (array_key_exists($codepage, $this->aCodePage)) {
                 $this->codepage = $codepage;
                 $table = $this->aCodePage[$codepage];
                 $this->charsetTableNum = $table['table'];
@@ -334,7 +331,7 @@ abstract class DefaultPrinter implements PrinterInterface
     public function setCodePage($codepage = null)
     {
         $codepage = $this->defaultCodePage($codepage);
-        $this->buffer->write(self::ESC.'t'.chr($this->tableNum));
+        $this->buffer->write(self::ESC.'t'.chr($this->charsetTableNum));
     }
 
     /**
@@ -347,7 +344,7 @@ abstract class DefaultPrinter implements PrinterInterface
     {
         $region = $this->defaultRegionPage($region);
         $mode = array_keys($this->aRegion, $region, true);
-        $this->buffer->write(self::ESC.'R'.chr($mode));
+        $this->buffer->write(self::ESC.'R'.chr($mode[0]));
     }
     
     /**
@@ -396,7 +393,7 @@ abstract class DefaultPrinter implements PrinterInterface
     {
         $font = $this->defaultFont($font);
         $mode = array_keys($this->aFont, $font, true);
-        $this->buffer->write(self::ESC.'M'.chr($mode));
+        $this->buffer->write(self::ESC.'M'.chr($mode[0]));
     }
 
     /**
@@ -440,7 +437,7 @@ abstract class DefaultPrinter implements PrinterInterface
         if (is_null($align)) {
             $align = 'L';
         }
-        $value = strtoupper($value);
+        $value = strtoupper($align);
         switch ($value) {
             case 'C':
                $mode = 1;
@@ -476,9 +473,7 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function setExpanded($size = null)
     {
-        if (is_null($size)) {
-            $size = 1;
-        }
+        $size = self::validateInteger($size, 1, 8, 1);
         $aSize = [
             [0, 0],
             [16, 1],
@@ -489,7 +484,6 @@ abstract class DefaultPrinter implements PrinterInterface
             [96, 6],
             [112, 7]
         ];
-        self::validateInteger($size, 1, 8, __FUNCTION__);
         $mode = $aSize[$size-1][0] + $aSize[$size-1][1];
         $this->buffer->write(self::ESC.'!'.chr($mode));
     }
@@ -549,8 +543,7 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function text($text = '')
     {
-        self::validateString($text, __FUNCTION__);
-        $text = $this->zTranslate($text);
+        $text = $this->translate($text);
         $this->buffer->write($text);
     }
 
@@ -564,6 +557,8 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function setSpacing($horizontal = 30, $vertical = 30)
     {
+        $horizontal = self::validateInteger($horizontal, 0, 255, 30);
+        $vertical = self::validateInteger($vertical, 0, 255, 30);
         $this->buffer->write(self::GS.'P'.chr($horizontal).chr($vertical));
     }
 
@@ -575,6 +570,7 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function setCharSpacing($value = 3)
     {
+        $value = self::validateInteger($value, 0, 255, 0);
         $this->buffer->write(self::ESC.' '.chr($value));
     }
 
@@ -582,12 +578,14 @@ abstract class DefaultPrinter implements PrinterInterface
      * Line spacing
      * The default is set to zero and 30/180 "
      * any different number of zero will generate multiples of.
-     *
+     * n  1/180-inch vertical motion
+     * normal paragraph 30/180" => 4.23 mm
+     * 
      * @param int $paragraph
      */
     public function setParagraph($value = 0)
-    {   //n * 1/180-inch vertical motion
-        //normal paragrafo 30/180" => 4.23 mm
+    {  
+        $value = self::validateInteger($value, 0, 255, 0);
         $paragraph = ceil($value);
         if ($paragraph == 0) {
             $this->buffer->write(self::ESC.'2');
@@ -609,11 +607,12 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function lineFeed($lines = 1)
     {
-        if ($lines <= 1) {
+        $lines = self::validateInteger($lines, 0, 255, 1);
+        if ($lines == 1) {
             $this->buffer->write(self::LF);
-        } else {
-            $this->buffer->write(self::ESC.'d'.chr($lines));
+            return;
         }
+        $this->buffer->write(self::ESC.'d'.chr($lines));
     }
 
     /**
@@ -624,7 +623,7 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function dotFeed($dots = 1)
     {
-        self::validateInteger($lines, 1, 80, __FUNCTION__);
+        $dots = self::validateInteger($dots, 0, 80, 0);
         $this->buffer->write(self::ESC.'J'.chr($dots));
     }
 
@@ -638,9 +637,9 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function pulse($pin = 0, $on_ms = 120, $off_ms = 240)
     {
-        self::validateInteger($pin, 0, 1, __FUNCTION__);
-        self::validateInteger($on_ms, 1, 511, __FUNCTION__);
-        self::validateInteger($off_ms, 1, 511, __FUNCTION__);
+        $pin = self::validateInteger($pin, 0, 1, 0);
+        $on_ms = self::validateInteger($on_ms, 1, 511, 120);
+        $off_ms = self::validateInteger($off_ms, 1, 511, 240);
         $this->buffer->write(self::ESC.'p'.chr($pin + 48).chr($on_ms / 2).chr($off_ms / 2));
     }
 
@@ -650,9 +649,9 @@ abstract class DefaultPrinter implements PrinterInterface
      * @param int $mode  FULL or PARTIAL. If not specified, FULL will be used. 
      * @param int $lines Number of lines to feed after cut
      */
-    public function cut($mode = 'FULL', $lines = 3)
+    public function cut($mode = 'PARTIAL', $lines = 3)
     {
-        self::validateInteger($lines, 1, 10, __FUNCTION__);
+        $lines = self::validateInteger($lines, 1, 10, 3);
         if ($mode == 'FULL') {
             $mode = self::CUT_FULL;
         } else {
@@ -662,7 +661,7 @@ abstract class DefaultPrinter implements PrinterInterface
     }
 
     /**
-     * Implements barcodes
+     * Implements barcodes 1D
      * GS k m n d1...dn
      * Prints bar code. n specifies the data length.
      *   m    bar code system             number of d (=k)
@@ -702,7 +701,7 @@ abstract class DefaultPrinter implements PrinterInterface
     public function barcode(
         $type = self::CODE128,
         $height = 162,
-        $lineWidth = 3,
+        $lineWidth = 2,
         $txtPosition = 'none',
         $txtFont = '',
         $data = '123456'
@@ -725,9 +724,13 @@ abstract class DefaultPrinter implements PrinterInterface
         if ($txtFont === 'B') {
             $font = 1;
         }
-        self::validateBarcodeData($type, $data, __FUNCTION__);
-        self::validateInteger($lineWidth, 2, 6, __FUNCTION__);
-        $nlen = len($data);
+        $id = 0;
+        if (self::validateBarcodeData($type, $id, $data) === false) {
+            return false;
+        }
+        $height = self::validateInteger($height, 1, 255, 4);
+        $lineWidth = self::validateInteger($lineWidth, 1, 6, 2);
+        $nlen = strlen($data);
         //set barcode height
         $this->buffer->write(self::GS.'h'.chr($height));
         //set barcode bar width
@@ -737,26 +740,26 @@ abstract class DefaultPrinter implements PrinterInterface
         //Selects font for the HRI characters.
         $this->buffer->write(self::GS.'f'.chr($font));
         //Print barcode
-        $this->buffer->write(self::GS.'k'.chr($type).chr($nlen).$data);
+        $this->buffer->write(self::GS.'k'.chr($id).chr($nlen).$data);
     }
     
     /**
      * Imprime o QR Code
-     * @param string $texto Dados a serem inseridos no QRCode
+     * @param string $data Dados a serem inseridos no QRCode
      * @param string $level Nivel de correção L,M,Q ou H
      * @param int $modelo modelo de QRCode 1, 2 ou 0 Micro
      * @param int $wmod largura da barra 3 ~ 16
      */
-    public function barcodeQRCode($texto = '', $level = 'L', $modelo = 2, $wmod = 4)
+    public function barcodeQRCode($data = '', $level = 'L', $modelo = 2, $wmod = 4)
     {
         //set model of QRCode
         $n1 = 50;
         if ($modelo == 1) {
             $n1 = 49;
         }
-        $this->buffer->write(self::GS . "(k" . chr(4) . $chr(0) . chr(49) . chr(65) . chr($n1) .chr(0));
+        $this->buffer->write(self::GS."(k".chr(4).chr(0).chr(49).chr(65).chr($n1).chr(0));
         //set module bar width
-        $this->buffer->write(self::GS . "(k" . chr(3) . $chr(0) . chr(49) . chr(67) . chr($wmod));
+        $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(49).chr(67).chr($wmod));
         //set error correction level
         $level = strtoupper($level);
         switch ($level) {
@@ -775,14 +778,14 @@ abstract class DefaultPrinter implements PrinterInterface
             default:
                 $n = 49;
         }
-        $this->buffer->write(self::GS . "(k" . chr(3) . $chr(0) . chr(49) . chr(69) . chr($n));
+        $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(49).chr(69).chr($n));
         //set data for QR Code assuming print only alphanumeric data
-        $len = strlen($texto) + 3;
+        $len = strlen($data) + 3;
         $pH = ($len / 256);
         $pL = $len % 256;
-        $this->buffer->write(self::GS . "(k" . chr($pL) . $chr($pH) . chr(49) . chr(80) . chr(48) . $texto);
+        $this->buffer->write(self::GS."(k".chr($pL).chr($pH).chr(49).chr(80).chr(48).$data);
         //Print QR Code
-        $this->buffer->write(self::GS . "(k" . chr(3) . $chr(0) . chr(49) . chr(81) . chr(48));
+        $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(49).chr(81).chr(48));
     }
 
     /**
@@ -853,34 +856,44 @@ abstract class DefaultPrinter implements PrinterInterface
     }
 
     /**
+     * Checks whether the barcode data is compatible with the chosen model
      * 
-     * @param type $type
-     * @param type $data
-     * @param type $source
-     * @throws InvalidArgumentException
+     * @param string $type
+     * @param int    $id
+     * @param string $data
+     * @return string 
      */
-    protected static function validateBarcodeData($type, $data, $source)
+    protected static function validateBarcodeData($type, &$id, &$data)
     {
         $aTypes = [
-            'A' => ['desc' => 'UPC-A', 'len' => '11;12', 'type' => 'N'],
-            'B' => ['desc' => 'UPC-E', 'len' => '6;7;8;11;12', 'type' => 'N'],
-            'C' => ['desc' => 'EAN13', 'len' => '12;13', 'type' => 'N'],
-            'D' => ['desc' => 'EAN8', 'len' => '7;8', 'type' => 'N'],
-            'E' => ['desc' => 'CODE39', 'len' => '1-', 'type' => 'C'],
-            'F' => ['desc' => 'ITF (i25)', 'len' => '1-even ', 'type' => 'N'],
-            'G' => ['desc' => 'CODABAR', 'len' => '2-more', 'type' => 'C'],
-            'H' => ['desc' => 'CODE93', 'len' => '1-255', 'type' => 'C'],
-            'I' => ['desc' => 'CODE128', 'len' => '2-255', 'type' => 'C'],
-            'J' => ['desc' => 'GS1-128', 'len' => '2-255', 'type' => 'C'],
-            'K' => ['desc' => 'GS1 DataBar Omnidirectional', 'len' => '13', 'type' => 'N'],
-            'L' => ['desc' => 'GS1 DataBar Truncated', 'len' => '13', 'type' => 'N'],
-            'M' => ['desc' => 'GS1 DataBar Limited', 'len' => '13', 'type' => 'N'],
-            'N' => ['desc' => 'GS1 DataBar Expanded', 'len' => '2-255', 'type' => 'C'],
+            'A' => ['id' => 65, 'desc' => 'UPC-A', 'len' => '11;12', 'type' => 'N'],
+            'B' => ['id' => 66, 'desc' => 'UPC-E', 'len' => '6;7;8;11;12', 'type' => 'N'],
+            'C' => ['id' => 67, 'desc' => 'EAN13', 'len' => '12;13', 'type' => 'N'],
+            'D' => ['id' => 68, 'desc' => 'EAN8', 'len' => '7;8', 'type' => 'N'],
+            'E' => ['id' => 69, 'desc' => 'CODE39', 'len' => '1-', 'type' => 'C'],
+            'F' => ['id' => 70, 'desc' => 'ITF (i25)', 'len' => '1-even ', 'type' => 'N'],
+            'G' => ['id' => 71, 'desc' => 'CODABAR', 'len' => '2-more', 'type' => 'C'],
+            'H' => ['id' => 72, 'desc' => 'CODE93', 'len' => '1-255', 'type' => 'C'],
+            'I' => ['id' => 73, 'desc' => 'CODE128', 'len' => '2-255', 'type' => 'C'],
+            'J' => ['id' => 74, 'desc' => 'GS1-128', 'len' => '2-255', 'type' => 'C'],
+            'K' => ['id' => 75, 'desc' => 'GS1 DataBar Omnidirectional', 'len' => '13', 'type' => 'N'],
+            'L' => ['id' => 76, 'desc' => 'GS1 DataBar Truncated', 'len' => '13', 'type' => 'N'],
+            'M' => ['id' => 77, 'desc' => 'GS1 DataBar Limited', 'len' => '13', 'type' => 'N'],
+            'N' => ['id' => 78, 'desc' => 'GS1 DataBar Expanded', 'len' => '2-255', 'type' => 'C'],
         ];
-        $barType = $aTypes[$type];
-        if (empty($barType)) {
-            throw new InvalidArgumentException("Argument $type to $source is not a valid type of barcode");
+        if (!array_key_exists($type, $aTypes)) {
+            return false;
         }
+        $bar = $aTypes[$type];
+        $id = $bar['id'];
+        $len = $bar['len'];
+        $dtype = $bar['type'];
+        //check data type if N only numeric is acceptable and all others chars must be removed
+        //and if then field stay is empty, this is must be completed to an acceptable standard value
+        
+        //check for length of data, if the field length is different from the 
+        //acceptable values, it must be adjusted by removing or adding characters
+        return true;
     }
 
     /**
@@ -962,44 +975,51 @@ abstract class DefaultPrinter implements PrinterInterface
     }
 
     /**
-     * Throw an exception if the argument given is not a boolean.
+     * Verify if the argument given is not a boolean.
      * 
      * @param bool   $test   the input to test
-     * @param string $source the name of the function calling this
+     * @param bool    $default the default value
+     * @return bool 
      */
-    protected static function validateBoolean($test, $source)
+    protected static function validateBoolean($test, $default)
     {
         if (!($test === true || $test === false)) {
-            throw new InvalidArgumentException("Argument to $source must be a boolean");
+            return $default;
         }
+        return $test;
     }
 
     /**
-     * Throw an exception if the argument given is not an integer within the specified range.
+     * Verify if the argument given is not an integer within the specified range.
+     * will return default instead
      * 
-     * @param int    $test   the input to test
-     * @param int    $min    the minimum allowable value (inclusive)
-     * @param int    $max    the maximum allowable value (inclusive)
-     * @param string $source the name of the function calling this
+     * @param int    $test    the input to test
+     * @param int    $min     the minimum allowable value (inclusive)
+     * @param int    $max     the maximum allowable value (inclusive)
+     * @param int    $default the default value
+     * @return int
      */
-    protected static function validateInteger($test, $min, $max, $source)
+    protected static function validateInteger($test, $min, $max, $default)
     {
         if (!is_integer($test) || $test < $min || $test > $max) {
-            throw new InvalidArgumentException("Argument to $source must be a number between $min and $max, but $test was given.");
+            return $default;
         }
+        return $test;
     }
 
     /**
-     * Throw an exception if the argument given can't be cast to a string.
+     * Verify if the argument given can't be cast to a string.
      *
-     * @param string $test   the input to test
-     * @param string $source the name of the function calling this
+     * @param string $test    the input to test
+     * @param string $default the default value
+     * @return string
      */
-    protected static function validateString($test, $source)
+    protected static function validateString($test, $default)
     {
         if (is_object($test) && !method_exists($test, '__toString')) {
-            throw new InvalidArgumentException("Argument to $source must be a string");
+            return $default;
         }
+        return $test;
     }
     
     /**
@@ -1007,12 +1027,11 @@ abstract class DefaultPrinter implements PrinterInterface
      * this translation uses "iconv" and admits texts ONLY in UTF-8.
      *
      * @param string $text
-     *
      * @return string
      */
     protected function translate($text = '')
     {
-        $indCode = $this->getCodePages();
+        $indCode = $this->defaultCodePage();
         if (!empty($indCode)) {
             $codep = $this->aCodePage[$indCode];
             if (!empty($codep)) {

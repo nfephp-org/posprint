@@ -70,16 +70,18 @@ class PhpSerial
     protected $waittime = 0.1;
     /**
      * OS type where php is running
+     * linux is default
      * 
      * @var int
      */
-    protected $ostype = 2; //linux is default
+    protected $ostype = 2; 
     /**
      * Mode command to set up serial port
+     * formated device mode for especific OS use
      * 
      * @var string
      */
-    protected $mode = ''; //formated device mode for especific OS use
+    protected $mode = '';
     /**
      * Status of port
      * NoSet, Set or Open
@@ -252,7 +254,7 @@ class PhpSerial
         }
         //before the serial port is opened it must be configured,
         //and in windows environment, all sets at a single time
-        $this->config();
+        $this->setUp();
         $this->handle = @fopen($this->device, 'r+b');
         if ($this->handle === false) {
             $this->handle = null;
@@ -285,7 +287,7 @@ class PhpSerial
     /**
      * Use class parameters to configure the serial port
      */
-    public function config()
+    public function setUp()
     {
         if ($this->state === self::SERIAL_DEVICE_SET) {
             return true;
@@ -294,7 +296,7 @@ class PhpSerial
             return false;
         }
         $modesos = [
-            1 => 'MODE', //windos mode com4: BAUD=9600 PARITY=n DATA=8 STOP=1 to=off dtr=off rts=off
+            1 => 'MODE', //windows mode com4: BAUD=9600 PARITY=n DATA=8 STOP=1 to=off dtr=off rts=off
             2 => "stty -F", //linux
             3 => "stty -F", //cygwin
             4 => 'stty -F', //unix
@@ -719,7 +721,7 @@ class PhpSerial
      * @param type $out
      * @return type
      */
-    protected function execCommand($cmd, &$out = null)
+    public function execCommand($cmd, &$out = null)
     {
         $desc = array(
             1 => array("pipe", "w"),
