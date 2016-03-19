@@ -4,7 +4,7 @@ namespace Posprint\Connectors;
 
 /**
  * Classe Connector interface
- * 
+ *
  * @category   NFePHP
  * @package    Posprint
  * @copyright  Copyright (c) 2015

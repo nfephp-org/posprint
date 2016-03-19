@@ -1,25 +1,40 @@
 <?php
+/**
+ * Project Posprint
+ * For make printing commands in ESC/POS themal printers
+ *
+ * PHP version 5 | 7
+ *
+ * @category  NFePHP
+ * @package   Posprint
+ * @author    Roberto L. Machado <linux.rlm@gmail.com>
+ * @copyright 2016 Roberto L. Machado
+ * @license   http://www.gnu.org/licenses/lesser.html LGPL v3
+ * @link      http://github.com/nfephp-org/posprint
+ *            for the canonical source repository
+ */
 
 namespace Posprint\Connectors;
 
+use Posprint\Connectors\ConnectorInterface;
+
 /**
- * Class Buffer 
+ * Class Buffer
  * In principle, the entire assembly of RAW commands must be made for this buffer
- * that will be used later for sending to the appropriate connector set by calling class
+ * that will be used later for sending to the appropriate connector set
+ * by calling class
  * this is necessary to make to enable:
  *    1 - debug the assembly of commands
  *    2 - allow the use of qz.io for printing by using a browser and a cloud server
  *
- * @category   NFePHP
- * @package    Posprint
- * @copyright  Copyright (c) 2015
- * @license    http://www.gnu.org/licenses/lesser.html LGPL v3
- * @author     Roberto L. Machado <linux.rlm at gmail dot com>
- * @link       http://github.com/nfephp-org/posprint for the canonical source repository
+ * @category  NFePHP
+ * @package   Posprint
+ * @author    Roberto L. Machado <linux.rlm@gmail.com>
+ * @copyright 2016 Roberto L. Machado
+ * @license   http://www.gnu.org/licenses/lesser.html LGPL v3
+ * @link      http://github.com/nfephp-org/posprint
+ *            for the canonical source repository
  */
-
-use Posprint\Connectors\ConnectorInterface;
-
 final class Buffer implements ConnectorInterface
 {
     private $ctrlCodes = [
@@ -39,10 +54,10 @@ final class Buffer implements ConnectorInterface
        ' [DC2] ' => 18, //DC2 Cancela modo condensado
        ' [DC3] ' => 19, //DC3 Cancela modo enfatizado
        ' [DC4] ' => 20, //DC4 Controle de dispositivo 4 Inicia modo normal
-       ' [SYN] ' => 22, //Sincronismo 
+       ' [SYN] ' => 22, //Sincronismo
        ' [CAN] ' => 24, //CAN Cancela linha enviada
        ' [EM] ' => 25, //Avança 4 linhas
-       ' [ESC] ' => 27, //escape 
+       ' [ESC] ' => 27, //escape
        ' [FS] ' => 28, //FS
        ' [GS] ' => 29, //GS
        ' [DEL] ' => 127 //Cancela último caracter
@@ -50,6 +65,7 @@ final class Buffer implements ConnectorInterface
     
     /**
      * Buffer of accumulated raw data.
+     *
      * @var array
      */
     private $buffer = null;
@@ -73,7 +89,7 @@ final class Buffer implements ConnectorInterface
 
     /**
      * Send data to buffer porperty
-     * 
+     *
      * @param string $data
      */
     public function write($data)
@@ -92,8 +108,8 @@ final class Buffer implements ConnectorInterface
     
     /**
      * Return the accumulated raw data that has been sent to this buffer.
-     * 
-     * @param bool $retArray Enable return as array, otherwise will return a string
+     *
+     * @param  bool $retArray Enable return as array, otherwise will return a string
      * @return string|array
      */
     public function getDataBinary($retArray = true)
@@ -107,17 +123,17 @@ final class Buffer implements ConnectorInterface
     /**
      * Return the data buffer in base64-encoded for transmission over TCP/IP,
      * specifically for use qz.io or other similar system.
-     * 
-     * @param boolean $retArray Enable return as array, otherwise will return a string
+     *
+     * @param  boolean $retArray Enable return as array, otherwise will return a string
      * @return array|string
      */
     public function getDataBase64($retArray = true)
     {
-        foreach($this->buffer as $linha) {
+        foreach ($this->buffer as $linha) {
             $lbuff[] = base64_encode($linha);
         }
         if (! $retArray) {
-            return implode("\n",$lbuff);
+            return implode("\n", $lbuff);
         }
         return $lbuff;
     }
@@ -127,8 +143,8 @@ final class Buffer implements ConnectorInterface
      * for use with the java ajax
      * It must be tested because there may be binary data
      * that can not travel on GET or POST requests over TCP/IP
-     * 
-     * @param bool $retArray Enable return as array, otherwise will return a string
+     *
+     * @param  bool $retArray Enable return as array, otherwise will return a string
      * @return string
      */
     public function getDataJson($retArray = true)
@@ -140,8 +156,8 @@ final class Buffer implements ConnectorInterface
      * getDataReadable
      * Return buffer data converted into a readable string.
      * For testing and debbuging only, this format should not be sent to printer
-     * 
-     * @param bool $retArray Enable return as array, otherwise will return a string
+     *
+     * @param  bool $retArray Enable return as array, otherwise will return a string
      * @return string|array
      */
     public function getDataReadable($retArray = true)
@@ -159,8 +175,8 @@ final class Buffer implements ConnectorInterface
     /**
      * Converts unprintable characters in screen-printing characters
      * used for debugging purpose only
-     * 
-     * @param string $input
+     *
+     * @param  string $input
      * @return string
      */
     protected function friendlyBinary($input)

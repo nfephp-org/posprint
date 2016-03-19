@@ -59,7 +59,7 @@ abstract class DefaultPrinter implements PrinterInterface
     const NOTRANS = false; //not translate characters codepage
     const TRANS = true; //perform a character convertion to codepage
 
-    //Cut types 
+    //Cut types
     const CUT_FULL = 65;
     const CUT_PARTIAL = 66;
     
@@ -79,10 +79,10 @@ abstract class DefaultPrinter implements PrinterInterface
     const CODE93 = 'H';
     const CODE128 = 'I';
     const GS1_128 = 'J';
-    const GS1_DataBar_Omnidirectional = 'K';
-    const GS1_DataBar_Truncated = 'L';
-    const GS1_DataBar_Limited = 'M';
-    const GS1_DataBar_Expanded = 'N';
+    const GS1_DATABAR_OMINIDIRETIONAL = 'K';
+    const GS1_DATABAR_TRUNCATED = 'L';
+    const GS1_DATABAR_LIMITED = 'M';
+    const GS1_DATABAR_EXPANDED = 'N';
 
     /**
      * List all available region pages.
@@ -177,7 +177,7 @@ abstract class DefaultPrinter implements PrinterInterface
      *
      * @var string
      */
-    protected $font = 'A';           
+    protected $font = 'A';
     /**
      * Resolution in dpi.
      *
@@ -248,7 +248,7 @@ abstract class DefaultPrinter implements PrinterInterface
     protected $reverseColors = false;
     /**
      * Selected under lined mode.
-     * 
+     *
      * @var bool
      */
     protected $underlineMode = false;
@@ -284,7 +284,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * if param $region is 'all' will return a array with all avaiable regions
      * if param $region is a string will set the region parameter of class and returns it.
      * NOTE: This command do not set the printer, only class parameters
-     * 
+     *
      * @param string $region
      * @return string|array
      */
@@ -309,7 +309,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * if param $codepage is 'all' will return a array with all avaiable codepages
      * if param $codepage is a string will set the codepage parameter of class and returns it.
      * NOTE: This command do not set the printer, only class parameters
-     * 
+     *
      * @param string $codepage
      * @return string|array
      */
@@ -354,7 +354,7 @@ abstract class DefaultPrinter implements PrinterInterface
     }
     
     /**
-     * Returns the default printer font 
+     * Returns the default printer font
      * A - Font A (12 x 24)
      * B - Font B (9 x 17)
      * C - Font C
@@ -367,7 +367,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * if param $font is 'all' will return a array with all avaiable printer fonts
      * if param $font is a string will set the font parameter of class and returns it.
      * NOTE: This command do not set the printer, only class parameters
-     * 
+     *
      * @param string $font
      * @return array|string
      */
@@ -391,7 +391,7 @@ abstract class DefaultPrinter implements PrinterInterface
     }
     
     /**
-     * Set a printer font 
+     * Set a printer font
      * If send a valid font name will set the printer otherelse a default font is selected
      * @param string $font
      */
@@ -434,7 +434,7 @@ abstract class DefaultPrinter implements PrinterInterface
     
     /**
      * Set italic mode on or off
-     * 
+     *
      * @return bool
      */
     public function setItalic()
@@ -445,8 +445,8 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Aligns all data in one line to the selected layout in standard mode.
      * L - left  C - center  R - rigth
-     * 
-     * @param string $align 
+     *
+     * @param string $align
      */
     public function setAlign($align = null)
     {
@@ -456,11 +456,11 @@ abstract class DefaultPrinter implements PrinterInterface
         $value = strtoupper($align);
         switch ($value) {
             case 'C':
-               $mode = 1;
-               break;
+                $mode = 1;
+                break;
             case 'R':
-               $mode = 2;
-               break;
+                $mode = 2;
+                break;
             default:
                 $mode = 0;
         }
@@ -485,7 +485,7 @@ abstract class DefaultPrinter implements PrinterInterface
     
     /**
      * Set expanded mode.
-     * @param int $size multiplies normal size 1 - 8 
+     * @param int $size multiplies normal size 1 - 8
      */
     public function setExpanded($size = null)
     {
@@ -536,7 +536,7 @@ abstract class DefaultPrinter implements PrinterInterface
     
     /**
      * initialize printer
-     * Clears the data in the print buffer and resets the printer modes to 
+     * Clears the data in the print buffer and resets the printer modes to
      * the modes that were in effect when the power was turned on.
      */
     public function initialize()
@@ -554,7 +554,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * Send message or command to buffer
      * when sending commands is not required to convert characters,
      * so the variable may translate by false.
-     * 
+     *
      * @param string $text
      */
     public function text($text = '')
@@ -581,7 +581,7 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Set right-side character spacing
      * 0 ≤ n ≤ 255 => 1/x".
-     * 
+     *
      * @param int $value
      */
     public function setCharSpacing($value = 3)
@@ -596,11 +596,11 @@ abstract class DefaultPrinter implements PrinterInterface
      * any different number of zero will generate multiples of.
      * n  1/180-inch vertical motion
      * normal paragraph 30/180" => 4.23 mm
-     * 
+     *
      * @param int $paragraph
      */
     public function setParagraph($value = 0)
-    {  
+    {
         $value = self::validateInteger($value, 0, 255, 0);
         $paragraph = ceil($value);
         if ($paragraph == 0) {
@@ -662,7 +662,7 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Cut the paper.
      *
-     * @param int $mode  FULL or PARTIAL. If not specified, FULL will be used. 
+     * @param int $mode  FULL or PARTIAL. If not specified, FULL will be used.
      * @param int $lines Number of lines to feed after cut
      */
     public function cut($mode = 'PARTIAL', $lines = 3)
@@ -689,13 +689,13 @@ abstract class DefaultPrinter implements PrinterInterface
      *  "F"     ITF                         even
      *  "G"     CODABAR (NW-7)              2 or more
      *  "H"     CODE93                      1–255
-     *  "I"     CODE128                     2–255    
-     *  "J"     GS1-128                     2–255    
+     *  "I"     CODE128                     2–255
+     *  "J"     GS1-128                     2–255
      *  "K"     GS1 DataBar Omnidirectional 13
      *  "L"     GS1 DataBar Truncated       13
      *  "M"     GS1 DataBar Limited         13
      *  "N"     GS1 DataBar Expanded        2–255.
-     * 
+     *
      *  GS h n Sets bar code height to n dots.
      *  GS w n Sets bar width of bar code. n = 2–6 (thin–thick)
      *  GS H n Selects print position of HRI characters.
@@ -846,7 +846,7 @@ abstract class DefaultPrinter implements PrinterInterface
                 //only for debug reasons
                 $resp = $this->buffer->getDataReadable(true);
                 break;
-            default :
+            default:
                 //returns a human readable format of string buffer
                 //only for debug reasons
                 $resp = $this->buffer->getDataReadable(false);
@@ -873,11 +873,11 @@ abstract class DefaultPrinter implements PrinterInterface
 
     /**
      * Checks whether the barcode data is compatible with the chosen model
-     * 
+     *
      * @param string $type
      * @param int    $id
      * @param string $data
-     * @return string 
+     * @return string
      */
     protected static function validateBarcodeData($type, &$id, &$data)
     {
@@ -907,7 +907,7 @@ abstract class DefaultPrinter implements PrinterInterface
         //check data type if N only numeric is acceptable and all others chars must be removed
         //and if then field stay is empty, this is must be completed to an acceptable standard value
         
-        //check for length of data, if the field length is different from the 
+        //check for length of data, if the field length is different from the
         //acceptable values, it must be adjusted by removing or adding characters
         return true;
     }
@@ -918,7 +918,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * @param string $filename Path to image file
      * @param float  $width
      * @param float  $height
-     * @param int    $size 0-normal 1-Double Width 2-Double Heigth 
+     * @param int    $size 0-normal 1-Double Width 2-Double Heigth
      * @throws RuntimeException
      */
     public function putImage($filename = '', $width = null, $height = null, $size = 0)
@@ -955,7 +955,7 @@ abstract class DefaultPrinter implements PrinterInterface
     }
 
     /**
-     * Generate two characters for a number: 
+     * Generate two characters for a number:
      * In lower and higher parts, or more parts as needed.
      *
      * @param int $int    Input number
@@ -996,10 +996,10 @@ abstract class DefaultPrinter implements PrinterInterface
 
     /**
      * Verify if the argument given is not a boolean.
-     * 
+     *
      * @param bool   $test   the input to test
      * @param bool    $default the default value
-     * @return bool 
+     * @return bool
      */
     protected static function validateBoolean($test, $default)
     {
@@ -1012,7 +1012,7 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Verify if the argument given is not an integer within the specified range.
      * will return default instead
-     * 
+     *
      * @param int    $test    the input to test
      * @param int    $min     the minimum allowable value (inclusive)
      * @param int    $max     the maximum allowable value (inclusive)
