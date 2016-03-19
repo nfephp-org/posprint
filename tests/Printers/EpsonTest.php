@@ -193,6 +193,12 @@ class EpsonTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
     
+    public function testSetItalic()
+    {
+        //Epson dont have italic mode
+        $this->assertTrue(true);
+    }
+    
     public function testSetAlign()
     {
         $expected = chr(27)."@".chr(27)."a".chr(1);
@@ -400,6 +406,17 @@ class EpsonTest extends \PHPUnit_Framework_TestCase
         $printer->barcodeQRCode($data, 'M', 2, 4);
         $actual = $printer->getBuffer('binS');
         $this->assertEquals($expected, $actual);
-        
+    }
+    
+    public function testPutImage()
+    {
+        $filename = realpath(dirname(__FILE__).'/../fixtures/image.bin');
+        $imagebin = file_get_contents($filename);
+        $expected = chr(27)."@".chr(29)."(L".$imagebin;
+        $filename = realpath(dirname(__FILE__).'/../fixtures/tux.png');
+        $printer = new Epson();
+        $printer->initialize();
+        $printer->putImage($filename);
+        $actual = $printer->getBuffer('binS');
     }
 }
