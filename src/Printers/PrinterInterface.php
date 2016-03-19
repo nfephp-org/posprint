@@ -9,7 +9,7 @@ namespace Posprint\Printers;
  * Or may not work due to differences in their firmware, even among printers
  * of the same model and brand.
  * Therefore it is important to ensure an updated firmware.
- * 
+ *
  * @category   NFePHP
  * @package    Posprint
  * @copyright  Copyright (c) 2015

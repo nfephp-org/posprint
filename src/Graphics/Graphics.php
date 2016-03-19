@@ -4,7 +4,7 @@ namespace Posprint\Graphics;
 
 /**
  * Classe Graphics
- * 
+ *
  * @category   NFePHP
  * @package    Posprint
  * @copyright  Copyright (c) 2016
@@ -22,7 +22,7 @@ class Graphics extends Basic
 {
     /**
      * Image prixels in BW
-     * @var string 
+     * @var string
      */
     protected $imgData = null;
     /**
@@ -32,9 +32,9 @@ class Graphics extends Basic
     protected $imgRasterData = null;
   
     /**
-     * Constructor 
+     * Constructor
      * Load a image, if passed a path to file and adjust dimentions
-     * 
+     *
      * @param string $filename
      * @param int $width
      * @param int $height
@@ -58,7 +58,7 @@ class Graphics extends Basic
     
     /**
      * Return a string of bytes
-     * 
+     *
      * @return string
      */
     public function getRasterImage()
@@ -73,11 +73,11 @@ class Graphics extends Basic
      * load
      * Load image file and adjust dimentions
      * @param string $filename path to image file
-     * @param float $width 
+     * @param float $width
      * @param float $height
      * @throws InvalidArgumentException
      * @throws RuntimeException
-     */ 
+     */
     public function load($filename, $width = null, $height = null)
     {
         if (! is_file($filename)) {
@@ -93,7 +93,7 @@ class Graphics extends Basic
             if ($img === false) {
                 throw new InvalidArgumentException("Image file is not a BMP");
             }
-            $this->img = $img; 
+            $this->img = $img;
         } else {
             $func = 'imagecreatefrom' . strtolower($tipo);
             if (! function_exists($func)) {
@@ -112,7 +112,7 @@ class Graphics extends Basic
     }
     
     /**
-     * Save image to PNG file 
+     * Save image to PNG file
      * @param string $filename
      */
     public function save($filename = null)
@@ -144,7 +144,7 @@ class Graphics extends Basic
                     $thisline .= chr(255).chr(255).chr(255);
                 } else {
                     $thisline .= chr($argb['blue']).chr($argb['green']).chr($argb['red']);
-                }    
+                }
             }
             while (strlen($thisline) % 4) {
                 $thisline .= "\x00";
@@ -263,9 +263,9 @@ class Graphics extends Basic
     /**
      * resizeImage
      * Resize an image
-     * NOTE: the width is always set to the multiple of 8 more 
+     * NOTE: the width is always set to the multiple of 8 more
      * next, why? printers have a resolution of 8 dots per mm
-     * 
+     *
      * @param float $width
      * @param float $height
      * @throws InvalidArgumentException
@@ -292,7 +292,7 @@ class Graphics extends Basic
     
     /**
      * Creates a  GD QRCode image
-     * 
+     *
      * @param string $dataText
      * @param int $width
      * @param int $padding
@@ -321,14 +321,14 @@ class Graphics extends Basic
     }
     
     /**
-     * Convert image from GD resource 
+     * Convert image from GD resource
      * into Black and White pixels image
-     * 
-     * @return string Representation of bytes image in BW 
+     *
+     * @return string Representation of bytes image in BW
      */
     protected function convertPixelBW()
     {
-        // Make a string of 1's and 0's 
+        // Make a string of 1's and 0's
         $this->imgData = str_repeat("\0", $this->imgHeight * $this->imgWidth);
         for ($yInd = 0; $yInd < $this->imgHeight; $yInd++) {
             for ($xInd = 0; $xInd < $this->imgWidth; $xInd++) {
@@ -347,10 +347,11 @@ class Graphics extends Basic
 
     /**
      * Output the image in raster (row) format.
-     * This can result in padding on the right of the image, 
+     * This can result in padding on the right of the image,
      * if its width is not divisible by 8.
-     * 
-     * @throws RuntimeException Where the generated data is unsuitable for the printer (indicates a bug or oversized image).
+     *
+     * @throws RuntimeException Where the generated data is
+     *         unsuitable for the printer (indicates a bug or oversized image).
      * @return string The image in raster format.
      */
     protected function convertRaster()
@@ -383,7 +384,7 @@ class Graphics extends Basic
                 $xCount = 0;
                 $yCount++;
                 $bit = 8;
-                if($yCount >= $heightPixels) {
+                if ($yCount >= $heightPixels) {
                     $data[$byte] = chr($byteVal);
                     break;
                 }
@@ -395,16 +396,16 @@ class Graphics extends Basic
                 $byte++;
             }
         } while (true);
-         if (strlen($data) != ($this->getWidthBytes() * $this->getHeight())) {
-             throw new RuntimeException("Bug in " . __FUNCTION__ . ", wrong number of bytes.");
-         }
+        if (strlen($data) != ($this->getWidthBytes() * $this->getHeight())) {
+            throw new RuntimeException("Bug in " . __FUNCTION__ . ", wrong number of bytes.");
+        }
          $this->imgRasterData = $data;
          return $this->imgRasterData;
     }
     
     /**
      * Save safety binary image file
-     * 
+     *
      * @param string $filename
      * @param resource|string|null $data
      * @return boolean
@@ -433,12 +434,12 @@ class Graphics extends Basic
         if (!$nbytes) {
             throw new RuntimeException("Fail to write in $filename.");
         }
-        return true;    
+        return true;
     }
     
     /**
      * Converts Litte Endian Bytes do String
-     * 
+     *
      * @param int $number
      * @param int $minbytes
      * @return string
@@ -455,7 +456,7 @@ class Graphics extends Basic
     
     /**
      * Get pixel colors
-     * 
+     *
      * @param resource $img
      * @param int $x
      * @param int $y
@@ -468,7 +469,7 @@ class Graphics extends Basic
     
     /**
      * Ajusta o numero para o multiplo mais proximo de base
-     * 
+     *
      * @param float $num
      * @param int $num
      * @return int
@@ -480,5 +481,5 @@ class Graphics extends Basic
             return $iNum;
         }
         return round($num/$base) * $base;
-    }    
+    }
 }

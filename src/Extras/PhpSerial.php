@@ -9,9 +9,9 @@ namespace Posprint\Extras;
  * and propose improvements and fixes to the fact that the original is not actively
  * maintained for many years.
  * by Roberto L. Machado <linux dot rlm at gmail dot com>
- * 
+ *
  * IMPORTANT: check and adjust permissions for serial port access by server user like www-data
- * 
+ *
  * @author Rémy Sanchez <remy.sanchez@hyperthese.net>
  * @author Rizwan Kassim <rizwank@geekymedia.com>
  * @thanks Aurélien Derouineau for finding how to open serial ports with windows
@@ -45,13 +45,13 @@ class PhpSerial
     
     /**
      * Pointer for device
-     * 
+     *
      * @var resource
      */
     protected $handle = null;
     /**
      * Data buffer
-     * 
+     *
      * @var string
      */
     protected $buffer = "";
@@ -64,107 +64,107 @@ class PhpSerial
     protected $autoflush = false;
     /**
      * Wait time after send data to serial
-     * 
+     *
      * @var float
      */
     protected $waittime = 0.1;
     /**
      * OS type where php is running
      * linux is default
-     * 
+     *
      * @var int
      */
-    protected $ostype = 2; 
+    protected $ostype = 2;
     /**
      * Mode command to set up serial port
      * formated device mode for especific OS use
-     * 
+     *
      * @var string
      */
     protected $mode = '';
     /**
      * Status of port
      * NoSet, Set or Open
-     * 
+     *
      * @var int
      */
     protected $state = self::SERIAL_DEVICE_NOTSET;
     /**
      * Port name
-     * 
+     *
      * @var string
      */
     protected $port = '/dev/ttyS0';
     /**
      * Data bits
-     * 
+     *
      * @var int
      */
     protected $databits = 8;
     /**
      * Baud Rate
-     * 
-     * @var int 
+     *
+     * @var int
      */
     protected $baudrate = 9600;
     /**
      * Parity
-     * 
+     *
      * @var int
      */
     protected $parity = self::PARITY_NONE;
     /**
      * Stop Bits
-     * 
+     *
      * @var float
      */
     protected $stopbits = 1;
     /**
      * Flow Control
-     * 
+     *
      * @var int
      */
     protected $flowcontrol = self::FLOW_NONE;
     /**
      * Formated device name command
-     * 
+     *
      * @var string
      */
     protected $device = '/dev/ttyS0';
     /**
      * Formated Data Bits command
-     * 
+     *
      * @var string
      */
     protected $formatedDataBits = 'cs8';
     /**
      * Formated Baud Rate command
-     * 
+     *
      * @var string
      */
     protected $formatedBaudRate = '9600';
     /**
      * Formated parity command
-     * 
+     *
      * @var string
      */
     protected $formatedParity = '-parenb';
     /**
      * Formated stop bits command
-     * 
+     *
      * @var string
      */
     protected $formatedStopBits = '-cstopb';
     /**
      * Formated flow control command
-     * 
+     *
      * @var string
      */
     protected $formatedFlowControl = 'clocal -crtscts -ixon -ixoff';
     
     /**
      * Parity data
-     * 
+     *
      * @var array
      */
     private $parityargs = [
@@ -175,7 +175,7 @@ class PhpSerial
     
     /**
      * Basud Rate data
-     * 
+     *
      * @var array
      */
     private $baudsargs = array (
@@ -196,7 +196,7 @@ class PhpSerial
     /**
      * Constructor
      * Set ostype parameter
-     * 
+     *
      * @param int $forceOS
      */
     public function __construct($forceOS = null)
@@ -244,7 +244,7 @@ class PhpSerial
     
     /**
      * Open set port
-     * 
+     *
      * @return boolean
      */
     public function open()
@@ -268,7 +268,7 @@ class PhpSerial
     
     /**
      * Close serial port
-     * 
+     *
      * @return boolean
      */
     public function close()
@@ -319,7 +319,7 @@ class PhpSerial
     
     /**
      * Set automatic send massage to serial
-     * 
+     *
      * @param bool $auto
      * @param float $waittime
      */
@@ -337,7 +337,7 @@ class PhpSerial
     
     /**
      * Returns automatic mode
-     * 
+     *
      * @return bool
      */
     public function getAuto()
@@ -347,7 +347,7 @@ class PhpSerial
 
     /**
      * Read serial port
-     * 
+     *
      * @return string
      */
     public function read()
@@ -360,7 +360,7 @@ class PhpSerial
      * depends of getAuto()
      * if  getAuto() == true this command writes directly to port
      * if  getAuto() == false this command writes to buffer (default)
-     * 
+     *
      * @param string $data
      * @return boolean
      */
@@ -376,7 +376,7 @@ class PhpSerial
     
     /**
      * Flushs imediatly data to serial port
-     * 
+     *
      * @return boolean
      */
     public function flush()
@@ -390,7 +390,7 @@ class PhpSerial
 
     /**
      * Set port name
-     * 
+     *
      * @param string $port
      */
     public function setPort($port)
@@ -418,7 +418,7 @@ class PhpSerial
     
     /**
      * Returns port name
-     *  
+     *
      * @return string
      */
     public function getPort()
@@ -428,7 +428,7 @@ class PhpSerial
     
     /**
      * Returns device formated name
-     * 
+     *
      * @return string
      */
     public function getDevice()
@@ -439,7 +439,7 @@ class PhpSerial
     /**
      * Sets the length of a character.
      * length of a character (5 <= length <= 8)
-     * 
+     *
      * @param int $length
      * @return boolean
      */
@@ -455,7 +455,7 @@ class PhpSerial
     
     /**
      * Returns char length
-     * 
+     *
      * @return int
      */
     public function getDataBits()
@@ -465,7 +465,7 @@ class PhpSerial
     
     /**
      * Format data bits commands
-     * 
+     *
      * @param int $length
      * @return string
      */
@@ -481,7 +481,7 @@ class PhpSerial
 
     /**
      * Set serial baud rate
-     * 
+     *
      * @param int $rate
      * @return boolean
      */
@@ -497,7 +497,7 @@ class PhpSerial
     
     /**
      * Return baud rate
-     * 
+     *
      * @return int
      */
     public function getBaudRate()
@@ -507,7 +507,7 @@ class PhpSerial
     
     /**
      * Format baud rate command
-     * 
+     *
      * @param int $rate
      * @return string
      */
@@ -524,7 +524,7 @@ class PhpSerial
 
     /**
      * Sets parity mode
-     * 
+     *
      * @param string $parity odd, even, none
      * @return boolean
      */
@@ -540,7 +540,7 @@ class PhpSerial
     
     /**
      * Get parity mode set
-     * 
+     *
      * @return string
      */
     public function getParity()
@@ -557,7 +557,7 @@ class PhpSerial
     
     /**
      * Format parity command
-     * 
+     *
      * @param string $parity
      * @return string
      */
@@ -577,7 +577,7 @@ class PhpSerial
      * the length of a stop bit.
      * It must be either 1, 1.5 or 2.
      * 1.5 is not supported under linux and on some computers.
-     * 
+     *
      * @param float $length
      * @return boolean
      */
@@ -593,7 +593,7 @@ class PhpSerial
     
     /**
      * Return stop bits set
-     * 
+     *
      * @return float
      */
     public function getStopBits()
@@ -603,7 +603,7 @@ class PhpSerial
     
     /**
      * Format stop bit command
-     * 
+     *
      * @param float $length
      * @return string
      */
@@ -622,7 +622,7 @@ class PhpSerial
      *   "none" : no flow control
      *   "rts/cts" : use RTS/CTS handshaking
      *   "xon/xoff" : use XON/XOFF protocol
-     * 
+     *
      * @param string $flow
      * @return boolean
      */
@@ -644,7 +644,7 @@ class PhpSerial
     
     /**
      * Returns flow control set
-     * 
+     *
      * @return string
      */
     public function getFlowControl()
@@ -661,7 +661,7 @@ class PhpSerial
     
     /**
      * Return flow control command formated for OP type
-     * 
+     *
      * @param int $flow
      * @return string
      */
@@ -669,26 +669,54 @@ class PhpSerial
     {
         $modeos = [
             //windows
-            self::OS_WIN => ["xon=off octs=off rts=on","xon=off octs=on rts=hs","xon=on octs=off rts=on"],
+            self::OS_WIN => [
+                "xon=off octs=off rts=on",
+                "xon=off octs=on rts=hs",
+                "xon=on octs=off rts=on"
+            ],
             //linux
-            self::OS_LINUX => ["clocal -crtscts -ixon -ixoff","-clocal crtscts -ixon -ixoff","-clocal -crtscts ixon ixoff"],
+            self::OS_LINUX => [
+                "clocal -crtscts -ixon -ixoff",
+                "-clocal crtscts -ixon -ixoff",
+                "-clocal -crtscts ixon ixoff"
+            ],
             //cygwin
-            self::OS_CYGWIN => ["clocal -crtscts -ixon -ixoff","-clocal crtscts -ixon -ixoff","-clocal -crtscts ixon ixoff"],
+            self::OS_CYGWIN => [
+                "clocal -crtscts -ixon -ixoff",
+                "-clocal crtscts -ixon -ixoff",
+                "-clocal -crtscts ixon ixoff"
+            ],
             //unix
-            self::OS_UNIX => ["clocal -crtscts -ixon -ixoff","-clocal crtscts -ixon -ixoff","-clocal -crtscts ixon ixoff"],
+            self::OS_UNIX => [
+                "clocal -crtscts -ixon -ixoff",
+                "-clocal crtscts -ixon -ixoff",
+                "-clocal -crtscts ixon ixoff"
+            ],
             //bsd
-            self::OS_BSD => ["clocal -crtscts -ixon -ixoff","-clocal crtscts -ixon -ixoff","-clocal -crtscts ixon ixoff"],
+            self::OS_BSD => [
+                "clocal -crtscts -ixon -ixoff",
+                "-clocal crtscts -ixon -ixoff",
+                "-clocal -crtscts ixon ixoff"
+            ],
             //macos
-            self::OS_OSX => ["clocal -crtscts -ixon -ixoff","-clocal crtscts -ixon -ixoff","-clocal -crtscts ixon ixoff"],
+            self::OS_OSX => [
+                "clocal -crtscts -ixon -ixoff",
+                "-clocal crtscts -ixon -ixoff",
+                "-clocal -crtscts ixon ixoff"
+            ],
             //hpux
-            self::OS_HPUX => ["clocal -crtscts -ixon -ixoff","-clocal crtscts -ixon -ixoff","-clocal -crtscts ixon ixoff"]
+            self::OS_HPUX => [
+                "clocal -crtscts -ixon -ixoff",
+                "-clocal crtscts -ixon -ixoff",
+                "-clocal -crtscts ixon ixoff"
+            ]
         ];
         return (string) $modeos[$this->ostype][$flow];
     }
     
     /**
      * Find OS type
-     * 
+     *
      * @return int
      */
     protected function getOs()
@@ -716,7 +744,7 @@ class PhpSerial
     
     /**
      * Exec command line in OS console
-     * 
+     *
      * @param type $cmd
      * @param type $out
      * @return type

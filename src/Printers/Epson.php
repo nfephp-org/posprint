@@ -4,7 +4,7 @@ namespace Posprint\Printers;
 
 /**
  * Epson class for POS printers.
- * 
+ *
  * @category   NFePHP
  * @package    Posprint
  * @copyright  Copyright (c) 2016
