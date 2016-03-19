@@ -29,6 +29,7 @@ interface PrinterInterface
     public function setFont();
     public function setBold();
     public function setUnderlined();
+    public function setItalic();
     public function setAlign();
     public function setReverseColors();
     public function setRotate90();

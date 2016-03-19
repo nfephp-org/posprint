@@ -3,3 +3,6 @@ limpaTAB.php
 local
 vendor
 nbproject
+build
+composer.lock
+docs

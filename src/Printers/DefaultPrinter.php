@@ -59,9 +59,14 @@ abstract class DefaultPrinter implements PrinterInterface
     const NOTRANS = false; //not translate characters codepage
     const TRANS = true; //perform a character convertion to codepage
 
-    // Cut types 
+    //Cut types 
     const CUT_FULL = 65;
     const CUT_PARTIAL = 66;
+    
+    //Image sizing options
+    const IMG_DEFAULT = 0;
+    const IMG_DOUBLE_WIDTH = 1;
+    const IMG_DOUBLE_HEIGHT = 2;
 
     //1D barcode types
     const UPC_A = 'A';
@@ -141,6 +146,7 @@ abstract class DefaultPrinter implements PrinterInterface
         'WINDOWS-1257' => array('conv' => 'WINDOWS-1257', 'table' => '51', 'desc' => 'WPC1257: Baltic Rim'),
         'WINDOWS-1258' => array('conv' => 'WINDOWS-1258', 'table' => '52', 'desc' => 'WPC1258: Vietnamese'),
     );
+    
     /**
      * Seleted code page
      * Defined in printer class.
@@ -425,7 +431,17 @@ abstract class DefaultPrinter implements PrinterInterface
         }
         $this->buffer->write(self::ESC . '-' . chr($mode));
     }
-
+    
+    /**
+     * Set italic mode on or off
+     * 
+     * @return bool
+     */
+    public function setItalic()
+    {
+        return true;
+    }
+    
     /**
      * Aligns all data in one line to the selected layout in standard mode.
      * L - left  C - center  R - rigth
@@ -902,9 +918,10 @@ abstract class DefaultPrinter implements PrinterInterface
      * @param string $filename Path to image file
      * @param float  $width
      * @param float  $height
+     * @param int    $size 0-normal 1-Double Width 2-Double Heigth 
      * @throws RuntimeException
      */
-    public function putImage($filename = '', $width = null, $height = null)
+    public function putImage($filename = '', $width = null, $height = null, $size = 0)
     {
         try {
             $img = new Graphics($filename, $width, $height);
@@ -913,6 +930,7 @@ abstract class DefaultPrinter implements PrinterInterface
         } catch (InvalidArgumentException $e) {
             throw new RuntimeException($e->getMessage());
         }
+        $size = self::validateInteger($size, 0, 3, 0);
         $imgHeader = self::dataHeader(array($img->getWidth(), $img->getHeight()), true);
         $tone = '0';
         $colors = '1';
@@ -922,16 +940,18 @@ abstract class DefaultPrinter implements PrinterInterface
         $this->sendGraphicsData('0', 'p', $header.$img->getRasterImage());
         $this->sendGraphicsData('0', '2');
     }
-    
+
     /**
-     * Calculate the size of the word.
+     * Wrapper for GS ( L, to calculate and send correct data length.
      *
-     * @param string $data
+     * @param string $m    Modifier/variant for function. Usually '0'.
+     * @param string $fn   Function number to use, as character.
+     * @param string $data Data to send.
      */
-    protected function getWordLength($data = '')
+    protected function sendGraphicsData($m, $fn, $data = '')
     {
-        //k = (pL + pH × 256) – 3
-        $len = strlen($texto);
+        $header = $this->intLowHigh(strlen($data) + 2, 2);
+        $this->buffer->write(self::GS.'(L'.$header.$m.$fn.$data);
     }
 
     /**
@@ -967,7 +987,7 @@ abstract class DefaultPrinter implements PrinterInterface
             if ($long) {
                 $outp[] = self::intLowHigh($input, 2);
             } else {
-                self::validateInteger($input, 0, 255, __FUNCTION__);
+                $input = self::validateInteger($input, 0, 255, 0);
                 $outp[] = chr($input);
             }
         }
@@ -1039,23 +1059,5 @@ abstract class DefaultPrinter implements PrinterInterface
             }
         }
         return $text;
-    }
-    
-    /**
-     * Wrapper for GS ( L, to calculate and send correct data length.
-     *
-     * @param string $m    Modifier/variant for function. Usually '0'.
-     * @param string $fn   Function number to use, as character.
-     * @param string $data Data to send.
-     *
-     * @throws InvalidArgumentException Where the input lengths are bad.
-     */
-    private function sendGraphicsData($m, $fn, $data = '')
-    {
-        if (strlen($m) != 1 || strlen($fn) != 1) {
-            throw new InvalidArgumentException('wrapperSendGraphicsData: m and fn must be one character each.');
-        }
-        $header = $this->intLowHigh(strlen($data) + 2, 2);
-        $this->buffer->write(self::GS.'(L'.$header.$m.$fn.$data);
     }
 }
