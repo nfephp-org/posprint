@@ -5,28 +5,31 @@ namespace Posprint\Graphics;
 /**
  * Basic method for graphics classes
  *
- * @category   NFePHP
- * @package    Posprint
- * @copyright  Copyright (c) 2016
- * @license    http://www.gnu.org/licenses/lesser.html LGPL v3
- * @author     Roberto L. Machado <linux dot rlm at gmail dot com>
- * @link       http://github.com/nfephp-org/posprint for the canonical source repository
+ * @category  NFePHP
+ * @package   Posprint
+ * @copyright Copyright (c) 2016
+ * @license   http://www.gnu.org/licenses/lesser.html LGPL v3
+ * @author    Roberto L. Machado <linux dot rlm at gmail dot com>
+ * @link      http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
 abstract class Basic
 {
     /**
      * Image GD
+     *
      * @var resource
      */
     protected $img;
     /**
      * Image Height
+     *
      * @var int
      */
     protected $imgHeight = 0;
     /**
      * Image Width
+     *
      * @var int
      */
     protected $imgWidth = 0;
@@ -67,6 +70,7 @@ abstract class Basic
      * zGetDimImage
      * Get width and height of resource image
      * and save in properties
+     *
      * @return array with dimentions of image
      */
     protected function getDimImage()
@@ -99,7 +103,8 @@ abstract class Basic
     /**
      * identifyImg
      * Identifies image file type
-     * @param string $filename
+     *
+     * @param  string $filename
      * @return string
      */
     protected function identifyImg($filename)

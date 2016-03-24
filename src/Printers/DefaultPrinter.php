@@ -169,6 +169,7 @@ abstract class DefaultPrinter implements PrinterInterface
     protected $region = 'LATIN';
     /**
      * List all avaiable fonts
+     *
      * @var array
      */
     protected $aFont = array(0 => 'A', 1 => 'B', 2 => 'C', 3 => 'D', 4 => 'E', 97 => 'SA', 98 => 'SB');
@@ -254,6 +255,7 @@ abstract class DefaultPrinter implements PrinterInterface
     protected $underlineMode = false;
     /**
      * Selected rotate 90 degrees mode
+     *
      * @var bool
      */
     protected $rotateMode = false;
@@ -285,7 +287,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * if param $region is a string will set the region parameter of class and returns it.
      * NOTE: This command do not set the printer, only class parameters
      *
-     * @param string $region
+     * @param  string $region
      * @return string|array
      */
     public function defaultRegionPage($region = null)
@@ -310,7 +312,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * if param $codepage is a string will set the codepage parameter of class and returns it.
      * NOTE: This command do not set the printer, only class parameters
      *
-     * @param string $codepage
+     * @param  string $codepage
      * @return string|array
      */
     public function defaultCodePage($codepage = null)
@@ -368,7 +370,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * if param $font is a string will set the font parameter of class and returns it.
      * NOTE: This command do not set the printer, only class parameters
      *
-     * @param string $font
+     * @param  string $font
      * @return array|string
      */
     public function defaultFont($font = null)
@@ -393,6 +395,7 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Set a printer font
      * If send a valid font name will set the printer otherelse a default font is selected
+     *
      * @param string $font
      */
     public function setFont($font = null)
@@ -455,14 +458,14 @@ abstract class DefaultPrinter implements PrinterInterface
         }
         $value = strtoupper($align);
         switch ($value) {
-            case 'C':
-                $mode = 1;
-                break;
-            case 'R':
-                $mode = 2;
-                break;
-            default:
-                $mode = 0;
+        case 'C':
+            $mode = 1;
+            break;
+        case 'R':
+            $mode = 2;
+            break;
+        default:
+            $mode = 0;
         }
         $this->buffer->write(self::ESC . 'a' . chr($mode));
     }
@@ -485,6 +488,7 @@ abstract class DefaultPrinter implements PrinterInterface
     
     /**
      * Set expanded mode.
+     *
      * @param int $size multiplies normal size 1 - 8
      */
     public function setExpanded($size = null)
@@ -723,18 +727,18 @@ abstract class DefaultPrinter implements PrinterInterface
         $data = '123456'
     ) {
         switch ($txtPosition) {
-            case 'Above':
-                $tPos = 1;
-                break;
-            case 'Below':
-                $tPos = 2;
-                break;
-            case 'Both':
-                $tPos = 3;
-                break;
-            default:
-                //none
-                $tPos = 0;
+        case 'Above':
+            $tPos = 1;
+            break;
+        case 'Below':
+            $tPos = 2;
+            break;
+        case 'Both':
+            $tPos = 3;
+            break;
+        default:
+            //none
+            $tPos = 0;
         }
         $font = 0;
         if ($txtFont === 'B') {
@@ -761,10 +765,11 @@ abstract class DefaultPrinter implements PrinterInterface
     
     /**
      * Imprime o QR Code
-     * @param string $data Dados a serem inseridos no QRCode
-     * @param string $level Nivel de correção L,M,Q ou H
-     * @param int $modelo modelo de QRCode 1, 2 ou 0 Micro
-     * @param int $wmod largura da barra 3 ~ 16
+     *
+     * @param string $data   Dados a serem inseridos no QRCode
+     * @param string $level  Nivel de correção L,M,Q ou H
+     * @param int    $modelo modelo de QRCode 1, 2 ou 0 Micro
+     * @param int    $wmod   largura da barra 3 ~ 16
      */
     public function barcodeQRCode($data = '', $level = 'L', $modelo = 2, $wmod = 4)
     {
@@ -779,20 +784,20 @@ abstract class DefaultPrinter implements PrinterInterface
         //set error correction level
         $level = strtoupper($level);
         switch ($level) {
-            case 'L':
-                $n = 48;
-                break;
-            case 'M':
-                $n = 49;
-                break;
-            case 'Q':
-                $n = 50;
-                break;
-            case 'H':
-                $n = 51;
-                break;
-            default:
-                $n = 49;
+        case 'L':
+            $n = 48;
+            break;
+        case 'M':
+            $n = 49;
+            break;
+        case 'Q':
+            $n = 50;
+            break;
+        case 'H':
+            $n = 51;
+            break;
+        default:
+            $n = 49;
         }
         $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(49).chr(69).chr($n));
         //set data for QR Code assuming print only alphanumeric data
@@ -821,35 +826,35 @@ abstract class DefaultPrinter implements PrinterInterface
     public function getBuffer($type = '')
     {
         switch ($type) {
-            case 'binA':
-                //returns a binary array of buffer
-                $resp = $this->buffer->getDataBinary(true);
-                break;
-            case 'binS':
-                //returns a binary string of buffer
-                $resp = $this->buffer->getDataBinary(false);
-                break;
-            case 'b64A':
-                //returns a base64 encoded array of buffer
-                $resp = $this->buffer->getDataBase64(true);
-                break;
-            case 'b64S':
-                //returns a base64 encoded string of buffer
-                $resp = $this->buffer->getDataBase64(false);
-                break;
-            case 'json':
-                //returns a json encoded of array buffer
-                $resp = $this->buffer->getDataJson();
-                break;
-            case 'readA':
-                //returns a human readable format of array buffer
-                //only for debug reasons
-                $resp = $this->buffer->getDataReadable(true);
-                break;
-            default:
-                //returns a human readable format of string buffer
-                //only for debug reasons
-                $resp = $this->buffer->getDataReadable(false);
+        case 'binA':
+            //returns a binary array of buffer
+            $resp = $this->buffer->getDataBinary(true);
+            break;
+        case 'binS':
+            //returns a binary string of buffer
+            $resp = $this->buffer->getDataBinary(false);
+            break;
+        case 'b64A':
+            //returns a base64 encoded array of buffer
+            $resp = $this->buffer->getDataBase64(true);
+            break;
+        case 'b64S':
+            //returns a base64 encoded string of buffer
+            $resp = $this->buffer->getDataBase64(false);
+            break;
+        case 'json':
+            //returns a json encoded of array buffer
+            $resp = $this->buffer->getDataJson();
+            break;
+        case 'readA':
+            //returns a human readable format of array buffer
+            //only for debug reasons
+            $resp = $this->buffer->getDataReadable(true);
+            break;
+        default:
+            //returns a human readable format of string buffer
+            //only for debug reasons
+            $resp = $this->buffer->getDataReadable(false);
         }
         return $resp;
     }
@@ -874,9 +879,9 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Checks whether the barcode data is compatible with the chosen model
      *
-     * @param string $type
-     * @param int    $id
-     * @param string $data
+     * @param  string $type
+     * @param  int    $id
+     * @param  string $data
      * @return string
      */
     protected static function validateBarcodeData($type, &$id, &$data)
@@ -915,10 +920,10 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Insert a image.
      *
-     * @param string $filename Path to image file
-     * @param float  $width
-     * @param float  $height
-     * @param int    $size 0-normal 1-Double Width 2-Double Heigth
+     * @param  string $filename Path to image file
+     * @param  float  $width
+     * @param  float  $height
+     * @param  int    $size     0-normal 1-Double Width 2-Double Heigth
      * @throws RuntimeException
      */
     public function putImage($filename = '', $width = null, $height = null, $size = 0)
@@ -976,8 +981,8 @@ abstract class DefaultPrinter implements PrinterInterface
      * Convert widths and heights to characters.
      * Used before sending graphics to set the size.
      *
-     * @param array $inputs
-     * @param bool  $long   True to use 4 bytes, false to use 2
+     * @param  array $inputs
+     * @param  bool  $long   True to use 4 bytes, false to use 2
      * @return string
      */
     protected static function dataHeader(array $inputs, $long = true)
@@ -997,8 +1002,8 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Verify if the argument given is not a boolean.
      *
-     * @param bool   $test   the input to test
-     * @param bool    $default the default value
+     * @param  bool $test    the input to test
+     * @param  bool $default the default value
      * @return bool
      */
     protected static function validateBoolean($test, $default)
@@ -1013,10 +1018,10 @@ abstract class DefaultPrinter implements PrinterInterface
      * Verify if the argument given is not an integer within the specified range.
      * will return default instead
      *
-     * @param int    $test    the input to test
-     * @param int    $min     the minimum allowable value (inclusive)
-     * @param int    $max     the maximum allowable value (inclusive)
-     * @param int    $default the default value
+     * @param  int $test    the input to test
+     * @param  int $min     the minimum allowable value (inclusive)
+     * @param  int $max     the maximum allowable value (inclusive)
+     * @param  int $default the default value
      * @return int
      */
     protected static function validateInteger($test, $min, $max, $default)
@@ -1030,8 +1035,8 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Verify if the argument given can't be cast to a string.
      *
-     * @param string $test    the input to test
-     * @param string $default the default value
+     * @param  string $test    the input to test
+     * @param  string $default the default value
      * @return string
      */
     protected static function validateString($test, $default)
@@ -1046,7 +1051,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * Translate the text from UTF-8 for the specified codepage
      * this translation uses "iconv" and admits texts ONLY in UTF-8.
      *
-     * @param string $text
+     * @param  string $text
      * @return string
      */
     protected function translate($text = '')

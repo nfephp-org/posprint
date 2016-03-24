@@ -5,12 +5,12 @@ namespace Posprint\Graphics;
 /**
  * Classe Graphics
  *
- * @category   NFePHP
- * @package    Posprint
- * @copyright  Copyright (c) 2016
- * @license    http://www.gnu.org/licenses/lesser.html LGPL v3
- * @author     Roberto L. Machado <linux dot rlm at gmail dot com>
- * @link       http://github.com/nfephp-org/posprint for the canonical source repository
+ * @category  NFePHP
+ * @package   Posprint
+ * @copyright Copyright (c) 2016
+ * @license   http://www.gnu.org/licenses/lesser.html LGPL v3
+ * @author    Roberto L. Machado <linux dot rlm at gmail dot com>
+ * @link      http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
 use Posprint\Graphics\Basic;
@@ -22,11 +22,13 @@ class Graphics extends Basic
 {
     /**
      * Image prixels in BW
+     *
      * @var string
      */
     protected $imgData = null;
     /**
      * Image Raster bit
+     *
      * @var string
      */
     protected $imgRasterData = null;
@@ -35,9 +37,9 @@ class Graphics extends Basic
      * Constructor
      * Load a image, if passed a path to file and adjust dimentions
      *
-     * @param string $filename
-     * @param int $width
-     * @param int $height
+     * @param  string $filename
+     * @param  int    $width
+     * @param  int    $height
      * @throws RuntimeException
      */
     public function __construct($filename = null, $width = null, $height = null)
@@ -72,9 +74,10 @@ class Graphics extends Basic
     /**
      * load
      * Load image file and adjust dimentions
-     * @param string $filename path to image file
-     * @param float $width
-     * @param float $height
+     *
+     * @param  string $filename path to image file
+     * @param  float  $width
+     * @param  float  $height
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
@@ -113,6 +116,7 @@ class Graphics extends Basic
     
     /**
      * Save image to PNG file
+     *
      * @param string $filename
      */
     public function save($filename = null)
@@ -122,7 +126,8 @@ class Graphics extends Basic
     
     /**
      * Convert a GD image into a BMP string representation
-     * @param string $filename path to image BMP file
+     *
+     * @param  string $filename path to image BMP file
      * @return string
      */
     public function convert2BMP($filename = null)
@@ -178,7 +183,8 @@ class Graphics extends Basic
     /**
      * loadBMP
      * Create a GD image from BMP file
-     * @param string $filename
+     *
+     * @param  string $filename
      * @return GD object
      */
     public function loadBMP($filename)
@@ -266,8 +272,8 @@ class Graphics extends Basic
      * NOTE: the width is always set to the multiple of 8 more
      * next, why? printers have a resolution of 8 dots per mm
      *
-     * @param float $width
-     * @param float $height
+     * @param  float $width
+     * @param  float $height
      * @throws InvalidArgumentException
      */
     public function resizeImage($width = null, $height = null)
@@ -294,8 +300,8 @@ class Graphics extends Basic
      * Creates a  GD QRCode image
      *
      * @param string $dataText
-     * @param int $width
-     * @param int $padding
+     * @param int    $width
+     * @param int    $padding
      * @param string $errCorretion
      */
     public function imageQRCode(
@@ -406,8 +412,8 @@ class Graphics extends Basic
     /**
      * Save safety binary image file
      *
-     * @param string $filename
-     * @param resource|string|null $data
+     * @param  string               $filename
+     * @param  resource|string|null $data
      * @return boolean
      * @throws InvalidArgumentException
      * @throws RuntimeException
@@ -440,8 +446,8 @@ class Graphics extends Basic
     /**
      * Converts Litte Endian Bytes do String
      *
-     * @param int $number
-     * @param int $minbytes
+     * @param  int $number
+     * @param  int $minbytes
      * @return string
      */
     private static function littleEndian2String($number, $minbytes = 1)
@@ -457,9 +463,9 @@ class Graphics extends Basic
     /**
      * Get pixel colors
      *
-     * @param resource $img
-     * @param int $x
-     * @param int $y
+     * @param  resource $img
+     * @param  int      $x
+     * @param  int      $y
      * @return array
      */
     private static function getPixelColor($img, $x, $y)
@@ -470,8 +476,8 @@ class Graphics extends Basic
     /**
      * Ajusta o numero para o multiplo mais proximo de base
      *
-     * @param float $num
-     * @param int $num
+     * @param  float $num
+     * @param  int   $num
      * @return int
      */
     private function closestMultiple($num = 0, $base = 8)

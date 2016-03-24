@@ -12,11 +12,11 @@ namespace Posprint\Extras;
  *
  * IMPORTANT: check and adjust permissions for serial port access by server user like www-data
  *
- * @author Rémy Sanchez <remy.sanchez@hyperthese.net>
- * @author Rizwan Kassim <rizwank@geekymedia.com>
- * @thanks Aurélien Derouineau for finding how to open serial ports with windows
- * @thanks Alec Avedisyan for help and testing with reading
- * @thanks Jim Wright for OSX cleanup/fixes.
+ * @author    Rémy Sanchez <remy.sanchez@hyperthese.net>
+ * @author    Rizwan Kassim <rizwank@geekymedia.com>
+ * @thanks    Aurélien Derouineau for finding how to open serial ports with windows
+ * @thanks    Alec Avedisyan for help and testing with reading
+ * @thanks    Jim Wright for OSX cleanup/fixes.
  * @copyright under GPL 2 licence
  */
 
@@ -346,7 +346,7 @@ class PhpSerial
     /**
      * Set automatic send massage to serial
      *
-     * @param bool $auto
+     * @param bool  $auto
      * @param float $waittime
      */
     public function setAuto($auto, $waittime)
@@ -374,7 +374,7 @@ class PhpSerial
     /**
      * Read serial port
      *
-     * @param int $count Number of characters to be read (will stop before
+     * @param  int $count Number of characters to be read (will stop before
      *                   if less characters are in the buffer)
      * @return string
      */
@@ -410,7 +410,7 @@ class PhpSerial
      * if  getAuto() == true this command writes directly to port
      * if  getAuto() == false this command writes to buffer (default)
      *
-     * @param string $data
+     * @param  string $data
      * @return boolean
      */
     public function write($data)
@@ -448,19 +448,19 @@ class PhpSerial
         $flagWinMode = preg_match("@^COM(\d+):?$@i", $port, $matches);
         //select port from OS type
         switch ($this->ostype) {
-            case self::OS_WIN:
-                $this->device = ($flagWinMode) ? "COM$matches[1]:" : $port;
-                break;
-            case self::OS_LINUX:
-            case self::OS_CYGWIN:
-                $this->device = ($flagWinMode) ? "/dev/ttyS".($matches[1]-1) : $port;
-                break;
-            case self::OS_UNIX:
-            case self::OS_BSD:
-            case self::OS_OSX:
-            case self::OS_HPUX:
-            default:
-                $this->device = $port;
+        case self::OS_WIN:
+            $this->device = ($flagWinMode) ? "COM$matches[1]:" : $port;
+            break;
+        case self::OS_LINUX:
+        case self::OS_CYGWIN:
+            $this->device = ($flagWinMode) ? "/dev/ttyS".($matches[1]-1) : $port;
+            break;
+        case self::OS_UNIX:
+        case self::OS_BSD:
+        case self::OS_OSX:
+        case self::OS_HPUX:
+        default:
+            $this->device = $port;
         }
         $this->port = $port;
     }
@@ -489,7 +489,7 @@ class PhpSerial
      * Sets the length of a character.
      * length of a character (5 <= length <= 8)
      *
-     * @param int $length
+     * @param  int $length
      * @return boolean
      */
     public function setDataBits($length)
@@ -515,7 +515,7 @@ class PhpSerial
     /**
      * Format data bits commands
      *
-     * @param int $length
+     * @param  int $length
      * @return string
      */
     protected function zDataBits($length)
@@ -531,7 +531,7 @@ class PhpSerial
     /**
      * Set serial baud rate
      *
-     * @param int $rate
+     * @param  int $rate
      * @return boolean
      */
     public function setBaudRate($rate)
@@ -557,7 +557,7 @@ class PhpSerial
     /**
      * Format baud rate command
      *
-     * @param int $rate
+     * @param  int $rate
      * @return string
      */
     protected function zBaudRate($rate)
@@ -574,7 +574,7 @@ class PhpSerial
     /**
      * Sets parity mode
      *
-     * @param string $parity odd, even, none
+     * @param  string $parity odd, even, none
      * @return boolean
      */
     public function setParity($parity)
@@ -595,19 +595,19 @@ class PhpSerial
     public function getParity()
     {
         switch ($this->parity) {
-            case 0:
-                return 'none';
-            case 1:
-                return 'odd';
-            case 2:
-                return 'even';
+        case 0:
+            return 'none';
+        case 1:
+            return 'odd';
+        case 2:
+            return 'even';
         }
     }
     
     /**
      * Format parity command
      *
-     * @param string $parity
+     * @param  string $parity
      * @return string
      */
     protected function zParity($parity)
@@ -627,7 +627,7 @@ class PhpSerial
      * It must be either 1, 1.5 or 2.
      * 1.5 is not supported under linux and on some computers.
      *
-     * @param float $length
+     * @param  float $length
      * @return boolean
      */
     public function setStopBits($length)
@@ -653,7 +653,7 @@ class PhpSerial
     /**
      * Format stop bit command
      *
-     * @param float $length
+     * @param  float $length
      * @return string
      */
     public function zStopBits($length)
@@ -672,20 +672,20 @@ class PhpSerial
      *   "rts/cts" : use RTS/CTS handshaking
      *   "xon/xoff" : use XON/XOFF protocol
      *
-     * @param string $flow
+     * @param  string $flow
      * @return boolean
      */
     public function setFlowControl($flow)
     {
         switch ($flow) {
-            case 'rts/cts':
-                $this->flowcontrol = self::FLOW_RTSCTS;
-                break;
-            case 'xon/xoff':
-                $this->flowcontrol = self::FLOW_XONXOFF;
-                break;
-            default:
-                $this->flowcontrol = self::FLOW_NONE;
+        case 'rts/cts':
+            $this->flowcontrol = self::FLOW_RTSCTS;
+            break;
+        case 'xon/xoff':
+            $this->flowcontrol = self::FLOW_XONXOFF;
+            break;
+        default:
+            $this->flowcontrol = self::FLOW_NONE;
         }
         $this->formatedFlowControl = $this->zFlowControl($this->flowcontrol);
         return true;
@@ -699,19 +699,19 @@ class PhpSerial
     public function getFlowControl()
     {
         switch ($this->flowcontrol) {
-            case 0:
-                return 'none';
-            case 1:
-                return 'rts/cts';
-            case 2:
-                return 'xon/xoff';
+        case 0:
+            return 'none';
+        case 1:
+            return 'rts/cts';
+        case 2:
+            return 'xon/xoff';
         }
     }
     
     /**
      * Return flow control command formated for OP type
      *
-     * @param int $flow
+     * @param  int $flow
      * @return string
      */
     protected function zFlowControl($flow)
@@ -772,30 +772,30 @@ class PhpSerial
     {
         $oss = strtoupper(substr(PHP_OS, 0, 3));
         switch ($oss) {
-            case 'DAR':
-                return self::OS_OSX;
-            case 'WIN':
-                return self::OS_WIN;
-            case 'LIN':
-                return self::OS_LINUX;
-            case 'CYG':
-                return self::OS_CYGWIN;
-            case 'HPU':
-                return self::OS_HPUX;
-            case 'BSD':
-                return self::OS_BSD; //este esta incorreto
-            case 'UNI':
-                return self::OS_UNIX;
-            default:
-                return self::OS_UNKNOWN;
+        case 'DAR':
+            return self::OS_OSX;
+        case 'WIN':
+            return self::OS_WIN;
+        case 'LIN':
+            return self::OS_LINUX;
+        case 'CYG':
+            return self::OS_CYGWIN;
+        case 'HPU':
+            return self::OS_HPUX;
+        case 'BSD':
+            return self::OS_BSD; //este esta incorreto
+        case 'UNI':
+            return self::OS_UNIX;
+        default:
+            return self::OS_UNKNOWN;
         }
     }
     
     /**
      * Exec command line in OS console
      *
-     * @param string $cmd comand line to execute
-     * @param array $out retorn of this command in terminal
+     * @param  string $cmd comand line to execute
+     * @param  array  $out retorn of this command in terminal
      * @return int
      */
     public function execCommand($cmd, &$out = null)
