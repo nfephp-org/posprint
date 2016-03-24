@@ -101,6 +101,15 @@ class PhpSerialTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @expectedException RunTimeException
+     */
+    public function testSetUpFail()
+    {
+        $connector = new PhpSerial();
+        $resp = $connector->setUp();
+    }
+    
+    /**
+     * @expectedException RunTimeException
      * @expectedExceptionMessage Fail to open device. Check permissions.
      */
     public function testOpenFail()
@@ -117,7 +126,7 @@ class PhpSerialTest extends \PHPUnit_Framework_TestCase
         $device = $connector->getDevice();
         $this->assertEquals($ttyPath, $device);
         $resp = $connector->open();
-        $this->assertTrue($resp);
+        
     }
     
     

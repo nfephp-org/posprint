@@ -13,7 +13,7 @@ namespace Posprint\Printers;
  * NOTE: It was built around the commands of the Epson TM-T20,
  * so in theory the Epson class will be almost empty just extending this class.
  * 
- * CodePage default WINDOWS-1250
+ * CodePage default CP437
  * CountyPage default LATIN
  * 
  * @category   NFePHP
