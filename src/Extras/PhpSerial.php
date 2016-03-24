@@ -21,7 +21,6 @@ namespace Posprint\Extras;
  */
 
 use RuntimeException;
-use InvalidArgumentException;
 
 class PhpSerial
 {
@@ -33,12 +32,15 @@ class PhpSerial
     const OS_BSD = 5; //FreeBSD or NetBSD or OpenBSD /dev/ttyu1
     const OS_OSX = 6; //Darwin MacOS
     const OS_HPUX = 7; //tty1p0
+    
     const SERIAL_DEVICE_NOTSET = 0;
     const SERIAL_DEVICE_SET = 1;
     const SERIAL_DEVICE_OPENED = 2;
+    
     const PARITY_NONE = 0;
     const PARITY_ODD = 1;
     const PARITY_EVEN = 2;
+    
     const FLOW_NONE = 0; //no flow control
     const FLOW_RTSCTS = 1; // use RTS/CTS handshaking
     const FLOW_XONXOFF = 2; //use XON/XOFF protocol
@@ -252,10 +254,14 @@ class PhpSerial
         if ($this->state === self::SERIAL_DEVICE_OPENED && is_resource($this->handle)) {
             return true;
         }
-        //before the serial port is opened it must be configured,
-        //and in windows environment, all sets at a single time
-        $this->setUp();
-        $this->handle = @fopen($this->device, 'r+b');
+        $timeout = 10; //seconds
+        for ($i = 0; $i < $timeout; $i++) {
+            $this->handle = @fopen($this->device, 'r+bn');
+            if ($this->handle) {
+                break;
+            }
+            sleep(1);
+        }
         if ($this->handle === false) {
             $this->handle = null;
             $this->state = self::SERIAL_DEVICE_NOTSET;
@@ -285,7 +291,22 @@ class PhpSerial
     }
     
     /**
+     * Returns the setup configuration for serial port
+     * this command will be exectuted in terminal
+     *
+     * @return string
+     */
+    public function getSetUp()
+    {
+        return $this->mode;
+    }
+    
+    /**
      * Use class parameters to configure the serial port
+     * before the serial port is opened it must be configured,
+     * and in windows environment, all sets at a single time
+     *
+     * @return bool
      */
     public function setUp()
     {
@@ -304,7 +325,6 @@ class PhpSerial
             6 => "stty -f", //MacOS
             7 => 'stty -F' //HPUX
         ];
-
         $mode = $modesos[$this->ostype]
                 . " "
                 . "$this->device "
@@ -314,7 +334,13 @@ class PhpSerial
                 . "$this->formatedStopBits "
                 . "$this->formatedFlowControl";
         
-        return $mode;
+        $out = '';
+        if ($this->execCommand($mode, $out) != 0) {
+            throw new RuntimeException("SetUP fail with: ".$out[1]);
+        }
+        $this->mode = $mode;
+        $this->state = self::SERIAL_DEVICE_SET;
+        return true;
     }
     
     /**
@@ -348,13 +374,36 @@ class PhpSerial
     /**
      * Read serial port
      *
+     * @param int $count Number of characters to be read (will stop before
+     *                   if less characters are in the buffer)
      * @return string
      */
-    public function read()
+    public function read($count = 0)
     {
-        return '';
+        if ($this->state !== self::SERIAL_DEVICE_OPENED) {
+            return '';
+        }
+        $content = "";
+        $i = 0;
+        // Windows port reading procedures still buggy
+        // Behavior in OSX isn't to wait for new data to recover, but just
+        // grabs what's there! Doesn't always work perfectly for me in OSX
+        if ($count !== 0) {
+            do {
+                if ($i > $count) {
+                    $content .= fread($this->handle, ($count - $i));
+                } else {
+                    $content .= fread($this->handle, 128);
+                }
+            } while (($i += 128) === strlen($content));
+            return $content;
+        }
+        do {
+            $content .= fread($this->handle, 128);
+        } while (($i += 128) === strlen($content));
+        return $content;
     }
-    
+
     /**
      * Write data to buffer or serial port
      * depends of getAuto()
@@ -745,9 +794,9 @@ class PhpSerial
     /**
      * Exec command line in OS console
      *
-     * @param type $cmd
-     * @param type $out
-     * @return type
+     * @param string $cmd comand line to execute
+     * @param array $out retorn of this command in terminal
+     * @return int
      */
     public function execCommand($cmd, &$out = null)
     {

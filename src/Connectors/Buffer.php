@@ -1,22 +1,6 @@
 <?php
-/**
- * Project Posprint
- * For make printing commands in ESC/POS themal printers
- *
- * PHP version 5 | 7
- *
- * @category  NFePHP
- * @package   Posprint
- * @author    Roberto L. Machado <linux.rlm@gmail.com>
- * @copyright 2016 Roberto L. Machado
- * @license   http://www.gnu.org/licenses/lesser.html LGPL v3
- * @link      http://github.com/nfephp-org/posprint
- *            for the canonical source repository
- */
 
 namespace Posprint\Connectors;
-
-use Posprint\Connectors\ConnectorInterface;
 
 /**
  * Class Buffer
@@ -35,6 +19,9 @@ use Posprint\Connectors\ConnectorInterface;
  * @link      http://github.com/nfephp-org/posprint
  *            for the canonical source repository
  */
+
+use Posprint\Connectors\ConnectorInterface;
+
 final class Buffer implements ConnectorInterface
 {
     private $ctrlCodes = [
@@ -96,6 +83,17 @@ final class Buffer implements ConnectorInterface
     {
         $this->buffer[] = $data;
     }
+    
+    /**
+     * Read data form buffer
+     * 
+     * @param int $len
+     * @return string
+     */
+    public function read($len = null)
+    {
+        return $this->getDataReadable();
+    }
 
     /**
      * Finalize printer connection
@@ -103,7 +101,7 @@ final class Buffer implements ConnectorInterface
      */
     public function close()
     {
-        $this->buffer = null;
+        $this->buffer = array();
     }
     
     /**
@@ -129,6 +127,7 @@ final class Buffer implements ConnectorInterface
      */
     public function getDataBase64($retArray = true)
     {
+        $lbuff = array();
         foreach ($this->buffer as $linha) {
             $lbuff[] = base64_encode($linha);
         }

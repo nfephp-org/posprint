@@ -3,7 +3,7 @@
 namespace Posprint\Tests\Connectors;
 
 /**
- * Unit Tests for Buffer Class
+ * Unit Tests for Buffer connector Class
  * 
  * @author Roberto L. Machado <linux dot rlm at gmail dot com>
  */
@@ -12,12 +12,15 @@ use Posprint\Connectors\Buffer;
 
 class BufferTest extends \PHPUnit_Framework_TestCase
 {
-    public function testInitialize()
+    public function testInstantiable()
     {
         $buffer = new Buffer();
         $this->assertInstanceOf(Buffer::class, $buffer);
     }
     
+    /**
+     * @depends testInstantiable
+     */
     public function testWrite()
     {
         $buffer = new Buffer();
@@ -28,6 +31,9 @@ class BufferTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($response, $expected);
     }
     
+    /**
+     * @depends testInstantiable
+     */
     public function testGetDataJson()
     {
         $buffer = new Buffer();
@@ -38,6 +44,9 @@ class BufferTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($response, $expected);
     }
     
+    /**
+     * @depends testInstantiable
+     */
     public function testGetDataBase64()
     {
         $buffer = new Buffer();
@@ -48,6 +57,11 @@ class BufferTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($response, $expected);
     }
     
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Connectors\Buffer::getDataReadable
+     * @covers Posprint\Connectors\Buffer::friendlyBinary
+     */
     public function testGetDataReadable()
     {
         $buffer = new Buffer();
