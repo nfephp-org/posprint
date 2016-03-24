@@ -87,7 +87,7 @@ final class Buffer implements ConnectorInterface
     /**
      * Read data form buffer
      * 
-     * @param int $len
+     * @param  int $len
      * @return string
      */
     public function read($len = null)
