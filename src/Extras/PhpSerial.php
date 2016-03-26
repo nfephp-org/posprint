@@ -448,19 +448,19 @@ class PhpSerial
         $flagWinMode = preg_match("@^COM(\d+):?$@i", $port, $matches);
         //select port from OS type
         switch ($this->ostype) {
-        case self::OS_WIN:
-            $this->device = ($flagWinMode) ? "COM$matches[1]:" : $port;
-            break;
-        case self::OS_LINUX:
-        case self::OS_CYGWIN:
-            $this->device = ($flagWinMode) ? "/dev/ttyS".($matches[1]-1) : $port;
-            break;
-        case self::OS_UNIX:
-        case self::OS_BSD:
-        case self::OS_OSX:
-        case self::OS_HPUX:
-        default:
-            $this->device = $port;
+            case self::OS_WIN:
+                $this->device = ($flagWinMode) ? "COM$matches[1]:" : $port;
+                break;
+            case self::OS_LINUX:
+            case self::OS_CYGWIN:
+                $this->device = ($flagWinMode) ? "/dev/ttyS".($matches[1]-1) : $port;
+                break;
+            case self::OS_UNIX:
+            case self::OS_BSD:
+            case self::OS_OSX:
+            case self::OS_HPUX:
+            default:
+                $this->device = $port;
         }
         $this->port = $port;
     }
@@ -595,12 +595,12 @@ class PhpSerial
     public function getParity()
     {
         switch ($this->parity) {
-        case 0:
-            return 'none';
-        case 1:
-            return 'odd';
-        case 2:
-            return 'even';
+            case 0:
+                return 'none';
+            case 1:
+                return 'odd';
+            case 2:
+                return 'even';
         }
     }
     
@@ -678,14 +678,14 @@ class PhpSerial
     public function setFlowControl($flow)
     {
         switch ($flow) {
-        case 'rts/cts':
-            $this->flowcontrol = self::FLOW_RTSCTS;
-            break;
-        case 'xon/xoff':
-            $this->flowcontrol = self::FLOW_XONXOFF;
-            break;
-        default:
-            $this->flowcontrol = self::FLOW_NONE;
+            case 'rts/cts':
+                $this->flowcontrol = self::FLOW_RTSCTS;
+                break;
+            case 'xon/xoff':
+                $this->flowcontrol = self::FLOW_XONXOFF;
+                break;
+            default:
+                $this->flowcontrol = self::FLOW_NONE;
         }
         $this->formatedFlowControl = $this->zFlowControl($this->flowcontrol);
         return true;
@@ -699,12 +699,12 @@ class PhpSerial
     public function getFlowControl()
     {
         switch ($this->flowcontrol) {
-        case 0:
-            return 'none';
-        case 1:
-            return 'rts/cts';
-        case 2:
-            return 'xon/xoff';
+            case 0:
+                return 'none';
+            case 1:
+                return 'rts/cts';
+            case 2:
+                return 'xon/xoff';
         }
     }
     
@@ -772,22 +772,22 @@ class PhpSerial
     {
         $oss = strtoupper(substr(PHP_OS, 0, 3));
         switch ($oss) {
-        case 'DAR':
-            return self::OS_OSX;
-        case 'WIN':
-            return self::OS_WIN;
-        case 'LIN':
-            return self::OS_LINUX;
-        case 'CYG':
-            return self::OS_CYGWIN;
-        case 'HPU':
-            return self::OS_HPUX;
-        case 'BSD':
-            return self::OS_BSD; //este esta incorreto
-        case 'UNI':
-            return self::OS_UNIX;
-        default:
-            return self::OS_UNKNOWN;
+            case 'DAR':
+                return self::OS_OSX;
+            case 'WIN':
+                return self::OS_WIN;
+            case 'LIN':
+                return self::OS_LINUX;
+            case 'CYG':
+                return self::OS_CYGWIN;
+            case 'HPU':
+                return self::OS_HPUX;
+            case 'BSD':
+                return self::OS_BSD; //este esta incorreto
+            case 'UNI':
+                return self::OS_UNIX;
+            default:
+                return self::OS_UNKNOWN;
         }
     }
     

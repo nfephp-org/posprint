@@ -458,14 +458,14 @@ abstract class DefaultPrinter implements PrinterInterface
         }
         $value = strtoupper($align);
         switch ($value) {
-        case 'C':
-            $mode = 1;
-            break;
-        case 'R':
-            $mode = 2;
-            break;
-        default:
-            $mode = 0;
+            case 'C':
+                $mode = 1;
+                break;
+            case 'R':
+                $mode = 2;
+                break;
+            default:
+                $mode = 0;
         }
         $this->buffer->write(self::ESC . 'a' . chr($mode));
     }
@@ -727,18 +727,18 @@ abstract class DefaultPrinter implements PrinterInterface
         $data = '123456'
     ) {
         switch ($txtPosition) {
-        case 'Above':
-            $tPos = 1;
-            break;
-        case 'Below':
-            $tPos = 2;
-            break;
-        case 'Both':
-            $tPos = 3;
-            break;
-        default:
-            //none
-            $tPos = 0;
+            case 'Above':
+                $tPos = 1;
+                break;
+            case 'Below':
+                $tPos = 2;
+                break;
+            case 'Both':
+                $tPos = 3;
+                break;
+            default:
+                //none
+                $tPos = 0;
         }
         $font = 0;
         if ($txtFont === 'B') {
@@ -784,20 +784,20 @@ abstract class DefaultPrinter implements PrinterInterface
         //set error correction level
         $level = strtoupper($level);
         switch ($level) {
-        case 'L':
-            $n = 48;
-            break;
-        case 'M':
-            $n = 49;
-            break;
-        case 'Q':
-            $n = 50;
-            break;
-        case 'H':
-            $n = 51;
-            break;
-        default:
-            $n = 49;
+            case 'L':
+                $n = 48;
+                break;
+            case 'M':
+                $n = 49;
+                break;
+            case 'Q':
+                $n = 50;
+                break;
+            case 'H':
+                $n = 51;
+                break;
+            default:
+                $n = 49;
         }
         $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(49).chr(69).chr($n));
         //set data for QR Code assuming print only alphanumeric data
@@ -826,35 +826,35 @@ abstract class DefaultPrinter implements PrinterInterface
     public function getBuffer($type = '')
     {
         switch ($type) {
-        case 'binA':
-            //returns a binary array of buffer
-            $resp = $this->buffer->getDataBinary(true);
-            break;
-        case 'binS':
-            //returns a binary string of buffer
-            $resp = $this->buffer->getDataBinary(false);
-            break;
-        case 'b64A':
-            //returns a base64 encoded array of buffer
-            $resp = $this->buffer->getDataBase64(true);
-            break;
-        case 'b64S':
-            //returns a base64 encoded string of buffer
-            $resp = $this->buffer->getDataBase64(false);
-            break;
-        case 'json':
-            //returns a json encoded of array buffer
-            $resp = $this->buffer->getDataJson();
-            break;
-        case 'readA':
-            //returns a human readable format of array buffer
-            //only for debug reasons
-            $resp = $this->buffer->getDataReadable(true);
-            break;
-        default:
-            //returns a human readable format of string buffer
-            //only for debug reasons
-            $resp = $this->buffer->getDataReadable(false);
+            case 'binA':
+                //returns a binary array of buffer
+                $resp = $this->buffer->getDataBinary(true);
+                break;
+            case 'binS':
+                //returns a binary string of buffer
+                $resp = $this->buffer->getDataBinary(false);
+                break;
+            case 'b64A':
+                //returns a base64 encoded array of buffer
+                $resp = $this->buffer->getDataBase64(true);
+                break;
+            case 'b64S':
+                //returns a base64 encoded string of buffer
+                $resp = $this->buffer->getDataBase64(false);
+                break;
+            case 'json':
+                //returns a json encoded of array buffer
+                $resp = $this->buffer->getDataJson();
+                break;
+            case 'readA':
+                //returns a human readable format of array buffer
+                //only for debug reasons
+                $resp = $this->buffer->getDataReadable(true);
+                break;
+            default:
+                //returns a human readable format of string buffer
+                //only for debug reasons
+                $resp = $this->buffer->getDataReadable(false);
         }
         return $resp;
     }

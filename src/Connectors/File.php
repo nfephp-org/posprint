@@ -40,7 +40,7 @@ class File implements ConnectorInterface
         }
         $command = 'rb+';
         if (! is_file($filename)) {
-            $command = 'wb+';    
+            $command = 'wb+';
         }
         $this->resource = @fopen($filename, $command);
         if ($this->resource === false) {
@@ -82,7 +82,7 @@ class File implements ConnectorInterface
     }
     /**
      * Read some bytes from file
-     * 
+     *
      * @param  int $len
      * @return string
      */

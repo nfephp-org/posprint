@@ -1,6 +1,7 @@
 <?php
 
 namespace Posprint\Connectors;
+
 /**
  * Class File
  * Create a binary file and writes the data line by line.
@@ -28,7 +29,7 @@ class Network extends File implements ConnectorInterface
      * @param  int    $port
      * @throws RuntimeException
      */
-    public function __construct($hostname = '', $port = 9100) 
+    public function __construct($hostname = '', $port = 9100)
     {
         if (empty($hostname)) {
             throw new InvalidArgumentException("A hostname or a valid IP must be passed.");
@@ -39,7 +40,7 @@ class Network extends File implements ConnectorInterface
         $errno = 0;
         $errstr = '';
         $this->resource = @fsockopen($ip, $port, $errno, $errstr);
-        if($this->resource === false) {
+        if ($this->resource === false) {
             throw new RuntimeException("Cannot initialise NetworkPrintConnector: " . $errstr);
         }
     }

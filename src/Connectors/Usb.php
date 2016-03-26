@@ -6,7 +6,7 @@ namespace Posprint\Connectors;
  * Class USB
  * Connects directly to the USB port set.
  * Note: You should not be forgotten providing the appropriate permissions,
- *       otherwise the PHP will not have the necessary permissions for 
+ *       otherwise the PHP will not have the necessary permissions for
  *       writing on that port.
  *
  *  In unix like systems will look something:
