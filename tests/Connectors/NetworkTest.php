@@ -15,7 +15,6 @@ class NetworkTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @expectedException RuntimeException
-     * @expectedExceptionMessage Cannot initialise NetworkPrintConnector: php_network_getaddresses: getaddrinfo failed: Name or service not known
      */
     public function testInstantiableFail()
     {
