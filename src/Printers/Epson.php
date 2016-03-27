@@ -4,6 +4,7 @@ namespace Posprint\Printers;
 
 /**
  * Epson class for POS printers.
+ * Model: TM-T20
  *
  * @category  NFePHP
  * @package   Posprint

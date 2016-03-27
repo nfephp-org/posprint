@@ -778,6 +778,7 @@ abstract class DefaultPrinter implements PrinterInterface
         if ($modelo == 1) {
             $n1 = 49;
         }
+        //select QR model
         $this->buffer->write(self::GS."(k".chr(4).chr(0).chr(49).chr(65).chr($n1).chr(0));
         //set module bar width
         $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(49).chr(67).chr($wmod));

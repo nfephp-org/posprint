@@ -3,7 +3,7 @@ namespace Posprint\Tests\Printers;
 
 /**
  * Unit Tests for Epson Class
- * 
+ *
  * @author Roberto L. Machado <linux dot rlm at gmail dot com>
  */
 
@@ -63,7 +63,7 @@ class EpsonTest extends \PHPUnit_Framework_TestCase
         $expected = 'CP437';
         $this->assertEquals($expected, $actual);
         
-        $expected = 'CP850';        
+        $expected = 'CP850';
         $actual = $printer->defaultCodePage($expected);
         $this->assertEquals($expected, $actual);
 

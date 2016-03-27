@@ -4,7 +4,7 @@ namespace Posprint\Tests\Connectors;
 
 /**
  * Unit Tests for Buffer connector Class
- * 
+ *
  * @author Roberto L. Machado <linux dot rlm at gmail dot com>
  */
 
@@ -12,6 +12,9 @@ use Posprint\Connectors\Buffer;
 
 class BufferTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @covers Posprint\Connectors\Buffer::__construct
+     */
     public function testInstantiable()
     {
         $buffer = new Buffer();
@@ -20,6 +23,8 @@ class BufferTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @depends testInstantiable
+     * @covers Posprint\Connectors\Buffer::write
+     * @covers Posprint\Connectors\Buffer::getDataBinary
      */
     public function testWrite()
     {
@@ -33,6 +38,8 @@ class BufferTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @depends testInstantiable
+     * @covers Posprint\Connectors\Buffer::write
+     * @covers Posprint\Connectors\Buffer::getDataJson
      */
     public function testGetDataJson()
     {
@@ -46,6 +53,8 @@ class BufferTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @depends testInstantiable
+     * @covers Posprint\Connectors\Buffer::write
+     * @covers Posprint\Connectors\Buffer::getDataBase64
      */
     public function testGetDataBase64()
     {
@@ -59,6 +68,7 @@ class BufferTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @depends testInstantiable
+     * @covers Posprint\Connectors\Buffer::write
      * @covers Posprint\Connectors\Buffer::getDataReadable
      * @covers Posprint\Connectors\Buffer::friendlyBinary
      */
@@ -68,6 +78,39 @@ class BufferTest extends \PHPUnit_Framework_TestCase
         $data = "123".chr(10)."45678".chr(8)."90A".chr(0)."SDFG";
         $buffer->write($data);
         $response = $buffer->getDataReadable(false);
+        $expected = '123 [LF] 45678\x0890A [NUL] SDFG';
+        $this->assertEquals($response, $expected);
+    }
+
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Connectors\Buffer::close
+     */
+    public function testClose()
+    {
+        $buffer = new Buffer();
+        $data = "123".chr(10)."45678".chr(8)."90A".chr(0)."SDFG";
+        $buffer->write($data);
+        $buffer->close();
+        $response = $buffer->read(20);
+        $expected = '';
+        $this->assertEquals($response, $expected);
+    }
+    
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Connectors\Buffer::write
+     * @covers Posprint\Connectors\Buffer::read
+     * @covers Posprint\Connectors\Buffer::getDataReadable
+     * @covers Posprint\Connectors\Buffer::friendlyBinary
+     * @covers Posprint\Connectors\Buffer::close
+     */
+    public function testRead()
+    {
+        $buffer = new Buffer();
+        $data = "123".chr(10)."45678".chr(8)."90A".chr(0)."SDFG";
+        $buffer->write($data);
+        $response = $buffer->read(20);
         $expected = '123 [LF] 45678\x0890A [NUL] SDFG';
         $this->assertEquals($response, $expected);
     }

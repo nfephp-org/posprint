@@ -4,7 +4,7 @@ namespace Posprint\Tests\Graphics;
 
 /**
  * Unit Tests for Graphics Class
- * 
+ *
  * @author Roberto L. Machado <linux dot rlm at gmail dot com>
  */
 
@@ -13,7 +13,7 @@ use Posprint\Graphics\Graphics;
 class GraphicsTest extends \PHPUnit_Framework_TestCase
 {
     
-    public function testInitialize()
+    public function testInstantiable()
     {
         $graphics = new Graphics();
         $this->assertInstanceOf(Graphics::class, $graphics);
@@ -77,7 +77,7 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Cant open file /new.bmp. Check permissions.
-     */    
+     */
     public function testeConvert2BMPSaveFail()
     {
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
