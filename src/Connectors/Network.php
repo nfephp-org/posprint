@@ -39,7 +39,7 @@ class Network extends File implements ConnectorInterface
         }
         $errno = 0;
         $errstr = '';
-        $this->resource = @fsockopen($ip, $port, $errno, $errstr);
+        $this->resource = @fsockopen($hostname, $port, $errno, $errstr);
         if ($this->resource === false) {
             throw new RuntimeException("Cannot initialise NetworkPrintConnector: " . $errstr);
         }

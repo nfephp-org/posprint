@@ -4,7 +4,7 @@ namespace Posprint\Tests\Connectors;
 
 /**
  * Unit Tests for File connector Class
- * 
+ *
  * @author Roberto L. Machado <linux dot rlm at gmail dot com>
  */
 
@@ -58,6 +58,16 @@ class FileTest extends \PHPUnit_Framework_TestCase
     /**
      * @depends testInstantiable
      */
+    public function testClose()
+    {
+        $filePath = realpath(dirname(__FILE__).'/../fixtures/escpos.prn');
+        $file = new File($filePath);
+        $file->close();
+    }
+    
+    /**
+     * @depends testInstantiable
+     */
     public function testRead()
     {
         $filePath = realpath(dirname(__FILE__).'/../fixtures/escpos.prn');
@@ -66,6 +76,4 @@ class FileTest extends \PHPUnit_Framework_TestCase
         $expected = '1234567890';
         $this->assertEquals($response, $expected);
     }
-    
-    
 }

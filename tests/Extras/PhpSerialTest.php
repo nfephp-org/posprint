@@ -3,7 +3,7 @@ namespace Posprint\Tests\Extras;
 
 /**
  * Unit Tests for PhpSerial Class
- * 
+ *
  * @author Roberto L. Machado <linux dot rlm at gmail dot com>
  */
 
@@ -11,7 +11,7 @@ use Posprint\Extras\PhpSerial;
 
 class PhpSerialTest extends \PHPUnit_Framework_TestCase
 {
-    public function testInitialize()
+    public function testInstantiable()
     {
         $connector = new PhpSerial();
         $this->assertInstanceOf(PhpSerial::class, $connector);
@@ -126,11 +126,5 @@ class PhpSerialTest extends \PHPUnit_Framework_TestCase
         $device = $connector->getDevice();
         $this->assertEquals($ttyPath, $device);
         $resp = $connector->open();
-        
     }
-    
-    
-    
-    
-            
 }

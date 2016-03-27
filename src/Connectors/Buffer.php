@@ -92,7 +92,7 @@ final class Buffer implements ConnectorInterface
      */
     public function read($len = null)
     {
-        return $this->getDataReadable();
+        return $this->getDataReadable(false);
     }
 
     /**
