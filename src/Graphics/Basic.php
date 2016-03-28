@@ -4,7 +4,7 @@ namespace Posprint\Graphics;
 
 /**
  * Basic method for graphics classes
- * 
+ *
  * @codeCoverageIgnore
  * @category  NFePHP
  * @package   Posprint

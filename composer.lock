@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/endroid/QrCode.git",
-                "reference": "39a7e1ef0d7254d3c1be2398df2e9bf5df9ee446"
+                "reference": "70a1daea37f8dbd41add2707e53a22a5c4b18ee7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/endroid/QrCode/zipball/39a7e1ef0d7254d3c1be2398df2e9bf5df9ee446",
-                "reference": "39a7e1ef0d7254d3c1be2398df2e9bf5df9ee446",
+                "url": "https://api.github.com/repos/endroid/QrCode/zipball/70a1daea37f8dbd41add2707e53a22a5c4b18ee7",
+                "reference": "70a1daea37f8dbd41add2707e53a22a5c4b18ee7",
                 "shasum": ""
             },
             "require": {
@@ -55,7 +55,7 @@
                 "qr",
                 "qrcode"
             ],
-            "time": "2016-01-01 19:09:42"
+            "time": "2016-03-26 19:54:00"
         }
     ],
     "packages-dev": [
@@ -65,12 +65,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/annotations.git",
-                "reference": "07a9af2d4de5f9ef0bf2d9ae94421e5fc50d7859"
+                "reference": "2e1b1f7597e2f647e99e96e747fcae9718ac817b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/annotations/zipball/07a9af2d4de5f9ef0bf2d9ae94421e5fc50d7859",
-                "reference": "07a9af2d4de5f9ef0bf2d9ae94421e5fc50d7859",
+                "url": "https://api.github.com/repos/doctrine/annotations/zipball/2e1b1f7597e2f647e99e96e747fcae9718ac817b",
+                "reference": "2e1b1f7597e2f647e99e96e747fcae9718ac817b",
                 "shasum": ""
             },
             "require": {
@@ -125,7 +125,7 @@
                 "docblock",
                 "parser"
             ],
-            "time": "2016-02-26 09:54:41"
+            "time": "2016-03-24 07:09:52"
         },
         {
             "name": "doctrine/instantiator",
@@ -1480,12 +1480,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "4e15784a05c1e8fe46afd43fdaf55b616e234691"
+                "reference": "0abb1dfc00b9b0fad870505224c588b6c3f9a7a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/4e15784a05c1e8fe46afd43fdaf55b616e234691",
-                "reference": "4e15784a05c1e8fe46afd43fdaf55b616e234691",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/0abb1dfc00b9b0fad870505224c588b6c3f9a7a1",
+                "reference": "0abb1dfc00b9b0fad870505224c588b6c3f9a7a1",
                 "shasum": ""
             },
             "require": {
@@ -1550,7 +1550,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2016-03-15 17:39:43"
+            "time": "2016-03-23 00:23:37"
         },
         {
             "name": "symfony/console",
@@ -1737,12 +1737,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "15d73518538b048dbb2e57be22b28390e1aaa4d6"
+                "reference": "78ff90f98b40e2e93a22df00aea048cef54a7a03"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/15d73518538b048dbb2e57be22b28390e1aaa4d6",
-                "reference": "15d73518538b048dbb2e57be22b28390e1aaa4d6",
+                "url": "https://api.github.com/repos/symfony/process/zipball/78ff90f98b40e2e93a22df00aea048cef54a7a03",
+                "reference": "78ff90f98b40e2e93a22df00aea048cef54a7a03",
                 "shasum": ""
             },
             "require": {
@@ -1778,7 +1778,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "time": "2016-03-16 16:22:05"
+            "time": "2016-03-23 13:33:04"
         },
         {
             "name": "symfony/yaml",
