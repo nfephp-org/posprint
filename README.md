@@ -84,3 +84,52 @@ Pessoal, essas alterações foram feitas apenas para testes no windows utilizand
 Atenciosamente, 
 
 R Ribeiro Soares
+
+## Instalação (*Install*)
+Via Composer
+
+``` bash
+$ composer require nfephp-org/posprint
+```
+
+## Exemplo de Uso  (*Usage*)
+``` php
+$filename = "/tmp/epson.prn";
+$connector = new Posprint\Connector\File($filename);
+$printer = new Posprint\Printers\Epson($connector);
+$printer->initialize();
+$printer->setBold();
+$printer->text("Hello World !!");
+$printer->setBold();
+$printer->lineFeed(2);
+$printer->setAlign("C");
+$printer->text("CENTRAL");
+$printer->lineFeed(2);
+$printer->cut();
+$printer->send();
+```
+
+## Log de Alterações (*Change Log*)
+Por favor veja o [Log de Alterações](CHANGELOG.md) para mais informações sobre as mudanças mais recentes.
+*Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.*
+
+## Testando (*Testing*)
+``` bash
+$ composer test
+```
+## Contribuindo (*Contributing*)
+Por favor leia como contribuir em [CONTRIBUTING](CONTRIBUTING.md) e nosso [Código de Conduta](CONDUCT.md) para maiores detalhes.
+*Please see [CONTRIBUTING](CONTRIBUTING.md) and [CONDUCT](CONDUCT.md) for details.*
+
+## Security
+Caso você encontre qualquer problema relacionado a segurança, informe diretamente o mantenedor linux.rlm@gmail.com ao invés de abrir uma ISSUE no github.
+*If you discover any security related issues, please email :author_email instead of using the issue tracker.*
+
+## Creditos (*Credits*)
+
+- 
+- 
+
+## Licenças (*License*)
+Este pacote está sendo disponibilizado sob as licenças LGPLv3 ou GPLv3 ou MIT, verifique o arquivo [Licenças](LICENSE.md) para maiores informações.
+*The LGPLv3, GPLv3 and MIT License. Please see [License File](LICENSE.md) for more information.*
