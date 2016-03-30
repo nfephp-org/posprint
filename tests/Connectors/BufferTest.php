@@ -65,6 +65,21 @@ class BufferTest extends \PHPUnit_Framework_TestCase
         $expected = base64_encode($data);
         $this->assertEquals($response, $expected);
     }
+
+  /**
+     * @depends testInstantiable
+     * @covers Posprint\Connectors\Buffer::write
+     * @covers Posprint\Connectors\Buffer::getDataBase64
+     */
+    public function testGetDataBase64Array()
+    {
+        $buffer = new Buffer();
+        $data = "1234567890ASDFG";
+        $buffer->write($data);
+        $response = $buffer->getDataBase64(true);
+        $expected = array(base64_encode($data));
+        $this->assertEquals($response, $expected);
+    }
     
     /**
      * @depends testInstantiable

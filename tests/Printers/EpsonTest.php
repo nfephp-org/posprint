@@ -1,4 +1,5 @@
 <?php
+
 namespace Posprint\Tests\Printers;
 
 /**
@@ -11,12 +12,16 @@ use Posprint\Printers\Epson;
 
 class EpsonTest extends \PHPUnit_Framework_TestCase
 {
-    public function testInitialize()
+    public function testInstantiable()
     {
         $printer = new Epson();
         $this->assertInstanceOf(Epson::class, $printer);
     }
     
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Printers\DefaultPrinter::defaultRegionPage
+     */
     public function testDefaultRegionPage()
     {
         $printer = new Epson();
@@ -55,7 +60,11 @@ class EpsonTest extends \PHPUnit_Framework_TestCase
         ];
         $this->assertEquals($expected, $actual);
     }
-    
+
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Printers\DefaultPrinter::defaultCodePage
+     */
     public function testDefaultCodePage()
     {
         $printer = new Epson();
@@ -105,7 +114,11 @@ class EpsonTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    public function testeDefaultFont()
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Printers\DefaultPrinter::defaultFont
+     */
+  public function testDefaultFont()
     {
         $expected = 'A';
         $printer = new Epson();
@@ -124,7 +137,23 @@ class EpsonTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
     
-    public function testInitialise()
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Printers\DefaultPrinter::defaultFont
+     */
+    public function testListAvaiableFonts()
+    {
+        $printer = new Epson();
+        $actual = $printer->defaultFont('ALL');
+        $expected = array(0 => 'A', 1 => 'B', 2 => 'C', 3 => 'D', 4 => 'E', 97 => 'SA', 98 => 'SB');
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Printers\DefaultPrinter::initialize
+     */
+    public function testInitialize()
     {
         $expected = ' [ESC] @';
         $printer = new Epson();
