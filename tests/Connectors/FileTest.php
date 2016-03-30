@@ -41,6 +41,18 @@ class FileTest extends \PHPUnit_Framework_TestCase
         $file = new File($filePath);
         $this->assertInstanceOf(File::class, $file);
     }
+
+    /**
+     * @depends testInstantiable
+     */
+    public function testWriteNothing()
+    {
+        $filePath = realpath(dirname(__FILE__).'/../fixtures/escpos.prn');
+        $file = new File($filePath);
+        $response = $file->write("");
+        $expected = 0;
+        $this->assertEquals($response, $expected);
+    }
     
     /**
      * @depends testInstantiable
@@ -74,6 +86,18 @@ class FileTest extends \PHPUnit_Framework_TestCase
         $file = new File($filePath);
         $response = $file->read(10);
         $expected = '1234567890';
+        $this->assertEquals($response, $expected);
+    }
+    
+    /**
+     * @depends testInstantiable
+     */
+    public function testReadFull()
+    {
+        $filePath = realpath(dirname(__FILE__).'/../fixtures/escpos.prn');
+        $file = new File($filePath);
+        $response = $file->read();
+        $expected = "1234567890ASDFG".chr(10).chr(27)."qqqqq";
         $this->assertEquals($response, $expected);
     }
 }

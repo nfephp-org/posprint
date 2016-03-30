@@ -19,13 +19,41 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Graphics::class, $graphics);
     }
     
+    /**
+     * @depends testInstantiable
+     */
     public function testLoadImage()
     {
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
         $graphics = new Graphics($imagePath);
     }
+
+    /**
+     * @depends testInstantiable
+     */
+    public function testGetDimImageWithNoImage()
+    {
+        $graphics = new Graphics();
+        $result = $graphics->getDimImage();
+        $expected = ['height'  => 0, 'width' => 0];
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @depends testInstantiable
+     */
+    public function testGetHeightBytes()
+    {
+        $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
+        $graphics = new Graphics($imagePath);
+        $result = $graphics->getHeightBytes();
+        $expected = 40;
+        $this->assertEquals($expected, $result);
+    }
+    
     
     /**
+     * @depends testInstantiable
      * @expectedException RunTimeException
      * @expectedExceptionMessage It is not possible to use or handle this type of image with GD
      */
@@ -36,6 +64,7 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @depends testInstantiable
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Image file not found.
      */
@@ -44,13 +73,25 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.svg');
         $graphics = new Graphics($imagePath);
     }
-    
+
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Graphics\Graphics::loadBMP
+     * @covers Posprint\Graphics\Graphics::save
+     * @covers Posprint\Graphics\Graphics::saveImage
+     */
     public function testLoadImageBMP()
     {
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.bmp');
         $graphics = new Graphics($imagePath);
+        $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux2.png');
+        $graphics->save($imagePath);
     }
-    
+
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Graphics\Graphics::convert2BMP
+     */
     public function testConvert2BMP()
     {
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
@@ -60,7 +101,10 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
         $expected = file_get_contents($filename);
         $this->assertEquals($result, $expected);
     }
-    
+
+    /**
+     * @depends testInstantiable
+     */
     public function testConvert2BMPSave()
     {
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
@@ -75,6 +119,7 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @depends testInstantiable
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Cant open file /new.bmp. Check permissions.
      */
@@ -85,7 +130,12 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
         $filename = realpath(dirname(__FILE__).'/../noexists').DIRECTORY_SEPARATOR.'new.bmp';
         $graphics->convert2BMP($filename);
     }
-    
+
+    /**
+     * @depends testInstantiable
+     * @covers Posprint\Graphics\Graphics::convertRaster
+     * @covers Posprint\Graphics\Graphics::getRasterImage
+     */
     public function testGetRaster()
     {
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
@@ -93,9 +143,38 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
         $result = $graphics->getRasterImage();
         $filename = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'tux.raw';
         $expected = file_get_contents($filename);
+        $result = $graphics->getRasterImage();
         //$this->assertEquals($result, $expected);
     }
+
+    /**
+     * @depends testInstantiable
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage No dimensions was passed.
+     */
+    public function testResizeImageFail()
+    {
+        $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
+        $graphics = new Graphics($imagePath);
+        $graphics->resizeImage();
+    }
     
+    /**
+     * @depends testInstantiable
+     */
+    public function testResizeImageFromHeigthOnly()
+    {
+        $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
+        $graphics = new Graphics($imagePath);
+        $graphics->resizeImage(null, 264);
+        $result = $graphics->getHeight();
+        $expected = 264;
+        $this->assertEquals($expected, $result);
+    }
+    
+    /**
+     * @depends testInstantiable
+     */
     public function testQRCode()
     {
         $graphics = new Graphics();

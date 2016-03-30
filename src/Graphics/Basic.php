@@ -68,19 +68,18 @@ abstract class Basic
     }
     
     /**
-     * zGetDimImage
+     * getDimImage
      * Get width and height of resource image
      * and save in properties
      *
      * @return array with dimentions of image
      */
-    protected function getDimImage()
+    public function getDimImage()
     {
-        if (!is_resource($this->img)) {
-            return;
+        if (is_resource($this->img)) {
+            $this->imgHeight = imagesy($this->img);
+            $this->imgWidth = imagesx($this->img);
         }
-        $this->imgHeight = imagesy($this->img);
-        $this->imgWidth = imagesx($this->img);
         return ['height'  => $this->imgHeight, 'width' => $this->imgWidth];
     }
     

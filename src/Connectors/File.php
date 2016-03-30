@@ -73,18 +73,20 @@ class File implements ConnectorInterface
      * Write data to the file
      *
      * @param string $data
+     * @return int
      */
     public function write($data = '')
     {
         if (is_resource($this->resource) && !empty($data)) {
-            return fwrite($this->resource, $data);
+            return (int) fwrite($this->resource, $data);
         }
+        return 0;
     }
     /**
      * Read some bytes from file
      *
      * @param  int $len
-     * @return string
+     * @return stirng
      */
     public function read($len = null)
     {
