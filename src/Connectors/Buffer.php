@@ -158,7 +158,7 @@ final class Buffer implements ConnectorInterface
      */
     public function getDataReadable($retArray = true)
     {
-        $ret = $this->zConvArray('R'); 
+        $ret = $this->zConvArray('R');
         if (! $retArray) {
             $ret = implode("\n", $ret);
         }
@@ -167,7 +167,7 @@ final class Buffer implements ConnectorInterface
     
     /**
      * Convert buffer content
-     * 
+     *
      * @param string $type
      * @return array
      */

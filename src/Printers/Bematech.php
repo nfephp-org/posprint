@@ -40,14 +40,14 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
      *
      * @param string $data   Dados a serem inseridos no QRCode
      * @param string $level  Nivel de correção L,M,Q ou H
-     * @param int    $modelo modelo de QRCode 
+     * @param int    $modelo modelo de QRCode
      * @param int    $wmod   largura da barra 3 ~ 16
-     */    
+     */
     public function barcodeQRCode($data = '', $level = 'M', $modelo = 2, $wmod = 4)
     {
-        //essa matriz especifica o numero máximo de caracteres alfanumericos que o 
+        //essa matriz especifica o numero máximo de caracteres alfanumericos que o
         //modelo de QRCode suporta dependendo no nivel de correção.
-        //Cada matriz representa um nivel de correção e cada uma das 40 posições nessas 
+        //Cada matriz representa um nivel de correção e cada uma das 40 posições nessas
         //matrizes indicam o numero do modelo do QRCode e o numero máximo de caracteres
         //alfamunéricos suportados
         //Quanto maior o nivel de correção menor é a quantidade de caracteres suportada
@@ -80,7 +80,7 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
         $am = $aModels[$n1];
         $i = 0;
         $flag = false;
-        foreach($am as $size) {
+        foreach ($am as $size) {
             //verifica se o tamanho maximo é maior ou igual ao comprimento da mensagem
             if ($size >= $length) {
                 $flag = true;
@@ -93,7 +93,7 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
         }
         //n3 Version QRCode
         //depende do comprimento dos dados e do nivel de correção
-        $n3 = ($i + 1); 
+        $n3 = ($i + 1);
         //n4 Encoding modes
         //0 – Numeric only              Max. 7,089 characters
         //1 – Alphanumeric              Max. 4,296 characters
