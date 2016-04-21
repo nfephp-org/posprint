@@ -26,13 +26,16 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
      */
     public function setPrintMode($mode = 'ESCPOS')
     {
-        //padrão é ESC/POS
+        //default ESC/POS
         $nmode = 0;
         if ($mode == 'ESCBEMA') {
             $this->printerMode = 'ESCBEMA';
             $nmode = 1;
         }
+        //select mode ESCPOS or ESCBEMA
         $this->buffer->write(self::GS . chr(249) . chr(32) . $nmode);
+        //clear Emphasized, Double height, Double width
+        $this->buffer->write(self::ESC . '!' . chr(0));
     }
 
     /**
@@ -40,10 +43,10 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
      *
      * @param string $data   Dados a serem inseridos no QRCode
      * @param string $level  Nivel de correção L,M,Q ou H
-     * @param int    $modelo modelo de QRCode
+     * @param int    $modelo modelo de QRCode 0 QRCode ou 1 microQR
      * @param int    $wmod   largura da barra 3 ~ 16
      */
-    public function barcodeQRCode($data = '', $level = 'M', $modelo = 2, $wmod = 4)
+    public function barcodeQRCode($data = '', $level = 'M', $modelo = 0, $wmod = 4)
     {
         //essa matriz especifica o numero máximo de caracteres alfanumericos que o
         //modelo de QRCode suporta dependendo no nivel de correção.
@@ -80,8 +83,19 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
             default:
                 $n1 = 0;
         }
+        if ($modelo != 0 && $modelo != 1) {
+            $modelo = 0;
+        }
+        //se for mucroQR sua capacidade é bem reduzida
+        if ($modelo == 1) {
+            $aModels[0] = [6,14,21];
+            $aModels[1] = [5,11,18];
+            $aModels[2] = [0,0,13];
+            $aModels[3] = [0,0,0];
+        }
         //n2 Module/cell size in pixels MSB 1 ≤ module size ≤ 127 LSB 0 QR or 1 MicroQR
-        $n2 = $wmod << 2;
+        $n2 = $wmod << 1;//shift 1 é o mesmo que multiplicar por 2
+        $n2 += $modelo;//seleciona QRCode ou microQR
         //comprimento da mensagem
         $length = strlen($data);
         //seleciona matriz de modelos aplicavel pelo nivel de correção
@@ -97,7 +111,9 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
             $i++;
         }
         if (! $flag) {
-            throw new InvalidArgumentException('O numero de caracteres da mensagem é maior que a capacidade do QRCode');
+            throw new InvalidArgumentException(
+                'O numero de caracteres da mensagem é maior que a capacidade do QRCode'
+            );
         }
         //n3 Version QRCode
         //depende do comprimento dos dados e do nivel de correção
@@ -108,7 +124,8 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
         //2 – Binary (8 bits)           Max. 2,953 bytes
         //3 – Kanji, full-width Kana    Max. 1,817 characters
         $n4 = 1;//sempre será 1 apenas caracteres alfanumericos nesse caso
-        //n5 e n6 Indicate the number of bytes that will be coded, where total = n5 + n6 x 256, and total must be less than 7089.
+        //n5 e n6 Indicate the number of bytes that will be coded, where total = n5 + n6 x 256,
+        //and total must be less than 7089.
         $n6 = intval($length / 256);
         $n5 = ($length % 256);
         $this->buffer->write(self::GS."kQ" . chr($n1) . chr($n2) . chr($n3) . chr($n4) . chr($n5) . chr($n6) . $data);
