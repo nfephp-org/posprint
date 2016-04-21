@@ -127,10 +127,7 @@ final class Buffer implements ConnectorInterface
      */
     public function getDataBase64($retArray = true)
     {
-        $lbuff = array();
-        foreach ($this->buffer as $linha) {
-            $lbuff[] = base64_encode($linha);
-        }
+        $lbuff = $this->zConvArray('B');
         if (! $retArray) {
             return implode("\n", $lbuff);
         }
@@ -161,12 +158,29 @@ final class Buffer implements ConnectorInterface
      */
     public function getDataReadable($retArray = true)
     {
-        $ret = array();
-        foreach ($this->buffer as $data) {
-            $ret[] = $this->friendlyBinary($data);
-        }
+        $ret = $this->zConvArray('R'); 
         if (! $retArray) {
             $ret = implode("\n", $ret);
+        }
+        return $ret;
+    }
+    
+    /**
+     * Convert buffer content
+     * 
+     * @param string $type
+     * @return array
+     */
+    protected function zConvArray($type)
+    {
+        $ret = array();
+        foreach ($this->buffer as $data) {
+            if ($type == 'R') {
+                $ret[] = $this->friendlyBinary($data);
+            }
+            if ($type == 'B') {
+                $ret[] = base64_encode($data);
+            }
         }
         return $ret;
     }

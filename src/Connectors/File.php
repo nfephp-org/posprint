@@ -64,9 +64,11 @@ class File implements ConnectorInterface
     public function close()
     {
         if (is_resource($this->resource)) {
-            @fclose($this->resource);
-            $this->resource = false;
+            if (! @fclose($this->resource)) {
+                //when a fclose returns false ??
+            }    
         }
+        $this->resource = false;
     }
 
     /**
