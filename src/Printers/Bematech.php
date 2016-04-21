@@ -96,7 +96,7 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
     
     /**
      * Set condensed mode.
-     * Will change Font do D 
+     * Will change Font do D
      */
     public function setCondensed()
     {
