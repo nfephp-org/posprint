@@ -107,7 +107,7 @@ abstract class DefaultPrinter implements PrinterInterface
         'SLOVENIA',
         'CHINA',
         'VIETNAM',
-        'ARABIA',
+        'ARABIA'
     );
 
     /**

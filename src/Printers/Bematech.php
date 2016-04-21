@@ -19,6 +19,45 @@ use Posprint\Printers\PrinterInterface;
 
 final class Bematech extends DefaultPrinter implements PrinterInterface
 {
+    
+    /**
+     * List all available code pages.
+     *
+     * @var array
+     */
+    protected $aCodePage = array(
+        'CP437' => array('conv' => '437', 'table' => '3', 'desc' => 'PC437: USA, Standard Europe'),
+        'CP850' => array('conv' => '850', 'table' => '2', 'desc' => 'PC850: Multilingual'),
+        'CP858' => array('conv' => '858', 'table' => '5', 'desc' => 'PC858: Multilingual'),
+        'CP860' => array('conv' => '860', 'table' => '4', 'desc' => 'PC860: Portuguese'),
+        'CP864' => array('conv' => '864', 'table' => '7', 'desc' => 'PC864: Arabic'),
+        'CP866' => array('conv' => '866', 'table' => '6', 'desc' => 'PC866: Cyrillic'),
+        'UTF8'  => array('conv' => 'UTF8', 'table' => '8', 'desc' => 'UTF-8: Unicode')
+    );
+    
+    /**
+     * List all avaiable fonts
+     *
+     * @var array
+     */
+    protected $aFont = array(0 => 'C', 1 => 'D');
+
+    /**
+     * initialize printer
+     * Clears the data in the print buffer and resets the printer modes to
+     * the modes that were in effect when the power was turned on.
+     */
+    public function initialize()
+    {
+        parent::initialize();
+        $this->setPrintMode('ESCPOS');
+        $this->setCodePage('CP850');
+        $this->setRegionPage('LATIN');
+        //clear Emphasized, Double height, Double width and select font C
+        $this->defaultFont('C');
+        $this->buffer->write(self::ESC . '!' . chr(1));
+    }
+    
     /**
      * Select printer mode
      *
@@ -34,10 +73,37 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
         }
         //select mode ESCPOS or ESCBEMA
         $this->buffer->write(self::GS . chr(249) . chr(32) . $nmode);
-        //clear Emphasized, Double height, Double width
-        $this->buffer->write(self::ESC . '!' . chr(0));
     }
-
+    
+    /**
+     * Set expanded mode.
+     *
+     * @param int $size qualquer valor ativa e null desativa
+     */
+    public function setExpanded($size = null)
+    {
+        $mode = array_keys($this->aFont, $this->font, true);
+        if ($this->boldMode) {
+                $mode += 8;
+        }
+        if (! isnull($size)) {
+            $mode = array_keys($this->aFont, $this->font, true);
+            //double width and double height
+            $mode += (16+32);
+        }
+        $this->buffer->write(self::ESC . '!' . $mode);
+    }
+    
+    /**
+     * Set condensed mode.
+     * Will change Font do D 
+     */
+    public function setCondensed()
+    {
+        $this->setExpanded();
+        $this->setFont('D');
+    }
+    
     /**
      * Imprime o QR Code
      *
@@ -48,6 +114,7 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
      */
     public function barcodeQRCode($data = '', $level = 'M', $modelo = 0, $wmod = 4)
     {
+        $aModels = array();
         //essa matriz especifica o numero máximo de caracteres alfanumericos que o
         //modelo de QRCode suporta dependendo no nivel de correção.
         //Cada matriz representa um nivel de correção e cada uma das 40 posições nessas
