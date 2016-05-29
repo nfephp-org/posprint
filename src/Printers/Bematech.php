@@ -20,6 +20,7 @@ use Posprint\Printers\PrinterInterface;
 final class Bematech extends DefaultPrinter implements PrinterInterface
 {
     
+    
     /**
      * List all available code pages.
      *
@@ -41,6 +42,13 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
      * @var array
      */
     protected $aFont = array(0 => 'C', 1 => 'D');
+    
+    
+    public function __construct(ConnectorInterface $conn = null)
+    {
+        parent::__construct($conn);
+        
+    }
 
     /**
      * initialize printer
@@ -50,8 +58,8 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
     public function initialize()
     {
         parent::initialize();
-        $this->setPrintMode('ESCPOS');
         $this->setCodePage('CP850');
+        $this->setPrintMode('ESCPOS');
         $this->setRegionPage('LATIN');
         //clear Emphasized, Double height, Double width and select font C
         $this->defaultFont('C');
@@ -59,17 +67,16 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
     }
     
     /**
-     * Select printer mode
+     * Select printer mode and code page to 850
      *
      * @param string $mode
      */
     public function setPrintMode($mode = 'ESCPOS')
     {
         //default ESC/POS
-        $nmode = 0;
+        $this->printerMode = 'ESCPOS';
         if ($mode == 'ESCBEMA') {
             $this->printerMode = 'ESCBEMA';
-            $nmode = 1;
         }
         //select mode ESCPOS or ESCBEMA
         $this->buffer->write(self::GS . chr(249) . chr(32) . $nmode);
@@ -196,5 +203,30 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
         $n6 = intval($length / 256);
         $n5 = ($length % 256);
         $this->buffer->write(self::GS."kQ" . chr($n1) . chr($n2) . chr($n3) . chr($n4) . chr($n5) . chr($n6) . $data);
+    }
+    
+    /**
+     * GS v0 m xL xH yL yH d1 ... dk
+     *
+     * @param string $filename
+     * @param intger $width
+     * @param integer $height
+     * @param integer $size resolution relation
+     * @throws RuntimeException
+     */
+    public function putImage($filename = '', $width = null, $height = null, $size = 0)
+    {
+        try {
+            $img = new Graphics($filename, $width, $height);
+        } catch (RuntimeException $e) {
+            throw new RuntimeException($e->getMessage());
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+        $size = self::validateInteger($size, 0, 3, 0);
+        //get xL xH yL yH
+        $imgHeader = self::dataHeader(array($img->getWidth(), $img->getHeight()), true);
+        //send graphics command to printer
+        $this->buffer->write(self::GS.'v0'.chr($size).$header.$img->getRasterImage());
     }
 }
