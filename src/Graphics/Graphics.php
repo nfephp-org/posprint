@@ -44,7 +44,6 @@ class Graphics extends Basic
      */
     public function __construct($filename = null, $width = null, $height = null)
     {
-        // Include option to Imagick
         if (! $this->isGdSupported()) {
             throw new RuntimeException("GD module not found.");
         }
@@ -60,7 +59,10 @@ class Graphics extends Basic
     
     /**
      * Return a string of bytes
-     *
+     * for inclusion on printer commands
+     * This method change image to Black and White and 
+     * reducing the color resolution of 1 bit per pixel
+     * 
      * @return string
      */
     public function getRasterImage()
@@ -96,7 +98,6 @@ class Graphics extends Basic
             if ($img === false) {
                 throw new InvalidArgumentException("Image file is not a BMP");
             }
-            $this->img = $img;
         } else {
             $func = 'imagecreatefrom' . strtolower($tipo);
             if (! function_exists($func)) {
@@ -115,19 +116,47 @@ class Graphics extends Basic
     }
     
     /**
-     * Save image to PNG file
+     * Converts a true color image to Black and white
+     */
+    public function convertBW()
+    {
+        $newimg = imagecreatetruecolor($this->imgWidth, $this->imgHeight);
+        imagealphablending($newimg, false);
+        imagesavealpha($newimg, true);
+        imagecopyresampled($newimg, $this->img, 0, 0, 0, 0, $this->imgWidth, $this->imgHeight, $this->imgWidth, $this->imgHeight);
+        $bcg = imagecolorallocate($newimg, 255, 255, 255);
+        imagefill($newimg, 0, 0, $bcg);
+        imagefilter($newimg, IMG_FILTER_GRAYSCALE);
+        imagefilter($newimg, IMG_FILTER_CONTRAST, -255);
+        $this->img = $newimg;
+    }
+    
+    /**
+     * Save image to file
      *
      * @param string $filename
+     * @param string $type  PNG, JPG, GIF, BMP
+     * @param integer $quality 0 - 100 default 75
+     * @return boolean
      */
-    public function save($filename = null)
+    public function save($filename = null, $type = 'PNG', $quality = 75)
     {
-        $this->saveImage($filename, $this->img);
+        $type = strtoupper($type);
+        if ($type == 'BMP') {
+            $this->convert2BMP($filename);
+            return true;
+        }
+        $aTypes = ['PNG', 'JPG', 'JPEG',  'GIF'];
+        if (! in_array($type, $aTypes)) {
+            throw InvalidArgumentException('This file type is not supported.');
+        }
+        return $this->saveImage($filename, $this->img, $type, $quality);
     }
     
     /**
      * Convert a GD image into a BMP string representation
      *
-     * @param  string $filename path to image BMP file
+     * @param string $filename
      * @return string
      */
     public function convert2BMP($filename = null)
@@ -144,12 +173,7 @@ class Graphics extends Basic
             $thisline = '';
             for ($xInd = 0; $xInd < $imageX; $xInd++) {
                 $argb = self::getPixelColor($img, $xInd, $yInd);
-                //change transparency to white color
-                if ($argb['alpha'] == 0 && $argb['blue'] == 0 && $argb['green'] == 0 && $argb['red'] == 0) {
-                    $thisline .= chr(255).chr(255).chr(255);
-                } else {
-                    $thisline .= chr($argb['blue']).chr($argb['green']).chr($argb['red']);
-                }
+                $thisline .= chr($argb['blue']).chr($argb['green']).chr($argb['red']);
             }
             while (strlen($thisline) % 4) {
                 $thisline .= "\x00";
@@ -185,87 +209,135 @@ class Graphics extends Basic
      * Create a GD image from BMP file
      *
      * @param  string $filename
-     * @return GD object
+     * @return boolean
      */
     public function loadBMP($filename)
     {
-        //Load the image into a string
-        $file = fopen($filename, "rb");
-        $read = fread($file, 10);
-        //continue at the end of file
-        while (! feof($file) && ($read <> "")) {
-            $read .= fread($file, 1024);
+        //open file as binary
+        if(! $f1 = fopen($filename,"rb")) {
+            throw InvalidArgumentException('Can not open file.');
         }
-        fclose($file);
-        $temp = unpack("H*", $read);
-        $hex = $temp[1];
-        $header = substr($hex, 0, 108);
-        //Process the header
-        //Structure: http://www.fastgraph.com/help/bmp_header_format.html
-        if (substr($header, 0, 4) != "424d") {
-            //is not a BMP file
-            return false;
+        //get properties from image file
+        $file = unpack("vfile_type/Vfile_size/Vreserved/Vbitmap_offset", fread($f1,14));
+        if ($file['file_type'] != 19778) {
+            throw InvalidArgumentException('This file is not a BMP image.');
         }
-        //Cut it in parts of 2 bytes
-        $headerParts = str_split($header, 2);
-        //Get the width 4 bytes
-        $width = hexdec($headerParts[19].$headerParts[18]);
-        //Get the height 4 bytes
-        $height = hexdec($headerParts[23].$headerParts[22]);
-        // Unset the header params
-        unset($headerParts);
-        // Define starting X and Y
-        $xPos = 0;
-        $yPos = 1;
-        //Create new gd image
-        $image = imagecreatetruecolor($width, $height);
-        //Grab the body from the image
-        $body = substr($hex, 108);
-        //Calculate if padding at the end-line is needed
-        //Divided by two to keep overview.
-        //1 byte = 2 HEX-chars
-        $bodySize = (strlen($body) / 2);
-        $headerSize = ($width * $height);
-        //Use end-line padding? Only when needed
-        $usePadding = ($bodySize > ($headerSize * 3) + 4);
-        //Using a for-loop with index-calculation instaid of str_split to avoid large memory consumption
-        //Calculate the next DWORD-position in the body
-        for ($iCount = 0; $iCount < $bodySize; $iCount += 3) {
-            //Calculate line-ending and padding
-            if ($xPos >= $width) {
-                //If padding needed, ignore image-padding
-                //Shift i to the ending of the current 32-bit-block
-                if ($usePadding) {
-                    $iCount += $width % 4;
+        //get properties form image
+        $bmp = unpack('Vheader_size/Vwidth/Vheight/vplanes/vbits_per_pixel'.
+           '/Vcompression/Vsize_bitmap/Vhoriz_resolution'.
+           '/Vvert_resolution/Vcolors_used/Vcolors_important', fread($f1,40));
+        //check deep of colors
+        $bmp['colors'] = pow(2, $bmp['bits_per_pixel']);
+        if ($bmp['size_bitmap'] == 0) {
+            $bmp['size_bitmap'] = $file['file_size'] - $file['bitmap_offset'];
+        }
+        $bmp['bytes_per_pixel'] = $bmp['bits_per_pixel']/8;
+        $bmp['bytes_per_pixel2'] = ceil($bmp['bytes_per_pixel']);
+        $bmp['decal'] = ($bmp['width']*$bmp['bytes_per_pixel']/4);
+        $bmp['decal'] -= floor($bmp['width']*$bmp['bytes_per_pixel']/4);
+        $bmp['decal'] = 4-(4*$bmp['decal']);
+        if ($bmp['decal'] == 4) {
+            $bmp['decal'] = 0;
+        }
+        $palette = array();
+        if ($bmp['colors'] < 16777216) {
+            $palette = unpack('V'.$bmp['colors'], fread($f1, $bmp['colors']*4));
+        }
+        //read all data form image but not the header
+        $img = fread($f1, $bmp['size_bitmap']);
+        fclose($f1);
+        //create a true color GD resource
+        $vide = chr(0);
+        $res = imagecreatetruecolor($bmp['width'], $bmp['height']);
+        $p = 0;
+        $y = $bmp['height']-1;
+        //read all bytes form original file
+        while ($y >= 0) {
+            $x=0;
+            while ($x < $bmp['width']) {
+                //get byte color from BMP
+                $color = $this->getBMPColor($bmp['bits_per_pixel'], $img, $vide, $p, $palette);
+                if ($color === false) {
+                    throw RuntimeException('Fail during conversion from BMP number bit per pixel incorrect!');
                 }
-                //Reset horizontal position
-                $xPos = 0;
-                //Raise the height-position (bottom-up)
-                $yPos++;
-                //Reached the image-height? Break the for-loop
-                if ($yPos > $height) {
-                    break;
-                }
+                imagesetpixel($res, $x, $y, $color[1]);
+                $x++;
+                $p += $bmp['bytes_per_pixel'];
             }
-            //Calculation of the RGB-pixel (defined as BGR in image-data)
-            //Define $i_pos as absolute position in the body
-            $iPos = $iCount * 2;
-            $red = hexdec($body[$iPos + 4] . $body[$iPos + 5]);
-            $green = hexdec($body[$iPos + 2] . $body[$iPos + 3]);
-            $blue = hexdec($body[$iPos] . $body[$iPos + 1]);
-            //Calculate and draw the pixel
-            $color = imagecolorallocate($image, $red, $green, $blue);
-            imagesetpixel($image, $xPos, $height-$yPos, $color);
-            //Raise the horizontal position
-            $xPos++;
+            $y--;
+            $p += $bmp['decal'];
         }
-        //Unset the body / free the memory
-        unset($body);
-        //Return GD image-object
-        $this->img = $image;
-        return $image;
+        $this->img = $res;
+        return true;
     }
     
+    /**
+     * Get byte color form BMP
+     * 
+     * @param integer $bpp bytes_per_pixel
+     * @param string $img bytes read of file
+     * @param string $vide
+     * @param integer $p
+     * @param integer $palette
+     * @return integer|boolean
+     */
+    private function getBMPColor($bpp, $img, $vide, $p, $palette)
+    {
+        switch ($bpp) {
+            case 24:
+                return unpack("V", substr($img, $p, 3).$vide);
+                break;
+            case 16:
+                $color = unpack("v", substr($img, $p, 2));
+                $blue = ($color[1] & 0x001f) << 3;
+                $green = ($color[1] & 0x07e0) >> 3;
+                $red = ($color[1] & 0xf800) >> 8;
+                $color[1] = $red * 65536 + $green * 256 + $blue;
+                return $color;
+                break;
+            case 8:    
+                $color = unpack("n", $vide.substr($img, $p, 1));
+                $color[1] = $palette[$color[1]+1];
+                return $color;
+                break;
+            case 4:
+                $color = unpack("n", $vide.substr($img, floor($p), 1));
+                if (($p*2)%2 == 0) {
+                   $color[1] = ($color[1] >> 4) ;
+                } else {
+                   $color[1] = ($color[1] & 0x0F);
+                }
+                $color[1] = $palette[$color[1]+1];
+                return $color;
+                break;
+            case 1:
+                $color = unpack("n", $vide.substr($img, floor($p), 1));
+                if (($p*8)%8 == 0) {
+                    $color[1] = $color[1]>>7;
+                } elseif (($p*8)%8 == 1) {
+                    $color[1] = ($color[1] & 0x40)>>6;
+                } elseif (($p*8)%8 == 2) {
+                    $color[1] = ($color[1] & 0x20)>>5;
+                } elseif (($p*8)%8 == 3) {
+                    $color[1] = ($color[1] & 0x10)>>4;
+                } elseif (($P*8)%8 == 4) {
+                    $color[1] = ($color[1] & 0x8)>>3;
+                } elseif (($p*8)%8 == 5) {
+                    $color[1] = ($color[1] & 0x4)>>2;
+                } elseif (($p*8)%8 == 6) {
+                    $color[1] = ($color[1] & 0x2)>>1;
+                } elseif (($p*8)%8 == 7) {
+                    $color[1] = ($color[1] & 0x1);
+                }
+                $color[1] = $palette[$color[1]+1];
+                return $color;
+                break;
+            default:
+                return false;
+        }
+    }
+
+
     /**
      * resizeImage
      * Resize an image
@@ -302,13 +374,14 @@ class Graphics extends Basic
      * @param string $dataText
      * @param int    $width
      * @param int    $padding
-     * @param string $errCorretion
+     * @param string $errCorretion  LOW, MEDIUM, QUARTILE, HIGH
+     * @return void
      */
     public function imageQRCode(
         $dataText = 'NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA',
         $width = 200,
         $padding = 10,
-        $errCorretion = 'medium'
+        $errCorretion = 'MEDIUM'
     ) {
         //adjust width for a closest multiple of 8
         $width = $this->closestMultiple($width, 8);
@@ -412,20 +485,33 @@ class Graphics extends Basic
     /**
      * Save safety binary image file
      *
-     * @param  string               $filename
-     * @param  resource|string|null $data
+     * @param string               $filename
+     * @param resource|string|null $data
+     * @param string $type PNG, JPG, GIF, BMP
+     * @param integer $quality
      * @return boolean
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
-    private function saveImage($filename = null, $data = null)
+    public function saveImage($filename = null, $data = null, $type = 'PNG', $quality = 75)
     {
-        if (is_null($filename) || is_null($data)) {
+        if (empty($filename) || empty($data)) {
             return false;
         }
         if (is_resource($data)) {
             //use GD to save image to file
-            $result = imagepng($data, $filename);
+            switch ($type) {
+                case 'JPG':
+                case 'JPEG':
+                    $result = imagejpeg($data, $filename, $quality);
+                    break;
+                case 'GIF':
+                    $result = imagegif($data, $filename);
+                    break;
+                default :
+                    $result = imagepng($data, $filename);
+                    break;
+            }
             if (!$result) {
                 throw new InvalidArgumentException("Fail to write in $filename.");
             }
