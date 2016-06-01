@@ -60,9 +60,9 @@ class Graphics extends Basic
     /**
      * Return a string of bytes
      * for inclusion on printer commands
-     * This method change image to Black and White and 
+     * This method change image to Black and White and
      * reducing the color resolution of 1 bit per pixel
-     * 
+     *
      * @return string
      */
     public function getRasterImage()
@@ -214,18 +214,18 @@ class Graphics extends Basic
     public function loadBMP($filename)
     {
         //open file as binary
-        if(! $f1 = fopen($filename,"rb")) {
+        if (! $f1 = fopen($filename, "rb")) {
             throw InvalidArgumentException('Can not open file.');
         }
         //get properties from image file
-        $file = unpack("vfile_type/Vfile_size/Vreserved/Vbitmap_offset", fread($f1,14));
+        $file = unpack("vfile_type/Vfile_size/Vreserved/Vbitmap_offset", fread($f1, 14));
         if ($file['file_type'] != 19778) {
             throw InvalidArgumentException('This file is not a BMP image.');
         }
         //get properties form image
         $bmp = unpack('Vheader_size/Vwidth/Vheight/vplanes/vbits_per_pixel'.
            '/Vcompression/Vsize_bitmap/Vhoriz_resolution'.
-           '/Vvert_resolution/Vcolors_used/Vcolors_important', fread($f1,40));
+           '/Vvert_resolution/Vcolors_used/Vcolors_important', fread($f1, 40));
         //check deep of colors
         $bmp['colors'] = pow(2, $bmp['bits_per_pixel']);
         if ($bmp['size_bitmap'] == 0) {
@@ -273,7 +273,7 @@ class Graphics extends Basic
     
     /**
      * Get byte color form BMP
-     * 
+     *
      * @param integer $bpp bytes_per_pixel
      * @param string $img bytes read of file
      * @param string $vide
@@ -295,7 +295,7 @@ class Graphics extends Basic
                 $color[1] = $red * 65536 + $green * 256 + $blue;
                 return $color;
                 break;
-            case 8:    
+            case 8:
                 $color = unpack("n", $vide.substr($img, $p, 1));
                 $color[1] = $palette[$color[1]+1];
                 return $color;
@@ -303,9 +303,9 @@ class Graphics extends Basic
             case 4:
                 $color = unpack("n", $vide.substr($img, floor($p), 1));
                 if (($p*2)%2 == 0) {
-                   $color[1] = ($color[1] >> 4) ;
+                    $color[1] = ($color[1] >> 4) ;
                 } else {
-                   $color[1] = ($color[1] & 0x0F);
+                    $color[1] = ($color[1] & 0x0F);
                 }
                 $color[1] = $palette[$color[1]+1];
                 return $color;
@@ -508,7 +508,7 @@ class Graphics extends Basic
                 case 'GIF':
                     $result = imagegif($data, $filename);
                     break;
-                default :
+                default:
                     $result = imagepng($data, $filename);
                     break;
             }
