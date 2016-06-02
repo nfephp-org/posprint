@@ -85,21 +85,7 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.bmp');
         $graphics = new Graphics($imagePath);
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux2.png');
-        $graphics->save($imagePath);
-    }
-
-    /**
-     * @depends testInstantiable
-     * @covers Posprint\Graphics\Graphics::convert2BMP
-     */
-    public function testConvert2BMP()
-    {
-        $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
-        $graphics = new Graphics($imagePath);
-        $result = $graphics->convert2BMP();
-        $filename = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'tux.bmp';
-        $expected = file_get_contents($filename);
-        $this->assertEquals($result, $expected);
+        $graphics->save($imagePath, 'PNG');
     }
 
     /**
@@ -110,7 +96,7 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
         $graphics = new Graphics($imagePath);
         $filename1 = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'new.bmp';
-        $graphics->convert2BMP($filename1);
+        $graphics->save($filename1, 'BMP');
         $result = file_get_contents($filename1);
         $filename2 = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'tux.bmp';
         $expected = file_get_contents($filename2);
@@ -128,7 +114,7 @@ class GraphicsTest extends \PHPUnit_Framework_TestCase
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
         $graphics = new Graphics($imagePath);
         $filename = realpath(dirname(__FILE__).'/../noexists').DIRECTORY_SEPARATOR.'new.bmp';
-        $graphics->convert2BMP($filename);
+        $graphics->save($filename, 'BMP');
     }
 
     /**
