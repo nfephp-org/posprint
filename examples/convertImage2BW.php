@@ -5,11 +5,11 @@ use Posprint\Graphics\Graphics;
 
 $graph = new Graphics();
 
-$imgPath = 'tux.png';
+$imgPath = '../images/tux.png';
 
 $graph->load($imgPath);
 
 $graph->convertBW();
 
-$imgPathBW = 'tuxBW.png';
+$imgPathBW = '../images/tuxBW.png';
 $graph->save($imgPathBW, 'PNG');

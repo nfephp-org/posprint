@@ -5,10 +5,10 @@ use Posprint\Graphics\Graphics;
 
 $graph = new Graphics();
 
-$imgPath = 'tux.bmp';
+$imgPath = '../images/tux.bmp';
 
 $graph->load($imgPath);
 
 
-$imgPathJPG = 'tux.jpg';
+$imgPathJPG = '../images/tux.jpg';
 $graph->save($imgPathJPG, 'JPG', 100);
