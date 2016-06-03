@@ -23,7 +23,7 @@
     },
     "autoload": {
         "psr-4": {
-          "Posprint\\": "src/"
+            "Posprint\\": "src/"
         }
     },
     "autoload-dev": {

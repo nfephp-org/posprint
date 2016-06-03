@@ -227,6 +227,6 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
         //get xL xH yL yH
         $imgHeader = self::dataHeader(array($img->getWidth(), $img->getHeight()), true);
         //send graphics command to printer
-        $this->buffer->write(self::GS.'v0'.chr($size).$header.$img->getRasterImage());
+        $this->buffer->write(self::GS.'v0'.chr($size).$imgHeader.$img->getRasterImage());
     }
 }
