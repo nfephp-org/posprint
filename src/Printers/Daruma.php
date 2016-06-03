@@ -19,7 +19,6 @@ use Posprint\Printers\PrinterInterface;
 
 final class Daruma extends DefaultPrinter implements PrinterInterface
 {
-    
     /**
      * List all available code pages.
      *
@@ -28,7 +27,6 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
     protected $aCodePage = array(
         'ISO8859-1' => array('conv' => 'ISO8859-1', 'table' => '0', 'desc' => 'ISO8859-1: Latin1'),
     );
-    
     /**
      * List all available region pages.
      *
@@ -56,7 +54,10 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
      * @var string
      */
     protected $codepage = 'ISO8859-1';
-    
+    /**
+     * Acceptable barcodes list
+     * @var array
+     */
     protected $barcode1Dlist = [
         'EAN13' => 1,
         'EAN8' => 2,
@@ -70,7 +71,27 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
         'MSI' => 10,
         'CODE11' => 11
     ];
-
+    /**
+     * List of supported models
+     * @var array
+     */
+    protected $modelList = [
+        'DR600',
+        'DR700'
+    ];
+    /**
+     * Selected model
+     * @var string
+     */
+    protected $printerModel = 'DR700';
+    
+    //public function __construct(); vide DefaultPrinter
+    //public function defaultCodePage(); vide DefaultPrinter
+    //public function defaultRegionPage(); vide DefaultPrinter
+    //public function defaultFont(); vide DefaultPrinter
+    //public function defaultModel(); vide DefaultPrinter
+    //public function initialize(); vide DefaultPrinter
+    
     /**
      * Select printer mode
      *
@@ -81,8 +102,18 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
         //not used for this printer
     }
     
-    //setCodePage vice DefaultPrinter
-    //setRegionPage vice DefaultPrinter
+    //public function setCodePage(); vide DefaultPrinter
+    
+    /**
+     * Set a region page.
+     * The numeric key of array $this->aRegion is the command parameter.
+     *
+     * @param string $region
+     */
+    public function setRegionPage($region = null)
+    {
+        //not used for this printer
+    }
     
     /**
      * Set a printer font
@@ -179,7 +210,7 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
      * L - left  C - center  R - rigth
      * OBS: O comando de justificação de texto desliga as configurações de margem.
      *      Apenas para V.02.20.00 ou superior.
-         *
+     *
      * @param string $align
      */
     public function setAlign($align = null)
@@ -253,26 +284,6 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
     }
     
     //public function setParagraph(); vide DefaultPrinter
-    
-    /**
-     * initialize printer
-     * Clears the data in the print buffer and resets the printer modes to
-     * the modes that were in effect when the power was turned on.
-     */
-    public function initialize()
-    {
-        $this->rotateMode = false;
-        $this->boldMode = false;
-        $this->italicMode = false;
-        $this->underlineMode = false;
-        $this->printerMode = 'normal';
-        $this->defaultCodePage();
-        $this->defaultRegionPage();
-        $this->defaultFont();
-        $this->buffer->write(self::ESC.'@');
-        $this->setFont();
-    }
-
     //public function text(); vide default
     
     /**
@@ -453,7 +464,6 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
         }
         $this->buffer->write(self::ESC . chr(129) . chr($nL) . chr($nH) . chr($w) . $ecc . $data);
     }
-
     //public function send(); vide DefultPrinter
     //public function close(); vide DefaultPrinter
 }

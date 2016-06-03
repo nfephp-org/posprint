@@ -203,7 +203,7 @@ final class Buffer implements ConnectorInterface
             if ($key !== false) {
                 $chars[$index] = $key;
             } elseif ($code < 32 || $code > 126) {
-                $chars[$index] = " " . bin2hex($byte) . "h ";
+                $chars[$index] = " (" . bin2hex($byte) . "h) ";
             }
         }
         return implode($chars);

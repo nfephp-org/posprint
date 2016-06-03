@@ -11,6 +11,8 @@ try {
 } catch (\InvalidArgumentException $e) {
     echo $e->getMessage();
     die;
-}    
+}
+
+$printer->text('Alô mundo. Cá estou eu !');
 
 echo $printer->getBuffer();

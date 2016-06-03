@@ -272,7 +272,10 @@ abstract class DefaultPrinter implements PrinterInterface
      * @var Connectors\Buffer
      */
     protected $buffer = null;
-
+    /**
+     * Acceptable barcodes list
+     * @var array
+     */
     protected $barcode1Dlist = [
         'UPC_A' => 65,
         'UPC_E' => 66,
@@ -289,7 +292,19 @@ abstract class DefaultPrinter implements PrinterInterface
         'GS1DATABARLIMIT' => 77,
         'GS1DATABAREXPAN' => 78
     ];
-    
+    /**
+     * List of supported models
+     * @var array
+     */
+    protected $modelList = [
+        'T20'
+    ];
+    /**
+     * Selected model
+     * @var string
+     */
+    protected $printerModel = 'T20';
+
     /**
      * Class constructor
      * Instantiates the data buffer.
@@ -303,7 +318,26 @@ abstract class DefaultPrinter implements PrinterInterface
         }
         $this->buffer = new Buffer();
     }
-
+    
+    /**
+     * Return default printer model
+     * @param string $model
+     * @return string|array
+     */
+    public function defaultModel($model = 'T20')
+    {
+        if (!is_null($model)) {
+            $model = strtoupper(trim($model));
+            if ($model == 'ALL') {
+                return $this->modelList;
+            }
+        }
+        if (array_key_exists($model, $this->modelList)) {
+            $this->printerModel = $model;
+        }
+        return $model;
+    }
+    
     /**
      * Returns a default region for codepage
      * if param $region is null will return actual default region from class
@@ -391,6 +425,34 @@ abstract class DefaultPrinter implements PrinterInterface
         }
         return $this->font;
     }
+
+    /**
+     * initialize printer
+     * Clears the data in the print buffer and resets the printer modes to
+     * the modes that were in effect when the power was turned on.
+     */
+    public function initialize()
+    {
+        $this->rotateMode = false;
+        $this->boldMode = false;
+        $this->italicMode = false;
+        $this->underlineMode = false;
+        $this->printerMode = 'normal';
+        $this->defaultModel();
+        $this->defaultCodePage();
+        $this->defaultRegionPage();
+        $this->defaultFont();
+        $this->buffer->write(self::ESC.'@');
+        $this->setPrintMode();
+        $this->setFont();
+        $this->setCodePage();
+        $this->setRegionPage();
+    }
+
+    /**
+     * Set the printer mode.
+     */
+    abstract public function setPrintMode($mode = null);
     
     /**
      * Set a codepage table in printer.
@@ -415,7 +477,6 @@ abstract class DefaultPrinter implements PrinterInterface
         $mode = array_keys($this->aRegion, $region, true);
         $this->buffer->write(self::ESC.'R'.chr($mode[0]));
     }
-    
     
     /**
      * Set a printer font
@@ -536,41 +597,17 @@ abstract class DefaultPrinter implements PrinterInterface
         $this->setFont('B');
     }
     
-
-    /**
-     * Set the printer mode.
-     */
-    abstract public function setPrintMode($mode = null);
-
     /**
      * Set rotate 90 degrees.
      */
     public function setRotate90()
     {
-        $mode = 0;
         $this->rotateMode = !$this->rotateMode;
+        $mode = 0;
         if ($this->rotateMode) {
             $mode = 1;
         }
         $this->buffer->write(self::ESC.'V'.chr($mode));
-    }
-    
-    /**
-     * initialize printer
-     * Clears the data in the print buffer and resets the printer modes to
-     * the modes that were in effect when the power was turned on.
-     */
-    public function initialize()
-    {
-        $this->rotateMode = false;
-        $this->boldMode = false;
-        $this->italicMode = false;
-        $this->underlineMode = false;
-        $this->printerMode = 'normal';
-        $this->defaultCodePage();
-        $this->defaultRegionPage();
-        $this->defaultFont();
-        $this->buffer->write(self::ESC.'@');
     }
     
     /**
@@ -770,6 +807,9 @@ abstract class DefaultPrinter implements PrinterInterface
             throw new \InvalidArgumentException('This barcode type is not listed.');
         }
         $id = $this->barcode1Dlist[$type];
+        if (is_null($id)) {
+            return;
+        }
         $height = self::validateInteger($height, 1, 255, 4);
         $lineWidth = self::validateInteger($lineWidth, 1, 6, 2);
         $nlen = strlen($data);
@@ -833,15 +873,6 @@ abstract class DefaultPrinter implements PrinterInterface
     }
 
     /**
-     * Close and clean buffer
-     * All data will be lost.
-     */
-    public function close()
-    {
-        $this->buffer->close();
-    }
-
-    /**
      * Return all data buffer.
      *
      * @param string $type specifies the return format
@@ -900,23 +931,6 @@ abstract class DefaultPrinter implements PrinterInterface
     }
 
     /**
-     * Checks whether the barcode data is compatible with the chosen model
-     *
-     * @param  string $type
-     * @param  int    $id
-     * @param  string $data
-     * @return string
-     */
-    protected static function validateBarcodeData($type, &$id, &$data)
-    {
-        if (!array_key_exists($type, $this->barcode1Dlist)) {
-            return false;
-        }
-        
-        return true;
-    }
-
-    /**
      * Insert a image.
      *
      * @param  string $filename Path to image file
@@ -945,6 +959,15 @@ abstract class DefaultPrinter implements PrinterInterface
         $this->sendGraphicsData('0', '2');
     }
 
+    /**
+     * Close and clean buffer
+     * All data will be lost.
+     */
+    public function close()
+    {
+        $this->buffer->close();
+    }
+    
     /**
      * Wrapper for GS ( L, to calculate and send correct data length.
      *

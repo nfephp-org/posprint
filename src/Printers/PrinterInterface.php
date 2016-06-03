@@ -21,6 +21,7 @@ namespace Posprint\Printers;
 interface PrinterInterface
 {
     //DEFAULT
+    public function defaultModel();
     public function defaultCodePage();
     public function defaultRegionPage();
     public function defaultFont();
