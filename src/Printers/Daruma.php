@@ -179,7 +179,7 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
      * L - left  C - center  R - rigth
      * OBS: O comando de justificação de texto desliga as configurações de margem.
      *      Apenas para V.02.20.00 ou superior.
-         * 
+         *
      * @param string $align
      */
     public function setAlign($align = null)
@@ -203,7 +203,7 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
     
     /**
      * Turns white/black reverse print On or Off for characters.
-     */    
+     */
     public function setReverseColors()
     {
         //not used for this printer
@@ -211,7 +211,7 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
 
     /**
      * Set rotate 90 degrees.
-     */    
+     */
     public function setRotate90()
     {
         //not used for this printer
@@ -230,7 +230,7 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
      * Padrão: x = 200 (sem uso na impressora)
      *         y = 400
      * Quando x e y são igual a zero, o valor padrão é carregado.
-     * 
+     *
      * @param int $horizontal
      * @param int $vertical
      */
@@ -299,11 +299,11 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
      *  1 Double-width   200 dpi                100 dpi
      *  2 Double-height  100 dpi                200 dpi
      *  3 Quadruple      100 dpi                100 dpi
-     * 
+     *
      * @param  string $filename Path to image file
      * @param  float  $width
      * @param  float  $height
-     * @param  int    $size     0-normal 1-Double Width 2-Double Heigth 3-Quadruple 
+     * @param  int    $size     0-normal 1-Double Width 2-Double Heigth 3-Quadruple
      * @throws RuntimeException
      */
     public function putImage($filename = '', $width = null, $height = null, $size = 0)
@@ -390,19 +390,18 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
      * @param string $data
      */
     public function barcode(
-        $data = '123456',    
+        $data = '123456',
         $type = 'CODE128',
         $height = 162,
         $lineWidth = 2,
         $txtPosition = 'none',
         $txtFont = ''
-        
     ) {
         if (! $data = Barcodes\Barcode1DAnalysis::validate($data, $type)) {
             throw new \InvalidArgumentException('Data or barcode type is incorrect.');
         }
         if (! array_key_exists($type, $this->barcode1Dlist)) {
-            throw new \InvalidArgumentException ('This barcode type is not listed.');
+            throw new \InvalidArgumentException('This barcode type is not listed.');
         }
         $id = $this->barcode1Dlist[$type];
         $height = self::validateInteger($height, 50, 200, 50);

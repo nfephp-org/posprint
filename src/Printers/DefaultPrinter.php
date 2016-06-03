@@ -496,7 +496,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * n = odd: On, n = even: Off.
      */
     public function setReverseColors()
-    {   
+    {
         $mode = 0;
         $this->reverseColors = ! $this->reverseColors;
         if ($this->reverseColors) {
@@ -729,7 +729,7 @@ abstract class DefaultPrinter implements PrinterInterface
      *  GS f n Selects font for the HRI characters.
      *           n = 0, "0": Font A,
      *           n = 1, "1": Font B
-     * 
+     *
      * @param string $data
      * @param int    $type        Default CODE128
      * @param int    $height
@@ -738,7 +738,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * @param string $txtFont
      */
     public function barcode(
-        $data = '123456',    
+        $data = '123456',
         $type = 'CODE128',
         $height = 162,
         $lineWidth = 2,
