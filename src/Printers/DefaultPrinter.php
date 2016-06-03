@@ -27,6 +27,7 @@ namespace Posprint\Printers;
 use Posprint\Connectors\ConnectorInterface;
 use Posprint\Connectors\Buffer;
 use Posprint\Graphics\Graphics;
+use Posprint\Printers\Barcodes\Barcode1DAnalysis;
 use RuntimeException;
 use InvalidArgumentException;
 
@@ -67,22 +68,6 @@ abstract class DefaultPrinter implements PrinterInterface
     const IMG_DEFAULT = 0;
     const IMG_DOUBLE_WIDTH = 1;
     const IMG_DOUBLE_HEIGHT = 2;
-
-    //1D barcode types
-    const UPC_A = 'A';
-    const UPC_E = 'B';
-    const EAN13 = 'C';
-    const EAN8 = 'D';
-    const CODE39 = 'E';
-    const ITF = 'F';
-    const CODABAR = 'G';
-    const CODE93 = 'H';
-    const CODE128 = 'I';
-    const GS1_128 = 'J';
-    const GS1_DATABAR_OMINIDIRETIONAL = 'K';
-    const GS1_DATABAR_TRUNCATED = 'L';
-    const GS1_DATABAR_LIMITED = 'M';
-    const GS1_DATABAR_EXPANDED = 'N';
 
     /**
      * List all available region pages.
@@ -242,6 +227,28 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     protected $boldMode = false;
     /**
+     * Selected italic mode.
+     *
+     * @var bool
+     */
+    protected $italicMode = false;
+    /**
+     * Selected condenced mode.
+     *
+     * @var bool
+     */
+    protected $condensedMode = false;
+    /**
+     * Selected expanded mode.
+     * @var bool
+     */
+    protected $expandedMode = false;
+    /**
+     * Seleted double higth mode.
+     * @var bool
+     */
+    protected $doubleHeigth = false;
+    /**
      * Selected reverse colors mode.
      *
      * @var bool
@@ -265,6 +272,38 @@ abstract class DefaultPrinter implements PrinterInterface
      * @var Connectors\Buffer
      */
     protected $buffer = null;
+    /**
+     * Acceptable barcodes list
+     * @var array
+     */
+    protected $barcode1Dlist = [
+        'UPC_A' => 65,
+        'UPC_E' => 66,
+        'EAN13' => 67,
+        'EAN8' => 68,
+        'CODE39' => 69,
+        'I25' => 70,
+        'CODABAR' => 71,
+        'CODE93' => 72,
+        'CODE128' => 73,
+        'GS1128' => 74,
+        'GS1DATABAROMINI' => 75,
+        'GS1DATABARTRUNC' => 76,
+        'GS1DATABARLIMIT' => 77,
+        'GS1DATABAREXPAN' => 78
+    ];
+    /**
+     * List of supported models
+     * @var array
+     */
+    protected $modelList = [
+        'T20'
+    ];
+    /**
+     * Selected model
+     * @var string
+     */
+    protected $printerModel = 'T20';
 
     /**
      * Class constructor
@@ -279,7 +318,26 @@ abstract class DefaultPrinter implements PrinterInterface
         }
         $this->buffer = new Buffer();
     }
-
+    
+    /**
+     * Return default printer model
+     * @param string $model
+     * @return string|array
+     */
+    public function defaultModel($model = 'T20')
+    {
+        if (!is_null($model)) {
+            $model = strtoupper(trim($model));
+            if ($model == 'ALL') {
+                return $this->modelList;
+            }
+        }
+        if (array_key_exists($model, $this->modelList)) {
+            $this->printerModel = $model;
+        }
+        return $model;
+    }
+    
     /**
      * Returns a default region for codepage
      * if param $region is null will return actual default region from class
@@ -332,30 +390,6 @@ abstract class DefaultPrinter implements PrinterInterface
     }
 
     /**
-     * Set a codepage table in printer.
-     *
-     * @param string $codepage
-     */
-    public function setCodePage($codepage = null)
-    {
-        $codepage = $this->defaultCodePage($codepage);
-        $this->buffer->write(self::ESC.'t'.chr($this->charsetTableNum));
-    }
-
-    /**
-     * Set a region page.
-     * The numeric key of array $this->aRegion is the command parameter.
-     *
-     * @param string $region
-     */
-    public function setRegionPage($region = null)
-    {
-        $region = $this->defaultRegionPage($region);
-        $mode = array_keys($this->aRegion, $region, true);
-        $this->buffer->write(self::ESC.'R'.chr($mode[0]));
-    }
-    
-    /**
      * Returns the default printer font
      * A - Font A (12 x 24)
      * B - Font B (9 x 17)
@@ -391,6 +425,58 @@ abstract class DefaultPrinter implements PrinterInterface
         }
         return $this->font;
     }
+
+    /**
+     * initialize printer
+     * Clears the data in the print buffer and resets the printer modes to
+     * the modes that were in effect when the power was turned on.
+     */
+    public function initialize()
+    {
+        $this->rotateMode = false;
+        $this->boldMode = false;
+        $this->italicMode = false;
+        $this->underlineMode = false;
+        $this->printerMode = 'normal';
+        $this->defaultModel();
+        $this->defaultCodePage();
+        $this->defaultRegionPage();
+        $this->defaultFont();
+        $this->buffer->write(self::ESC.'@');
+        $this->setPrintMode();
+        $this->setFont();
+        $this->setCodePage();
+        $this->setRegionPage();
+    }
+
+    /**
+     * Set the printer mode.
+     */
+    abstract public function setPrintMode($mode = null);
+    
+    /**
+     * Set a codepage table in printer.
+     *
+     * @param string $codepage
+     */
+    public function setCodePage($codepage = null)
+    {
+        $codepage = $this->defaultCodePage($codepage);
+        $this->buffer->write(self::ESC.'t'.chr($this->charsetTableNum));
+    }
+
+    /**
+     * Set a region page.
+     * The numeric key of array $this->aRegion is the command parameter.
+     *
+     * @param string $region
+     */
+    public function setRegionPage($region = null)
+    {
+        $region = $this->defaultRegionPage($region);
+        $mode = array_keys($this->aRegion, $region, true);
+        $this->buffer->write(self::ESC.'R'.chr($mode[0]));
+    }
     
     /**
      * Set a printer font
@@ -410,13 +496,11 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function setBold()
     {
+        $mode = 1;
         if ($this->boldMode) {
-            $this->boldMode = false;
             $mode = 0;
-        } else {
-            $this->boldMode = true;
-            $mode = 1;
         }
+        $this->boldMode = ! $this->boldMode;
         $this->buffer->write(self::ESC . 'E' . chr($mode));
     }
 
@@ -425,13 +509,11 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function setUnderlined()
     {
+        $mode = 1;
         if ($this->underlineMode) {
-            $this->underlineMode = false;
             $mode = 0;
-        } else {
-            $this->underlineMode = true;
-            $mode = 1;
         }
+        $this->underlineMode = ! $this->underlineMode;
         $this->buffer->write(self::ESC . '-' . chr($mode));
     }
     
@@ -442,7 +524,7 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function setItalic()
     {
-        return true;
+        //dont exists in this printer
     }
     
     /**
@@ -476,11 +558,9 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     public function setReverseColors()
     {
+        $mode = 0;
+        $this->reverseColors = ! $this->reverseColors;
         if ($this->reverseColors) {
-            $this->reverseColors = false;
-            $mode = 0;
-        } else {
-            $this->reverseColors = true;
             $mode = 1;
         }
         $this->buffer->write(self::GS.'B'.chr($mode));
@@ -517,41 +597,17 @@ abstract class DefaultPrinter implements PrinterInterface
         $this->setFont('B');
     }
     
-
-    /**
-     * Set the printer mode.
-     */
-    abstract public function setPrintMode($mode = null);
-
     /**
      * Set rotate 90 degrees.
      */
     public function setRotate90()
     {
+        $this->rotateMode = !$this->rotateMode;
+        $mode = 0;
         if ($this->rotateMode) {
-            $this->rotateMode = false;
-            $mode = 0;
-        } else {
-            $this->rotateMode = true;
             $mode = 1;
         }
         $this->buffer->write(self::ESC.'V'.chr($mode));
-    }
-    
-    /**
-     * initialize printer
-     * Clears the data in the print buffer and resets the printer modes to
-     * the modes that were in effect when the power was turned on.
-     */
-    public function initialize()
-    {
-        $this->buffer->write(self::ESC.'@');
-        $this->rotateMode = false;
-        $this->defaultCodePage('CP470');
-        $this->underlineMode = false;
-        $this->boldMode = false;
-        $this->printerMode = 'normal';
-        $this->font = 'A';
     }
     
     /**
@@ -623,7 +679,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * Prints data and feeds paper n lines
      * ESC d n Prints data and feeds paper n lines.
      *
-     * @param type $lines
+     * @param integer $lines
      */
     public function lineFeed($lines = 1)
     {
@@ -711,20 +767,20 @@ abstract class DefaultPrinter implements PrinterInterface
      *           n = 0, "0": Font A,
      *           n = 1, "1": Font B
      *
+     * @param string $data
      * @param int    $type        Default CODE128
      * @param int    $height
      * @param int    $lineWidth
      * @param string $txtPosition
      * @param string $txtFont
-     * @param string $data
      */
     public function barcode(
-        $type = self::CODE128,
+        $data = '123456',
+        $type = 'CODE128',
         $height = 162,
         $lineWidth = 2,
         $txtPosition = 'none',
-        $txtFont = '',
-        $data = '123456'
+        $txtFont = ''
     ) {
         switch ($txtPosition) {
             case 'Above':
@@ -744,9 +800,15 @@ abstract class DefaultPrinter implements PrinterInterface
         if ($txtFont === 'B') {
             $font = 1;
         }
-        $id = 0;
-        if (self::validateBarcodeData($type, $id, $data) === false) {
-            return false;
+        if (! $data = Barcodes\Barcode1DAnalysis::validate($data, $type)) {
+            throw new \InvalidArgumentException('Data or barcode type is incorrect.');
+        }
+        if (! array_key_exists($type, $this->barcode1Dlist)) {
+            throw new \InvalidArgumentException('This barcode type is not listed.');
+        }
+        $id = $this->barcode1Dlist[$type];
+        if (is_null($id)) {
+            return;
         }
         $height = self::validateInteger($height, 1, 255, 4);
         $lineWidth = self::validateInteger($lineWidth, 1, 6, 2);
@@ -811,15 +873,6 @@ abstract class DefaultPrinter implements PrinterInterface
     }
 
     /**
-     * Close and clean buffer
-     * All data will be lost.
-     */
-    public function close()
-    {
-        $this->buffer->close();
-    }
-
-    /**
      * Return all data buffer.
      *
      * @param string $type specifies the return format
@@ -878,47 +931,6 @@ abstract class DefaultPrinter implements PrinterInterface
     }
 
     /**
-     * Checks whether the barcode data is compatible with the chosen model
-     *
-     * @param  string $type
-     * @param  int    $id
-     * @param  string $data
-     * @return string
-     */
-    protected static function validateBarcodeData($type, &$id, &$data)
-    {
-        $aTypes = [
-            'A' => ['id' => 65, 'desc' => 'UPC-A', 'len' => '11;12', 'type' => 'N'],
-            'B' => ['id' => 66, 'desc' => 'UPC-E', 'len' => '6;7;8;11;12', 'type' => 'N'],
-            'C' => ['id' => 67, 'desc' => 'EAN13', 'len' => '12;13', 'type' => 'N'],
-            'D' => ['id' => 68, 'desc' => 'EAN8', 'len' => '7;8', 'type' => 'N'],
-            'E' => ['id' => 69, 'desc' => 'CODE39', 'len' => '1-', 'type' => 'C'],
-            'F' => ['id' => 70, 'desc' => 'ITF (i25)', 'len' => '1-even ', 'type' => 'N'],
-            'G' => ['id' => 71, 'desc' => 'CODABAR', 'len' => '2-more', 'type' => 'C'],
-            'H' => ['id' => 72, 'desc' => 'CODE93', 'len' => '1-255', 'type' => 'C'],
-            'I' => ['id' => 73, 'desc' => 'CODE128', 'len' => '2-255', 'type' => 'C'],
-            'J' => ['id' => 74, 'desc' => 'GS1-128', 'len' => '2-255', 'type' => 'C'],
-            'K' => ['id' => 75, 'desc' => 'GS1 DataBar Omnidirectional', 'len' => '13', 'type' => 'N'],
-            'L' => ['id' => 76, 'desc' => 'GS1 DataBar Truncated', 'len' => '13', 'type' => 'N'],
-            'M' => ['id' => 77, 'desc' => 'GS1 DataBar Limited', 'len' => '13', 'type' => 'N'],
-            'N' => ['id' => 78, 'desc' => 'GS1 DataBar Expanded', 'len' => '2-255', 'type' => 'C'],
-        ];
-        if (!array_key_exists($type, $aTypes)) {
-            return false;
-        }
-        $bar = $aTypes[$type];
-        $id = $bar['id'];
-        $len = $bar['len'];
-        $dtype = $bar['type'];
-        //check data type if N only numeric is acceptable and all others chars must be removed
-        //and if then field stay is empty, this is must be completed to an acceptable standard value
-        
-        //check for length of data, if the field length is different from the
-        //acceptable values, it must be adjusted by removing or adding characters
-        return true;
-    }
-
-    /**
      * Insert a image.
      *
      * @param  string $filename Path to image file
@@ -947,6 +959,15 @@ abstract class DefaultPrinter implements PrinterInterface
         $this->sendGraphicsData('0', '2');
     }
 
+    /**
+     * Close and clean buffer
+     * All data will be lost.
+     */
+    public function close()
+    {
+        $this->buffer->close();
+    }
+    
     /**
      * Wrapper for GS ( L, to calculate and send correct data length.
      *

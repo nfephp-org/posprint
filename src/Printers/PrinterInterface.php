@@ -20,21 +20,23 @@ namespace Posprint\Printers;
 
 interface PrinterInterface
 {
-    //SET UP
-    public function defaultRegionPage();
+    //DEFAULT
+    public function defaultModel();
     public function defaultCodePage();
+    public function defaultRegionPage();
+    public function defaultFont();
+    //SET UP
     public function setCodePage();
     public function setRegionPage();
-    public function defaultFont();
     public function setFont();
     public function setBold();
     public function setUnderlined();
     public function setItalic();
+    public function setCondensed();
+    public function setExpanded();
     public function setAlign();
     public function setReverseColors();
     public function setRotate90();
-    public function setExpanded();
-    public function setCondensed();
     public function setSpacing();
     public function setCharSpacing();
     public function setParagraph();
@@ -42,13 +44,13 @@ interface PrinterInterface
     //ACTIONS
     public function initialize();
     public function text();
-    public function barcode();
-    public function barcodeQRCode();
     public function lineFeed();
     public function dotFeed();
-    public function pulse();
     public function putImage();
+    public function pulse();
     public function cut();
+    public function barcode();
+    public function barcodeQRCode();
     public function send();
     public function close();
 }

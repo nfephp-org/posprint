@@ -1,6 +1,6 @@
 <?php
 
-namespace Posprint\Printers;
+namespace Posprint\Printers\Bematech;
 
 /**
  * Bematech class for POS printer
@@ -17,9 +17,8 @@ namespace Posprint\Printers;
 use Posprint\Printers\DefaultPrinter;
 use Posprint\Printers\PrinterInterface;
 
-final class Bematech extends DefaultPrinter implements PrinterInterface
+class Bematech extends DefaultPrinter implements PrinterInterface
 {
-    
     
     /**
      * List all available code pages.
@@ -35,80 +34,411 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
         'CP866' => array('conv' => '866', 'table' => '6', 'desc' => 'PC866: Cyrillic'),
         'UTF8'  => array('conv' => 'UTF8', 'table' => '8', 'desc' => 'UTF-8: Unicode')
     );
-    
+    /**
+     * List all available region pages.
+     *
+     * @var array
+     */
+    protected $aRegion = array(
+        'LATIN'
+    );
+    /**
+     * Seleted printer mode.
+     *
+     * @var string
+     */
+    protected $printerMode = 'ESCBEMA';
     /**
      * List all avaiable fonts
      *
      * @var array
      */
     protected $aFont = array(0 => 'C', 1 => 'D');
-    
-    
-    public function __construct(ConnectorInterface $conn = null)
-    {
-        parent::__construct($conn);
-        
-    }
-
     /**
-     * initialize printer
-     * Clears the data in the print buffer and resets the printer modes to
-     * the modes that were in effect when the power was turned on.
+     * Selected internal font.
+     *
+     * @var string
      */
-    public function initialize()
-    {
-        parent::initialize();
-        $this->setCodePage('CP850');
-        $this->setPrintMode('ESCPOS');
-        $this->setRegionPage('LATIN');
-        //clear Emphasized, Double height, Double width and select font C
-        $this->defaultFont('C');
-        $this->buffer->write(self::ESC . '!' . chr(1));
-    }
+    protected $font = 'C';
+    /**
+     * Seleted code page
+     * Defined in printer class.
+     *
+     * @var string
+     */
+    protected $codepage = 'CP850';
+    /**
+     * Acceptable barcodes list
+     * @var array
+     */
+    protected $barcode1Dlist = [
+        'UPC_A' => 65,
+        'UPC_E' => 66,
+        'EAN13' => 67,
+        'EAN8' => 68,
+        'CODE39' => 69,
+        'I25' => 70,
+        'CODABAR' => 71,
+        'CODE93' => 72,
+        'CODE128' => 73,
+        'ISBN' => null,
+        'MSI' => null
+    ];
+    /**
+     * List of supported models
+     * @var array
+     */
+    protected $modelList = [
+        '4200TH'
+    ];
+    /**
+     * Selected model
+     * @var string
+     */
+    protected $printerModel = '4200TH';
+
+    //public function __construct(); vide DefaultPrinter
+    //public function defaultCodePage(); vide DefaultPrinter
+    //public function defaultRegionPage(); vide DefaultPrinter
+    //public function defaultFont(); vide DefaultPrinter
+    //public function defaultModel(); vide DefaultPrinter
+    //public function initialize(); vide DefaultPrinter
     
     /**
-     * Select printer mode and code page to 850
+     * Select printer mode
      *
      * @param string $mode
      */
-    public function setPrintMode($mode = 'ESCPOS')
+    public function setPrintMode($mode = 'ESCBEMA')
     {
-        //default ESC/POS
-        $this->printerMode = 'ESCPOS';
-        if ($mode == 'ESCBEMA') {
-            $this->printerMode = 'ESCBEMA';
+        if ($mode != $this->printerMode) {
+            switch ($mode) {
+                case 'ESCBEMA':
+                    $this->printerMode = 'ESCBEMA';
+                    break;
+                default:
+                    $this->printerMode = 'ESCPOS';
+            }
         }
-        //select mode ESCPOS or ESCBEMA
-        $this->buffer->write(self::GS . chr(249) . chr(32) . $nmode);
+        $nmod = 0;
+        if ($this->printerMode == 'ESCPOS') {
+            $nmod = 1;
+        }
+        $this->buffer->write(self::GS . chr(249) . chr(53) . $nmode);
     }
     
     /**
-     * Set expanded mode.
+     * Set a codepage table in printer.
      *
-     * @param int $size qualquer valor ativa e null desativa
+     * @param string $codepage
      */
-    public function setExpanded($size = null)
+    public function setCodePage($codepage = null)
     {
-        $mode = array_keys($this->aFont, $this->font, true);
-        if ($this->boldMode) {
-                $mode += 8;
+        if ($this->printerMode == 'ESCPOS') {
+            parent::setCodePage($codepage);
+            return;
         }
-        if (! isnull($size)) {
-            $mode = array_keys($this->aFont, $this->font, true);
-            //double width and double height
-            $mode += (16+32);
-        }
-        $this->buffer->write(self::ESC . '!' . $mode);
+        $codepage = $this->defaultCodePage($codepage);
+        $this->buffer->write(self::GS . chr(249) . chr(55) . chr($this->charsetTableNum));
     }
     
     /**
-     * Set condensed mode.
-     * Will change Font do D
+     * Set a region page.
+     * The numeric key of array $this->aRegion is the command parameter.
+     *
+     * @param string $region
+     */
+    public function setRegionPage($region = null)
+    {
+        //not used for this printer
+    }
+    
+    /**
+     * Set a printer font
+     * If send a valid font name will set the printer otherelse a default font is selected
+     *
+     * @param string $font
+     */
+    public function setFont($font = null)
+    {
+        if ($this->printerMode == 'ESCPOS') {
+            parent::setFont($codepage);
+        }
+    }
+
+    /**
+     * Set emphasys mode on or off.
+     */
+    public function setBold()
+    {
+        if ($this->printerMode == 'ESCPOS') {
+            parent::setBold();
+            return;
+        }
+        $this->boldMode = ! $this->boldMode;
+        if ($this->boldMode) {
+            $this->buffer->write(self::ESC . 'E');
+        } else {
+            $this->buffer->write(self::ESC . 'F');
+        }
+    }
+
+    /**
+     * Set Italic mode
+     */
+    public function setItalic()
+    {
+        $this->italicMode = ! $this->italicMode;
+        if ($this->printerMode == 'ESCPOS') {
+            return;
+        }
+        if ($this->italicMode) {
+            $this->buffer->write(self::ESC . '4');
+        } else {
+            $this->buffer->write(self::ESC . '5');
+        }
+    }
+
+    //public function setUnderlined(); vide DefaultPrinter
+
+    /**
+     * Set or unset condensed mode.
      */
     public function setCondensed()
     {
-        $this->setExpanded();
-        $this->setFont('D');
+        if ($this->printerMode == 'ESCPOS') {
+            return;
+        }
+        $this->condensedMode = ! $this->condensedMode;
+        if ($this->condensedMode) {
+            $this->buffer->write(self::SI);
+        } else {
+            $this->buffer->write(self::DC2);
+        }
+    }
+    
+    /**
+     * Set or unset expanded mode.
+     *
+     * @param integer $size not used
+     */
+    public function setExpanded($size = null)
+    {
+        $this->expandedMode = ! $this->expandedMode;
+        if ($this->printerMode == 'ESCPOS') {
+            return;
+        }
+        $n = 0;
+        if ($this->expandedMode) {
+            $n = 1;
+        }
+        $this->buffer->write(self::ESC . 'W' . chr($n));
+    }
+    
+    //public function setAlign(); vide DefaultPrinter
+    
+    /**
+     * Turns white/black reverse print On or Off for characters.
+     */
+    public function setReverseColors()
+    {
+        if ($this->printerMode == 'ESCPOS') {
+            parent::reverseColors();
+        }
+    }
+    
+    /**
+     * Set rotate 90 degrees.
+     */
+    public function setRotate90()
+    {
+        if ($this->printerMode == 'ESCPOS') {
+            parent::setRotate90();
+        }
+    }
+    
+    /**
+     * Set horizontal and vertical motion units
+     * $horizontal => character spacing 1/x"
+     * $vertical => line spacing 1/y".
+     */
+    public function setSpacing($horizontal = 30, $vertical = 30)
+    {
+        //not used for this printer
+    }
+    
+    /**
+     * Set right-side character spacing
+     * 0 ≤ n ≤ 255 => 1/x".
+     *
+     * @param int $value
+     */
+    public function setCharSpacing($value = 3)
+    {
+        //not used for this printer
+    }
+    
+    //public function setParagraph(); vide DefaultPrinter
+    //public function text(); vide default
+
+    /**
+     * Prints data and feeds paper n lines
+     * ESC d n Prints data and feeds paper n lines.
+     *
+     * @param integer $lines
+     */
+    public function lineFeed($lines = 1)
+    {
+        if ($this->printerMode == 'ESCPOS') {
+            parent::lineFeed($lines);
+            return;
+        }
+        $lines = self::validateInteger($lines, 0, 255, 1);
+        for ($lin = 1; $lin <= $lines; $lin++) {
+            $this->buffer->write(self::LF);
+        }
+    }
+    
+    //public function dotFeed(); vide default
+
+    /**
+     * Put a image
+     * GS v0 m xL xH yL yH d1 ... dk
+     *
+     * @param string $filename
+     * @param intger $width
+     * @param integer $height
+     * @param integer $size resolution relation
+     * @throws RuntimeException
+     */
+    public function putImage($filename = '', $width = null, $height = null, $size = 0)
+    {
+        try {
+            $img = new Graphics($filename, $width, $height);
+        } catch (RuntimeException $e) {
+            throw new RuntimeException($e->getMessage());
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException($e->getMessage());
+        }
+        $size = self::validateInteger($size, 0, 3, 0);
+        //get xL xH yL yH
+        $imgHeader = self::dataHeader(array($img->getWidth(), $img->getHeight()), true);
+        //send graphics command to printer
+        $this->buffer->write(self::GS.'v0'.chr($size).$imgHeader.$img->getRasterImage());
+    }
+
+    /**
+     * Generate a pulse, for opening a cash drawer if one is connected.
+     *
+     *
+     * @param int $pin    0 or 1, for pin 2 or pin 5 kick-out connector respectively.
+     * @param int $on_ms  pulse ON time, in milliseconds.
+     * @param int $off_ms pulse OFF time, in milliseconds.
+     */
+    public function pulse($pin = 0, $on_ms = 120, $off_ms = 240)
+    {
+        if ($this->printerMode == 'ESCPOS') {
+            parent::pulse($pin, $on_ms, $off_ms);
+            return;
+        }
+        $on_ms = self::validateInteger($on_ms, 50, 250, 50);
+        if ($pin == 0 || $pin == 1) {
+            $this->buffer->write(self::ESC.'v'. chr($on_ms));
+        } else {
+            $this->buffer->write(self::ESC. chr(128) . chr($on_ms));
+        }
+    }
+
+    /**
+     * Cut the paper.
+     *
+     * @param int $mode  FULL or PARTIAL. If not specified, FULL will be used.
+     * @param int $lines Number of lines to feed after cut
+     */
+    public function cut($mode = 'PARTIAL', $lines = 3)
+    {
+        if ($this->printerMode == 'ESCPOS') {
+            parent::cut($mode, $lines);
+        }
+        $lines = self::validateInteger($lines, 1, 10, 3);
+        if ($mode == 'FULL') {
+            $this->buffer->write(self::ESC.'w');
+        } else {
+            $this->buffer->write(self::ESC.'m');
+        }
+        $this->lineFeed($lines);
+    }
+
+    /**
+     * Implements barcodes 1D
+     *
+     * @param int    $type        Default CODE128
+     * @param int    $height
+     * @param int    $lineWidth
+     * @param string $txtPosition
+     * @param string $txtFont
+     * @param string $data
+     */
+    public function barcode(
+        $data = '123456',
+        $type = 'CODE128',
+        $height = 162,
+        $lineWidth = 2,
+        $txtPosition = 'none',
+        $txtFont = ''
+    ) {
+        if ($this->printerMode == 'ESCPOS') {
+            parent::barcode($data, $type, $height, $lineWidth, $txtPosition, $txtFont);
+            return;
+        }
+        if (! $data = Barcodes\Barcode1DAnalysis::validate($data, $type)) {
+            throw new \InvalidArgumentException('Data or barcode type is incorrect.');
+        }
+        if (! array_key_exists($type, $this->barcode1Dlist)) {
+            throw new \InvalidArgumentException('This barcode type is not listed.');
+        }
+        $id = $this->barcode1Dlist[$type];
+        $height = self::validateInteger($height, 50, 200, 50);
+        $lineWidth = self::validateInteger($lineWidth, 2, 5, 2);
+        $n4 = 0;
+        if ($txtPosition != 'none') {
+            $n4 = 1;
+        }
+        switch ($type) {
+            case 'UPC_A':
+                //$this->buffer->write(self::ESC);
+                break;
+            case 'UPC_E':
+                //$this->buffer->write(self::ESC);
+                break;
+            case 'EAN13':
+                //$this->buffer->write(self::ESC);
+                break;
+            case 'EAN8':
+                //$this->buffer->write(self::ESC);
+                break;
+            case 'CODE39':
+                //$this->buffer->write(self::ESC);
+                break;
+            case 'I25':
+                //$this->buffer->write(self::ESC);
+                break;
+            case 'CODABAR':
+                //$this->buffer->write(self::ESC);
+                break;
+            case 'CODE93':
+                //$this->buffer->write(self::ESC);
+                break;
+            case 'CODE128':
+                //$this->buffer->write(self::ESC);
+                break;
+            case 'ISBN':
+                //$this->buffer->write(self::ESC);
+                break;
+            case 'MSI':
+                //$this->buffer->write(self::ESC);
+                break;
+        }
     }
     
     /**
@@ -203,30 +533,5 @@ final class Bematech extends DefaultPrinter implements PrinterInterface
         $n6 = intval($length / 256);
         $n5 = ($length % 256);
         $this->buffer->write(self::GS."kQ" . chr($n1) . chr($n2) . chr($n3) . chr($n4) . chr($n5) . chr($n6) . $data);
-    }
-    
-    /**
-     * GS v0 m xL xH yL yH d1 ... dk
-     *
-     * @param string $filename
-     * @param intger $width
-     * @param integer $height
-     * @param integer $size resolution relation
-     * @throws RuntimeException
-     */
-    public function putImage($filename = '', $width = null, $height = null, $size = 0)
-    {
-        try {
-            $img = new Graphics($filename, $width, $height);
-        } catch (RuntimeException $e) {
-            throw new RuntimeException($e->getMessage());
-        } catch (InvalidArgumentException $e) {
-            throw new RuntimeException($e->getMessage());
-        }
-        $size = self::validateInteger($size, 0, 3, 0);
-        //get xL xH yL yH
-        $imgHeader = self::dataHeader(array($img->getWidth(), $img->getHeight()), true);
-        //send graphics command to printer
-        $this->buffer->write(self::GS.'v0'.chr($size).$header.$img->getRasterImage());
     }
 }
