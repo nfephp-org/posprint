@@ -24,6 +24,7 @@ namespace Posprint\Printers;
  * @link       http://github.com/nfephp-org/posprint for the canonical source repository
  */
 
+use Posprint\Printers\PrinterInterface;
 use Posprint\Connectors\ConnectorInterface;
 use Posprint\Connectors\Buffer;
 use Posprint\Graphics\Graphics;
@@ -835,8 +836,11 @@ abstract class DefaultPrinter implements PrinterInterface
      * @param integer $colunms
      * @return boolean
      */
-    public function barcodePDF417($data, $ecc = 5, $pheight = 2, $pwidth = 2, $colunms = 3)
+    public function barcodePDF417($data = '', $ecc = 5, $pheight = 2, $pwidth = 2, $colunms = 3)
     {
+        if (empty($data)) {
+            return false;
+        }
         $ecc = self::validateInteger($ecc, 0, 8, 5);
         $pheight = self::validateInteger($pheight, 1, 8, 2);
         $n = $ecc + 48;
@@ -877,14 +881,14 @@ abstract class DefaultPrinter implements PrinterInterface
         //29  40 107  3    0   48  81 m
         $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(48).chr(81).chr(0));
     }
-    
+  
     /**
-     * Imprime o QR Code
+     * Prints QRCode
      *
-     * @param string $data   Dados a serem inseridos no QRCode
-     * @param string $level  Nivel de correção L,M,Q ou H
-     * @param int    $modelo modelo de QRCode 1, 2 ou 0 Micro
-     * @param int    $wmod   largura da barra 3 ~ 16
+     * @param string $data   barcode data
+     * @param string $level  correction level L,M,Q ou H
+     * @param int    $modelo QRCode model 1, 2 ou 0 Micro
+     * @param int    $wmod   width bar 3 ~ 16
      */
     public function barcodeQRCode($data = '', $level = 'L', $modelo = 2, $wmod = 4)
     {

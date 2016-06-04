@@ -20,7 +20,7 @@ namespace Posprint\Printers;
 
 interface PrinterInterface
 {
-    //DEFAULT
+    //DEFAULT ENVIRONMENT
     public function defaultModel();
     public function defaultCodePage();
     public function defaultRegionPage();
