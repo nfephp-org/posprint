@@ -91,7 +91,10 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
     //public function defaultFont(); vide DefaultPrinter
     //public function defaultModel(); vide DefaultPrinter
     //public function initialize(); vide DefaultPrinter
-    
+    //
+    //          0000000000111111111122222222223333333333
+    //          0123456789012345678901234567890123456789
+    //[ESC] 228 0XXXX5678X0XXX45XXXXXXXXXXXXXXXXX3456XX9
     /**
      * Select printer mode
      *
@@ -422,6 +425,50 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
             $n4 = 1;
         }
         $this->buffer->write(self::ESC . 'b' . chr($id) . chr($lineWidth) . chr($height) . chr($n4) . $data);
+    }
+
+    /**
+     * Print PDF 417 2D barcode
+     * @param string $data
+     * @param integer $ecc
+     * @param integer $pheight
+     * @param integer $pwidth
+     * @param integer $colunms
+     * @return boolean
+     */
+    public function barcodePDF417($data, $ecc = 5, $pheight = 2, $pwidth = 2, $colunms = 3)
+    {
+        $length = strlen($data)+6;
+        if ($length > 906) {
+            return false;
+        }
+        $pheight = self::validateInteger($pheight, 1, 8, 2);
+        $pwidth = self::validateInteger($pwidth, 1, 8, 2);
+        $pH = intval($length / 256);
+        $pL = ($length % 256);
+        //[ESC] <128> <–Size><+Size> <–Columns><+Columns> <–Height><+Height> <–Width><+Width>
+        //<D001> <D002> . . . <Dnnn>
+        //Size inclui os demais 6 bytes de controle
+        //Size ≤ 906
+        //nnn = Size – 6
+        $cH = intval($colunms / 256);
+        $cL = ($colunms % 256);
+        $hH = intval($pheight / 256);
+        $hL = ($pheight % 256);
+        $wH = intval($pwidth / 256);
+        $wL = ($pwidth % 256);
+        
+        $this->buffer->write(self::ESC
+            . chr(128)
+            . chr($pL)
+            . chr($pH)
+            . chr($cL)
+            . chr($cH)
+            . chr($hL)
+            . chr($hH)
+            . chr($wL)
+            . chr($wH)
+            . $data);
     }
     
     /**

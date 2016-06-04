@@ -1,6 +1,6 @@
 <?php
 
-namespace Posprint\Printers\Bematech;
+namespace Posprint\Printers;
 
 /**
  * Bematech class for POS printer
@@ -397,6 +397,7 @@ class Bematech extends DefaultPrinter implements PrinterInterface
         if (! array_key_exists($type, $this->barcode1Dlist)) {
             throw new \InvalidArgumentException('This barcode type is not listed.');
         }
+        $n = strlen($data);
         $id = $this->barcode1Dlist[$type];
         $height = self::validateInteger($height, 50, 200, 50);
         $lineWidth = self::validateInteger($lineWidth, 2, 5, 2);
@@ -406,40 +407,75 @@ class Bematech extends DefaultPrinter implements PrinterInterface
         }
         switch ($type) {
             case 'UPC_A':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'kA' .self::VT . $data);
                 break;
             case 'UPC_E':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'kB' .self::ACK . $data);
                 break;
             case 'EAN13':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'kC' .self::FF . $data);
                 break;
             case 'EAN8':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'kD' .self::BEL . $data);
                 break;
             case 'CODE39':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'kE' . char($n) . $data);
                 break;
             case 'I25':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'kF' . char($n) . $data);
                 break;
             case 'CODABAR':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'kG' . char($n) . $data);
                 break;
             case 'CODE93':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'kH' . char($n) . $data);
                 break;
             case 'CODE128':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'kI' . char($n) . $data);
                 break;
             case 'ISBN':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'k' . self::NAK . $data . self::NUL);
                 break;
             case 'MSI':
-                //$this->buffer->write(self::ESC);
+                $this->buffer->write(self::GS . 'k' . self::SYN . $data . self::NUL);
                 break;
         }
     }
+    
+    /**
+     * Print PDF 417 2D barcode
+     * @param string $data
+     * @param integer $ecc
+     * @param integer $pheight
+     * @param integer $pwidth
+     * @param integer $colunms
+     * @return boolean
+     */
+    public function barcodePDF417($data, $ecc = 5, $pheight = 2, $pwidth = 2, $colunms = 3)
+    {
+        if ($this->printerMode == 'ESCPOS') {
+            parent::barcodePDF417($data, $ecc, $pheight, $pwidth, $colunms);
+        }
+        $ecc = self::validateInteger($ecc, 0, 8, 5);
+        $pheight = self::validateInteger($pheight, 1, 8, 2);
+        $pwidth = self::validateInteger($pwidth, 1, 4, 2);
+        $length = strlen($data);
+        $n6 = intval($length / 256);
+        $n5 = ($length % 256);
+        $this->buffer->write(
+            self::GS
+            . 'k'
+            . chr(128)
+            . chr($ecc)
+            . chr($pheight)
+            . chr($pwidth)
+            . chr(0)
+            . chr($n5)
+            . chr($n6)
+            . $data
+        );
+    }
+
     
     /**
      * Imprime o QR Code
