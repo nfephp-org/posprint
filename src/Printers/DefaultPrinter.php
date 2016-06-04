@@ -56,6 +56,7 @@ abstract class DefaultPrinter implements PrinterInterface
     const SI = "\x0f"; //Seleciona modo condensado
     const EM = "\x19"; //Avança 4 linhas
     const DEL = "\x7f"; //Cancela último caracter
+    const NAK = "\x15"; //
     const SYN = "\x16"; //Sincronismo
     const NOTRANS = false; //not translate characters codepage
     const TRANS = true; //perform a character convertion to codepage
@@ -823,6 +824,58 @@ abstract class DefaultPrinter implements PrinterInterface
         $this->buffer->write(self::GS.'f'.chr($font));
         //Print barcode
         $this->buffer->write(self::GS.'k'.chr($id).chr($nlen).$data);
+    }
+    
+    /**
+     * Print PDF 417 2D barcode
+     * @param string $data
+     * @param integer $ecc
+     * @param integer $pheight
+     * @param integer $pwidth
+     * @param integer $colunms
+     * @return boolean
+     */
+    public function barcodePDF417($data, $ecc = 5, $pheight = 2, $pwidth = 2, $colunms = 3)
+    {
+        $ecc = self::validateInteger($ecc, 0, 8, 5);
+        $pheight = self::validateInteger($pheight, 1, 8, 2);
+        $n = $ecc + 48;
+        $length = strlen($data);
+        $pH = intval($length / 256);
+        $pL = ($length % 256);
+        //Set the number of columns in the data region
+        //GS (   k  pL pH cn fn n
+        //29 40 107 3   0 48 65 n
+        $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(48).chr(65).chr(0));
+        //Set the number of rows
+        //GS  (      k   pL  pH  cn fn n
+        //29  40    107  3    0  48 66 n
+        $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(48).chr(66).chr(0));
+        //Set the width of the module
+        //GS  (   k   pL   pH  cn  fn n
+        //29  40 107  3    0   48  67 n
+        $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(48).chr(67).chr(0));
+        //Set the row height
+        //GS  (    k   pL  pH  cn  fn n
+        //29  40  107  3   0   48  68 n
+        //pheight 3 or 5 time pwidth
+        $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(48).chr(68).chr($pheight));
+        //Set the error correction level
+        //GS  (    k    pL  pH     cn fn m n
+        //29  40  107    4   0     48 69 m n n = 48 - 56
+        $this->buffer->write(self::GS."(k".chr(4).chr(0).chr(48).chr(69).chr(58).chr($n));
+        //Select the options
+        //GS  (    k    pL   pH   cn   fn   n
+        //29  40  107   3     0   48   70   n
+        $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(48).chr(70).chr(0));
+        //Store the data in the symbol storage area
+        //GS  (   k   pL  pH   cn  fn  m   d1...dk
+        //29  40 107  pL  pH   48  80  48  d1...dk
+        $this->buffer->write(self::GS."(k".chr($pL).chr($pH).chr(48).chr(80).chr(48).$data);
+        //Print the symbol data in the symbol storage area
+        //GS  (   k   pL  pH  cn  fn m
+        //29  40 107  3    0   48  81 m
+        $this->buffer->write(self::GS."(k".chr(3).chr(0).chr(48).chr(81).chr(0));
     }
     
     /**

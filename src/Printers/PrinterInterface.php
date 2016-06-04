@@ -12,7 +12,7 @@ namespace Posprint\Printers;
  *
  * @category  NFePHP
  * @package   Posprint
- * @copyright Copyright (c) 2015
+ * @copyright Copyright (c) 2016
  * @license   http://www.gnu.org/licenses/lesser.html LGPL v3
  * @author    Roberto L. Machado <linux.rlm at gmail dot com>
  * @link      http://github.com/nfephp-org/posprint for the canonical source repository
@@ -51,6 +51,7 @@ interface PrinterInterface
     public function cut();
     public function barcode();
     public function barcodeQRCode();
+    public function barcodePDF417();
     public function send();
     public function close();
 }
