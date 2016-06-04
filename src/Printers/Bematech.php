@@ -451,8 +451,11 @@ class Bematech extends DefaultPrinter implements PrinterInterface
      * @param integer $colunms
      * @return boolean
      */
-    public function barcodePDF417($data, $ecc = 5, $pheight = 2, $pwidth = 2, $colunms = 3)
+    public function barcodePDF417($data = '', $ecc = 5, $pheight = 2, $pwidth = 2, $colunms = 3)
     {
+        if (empty($data)) {
+            return false;
+        }
         if ($this->printerMode == 'ESCPOS') {
             parent::barcodePDF417($data, $ecc, $pheight, $pwidth, $colunms);
         }

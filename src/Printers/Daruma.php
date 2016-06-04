@@ -436,8 +436,11 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
      * @param integer $colunms
      * @return boolean
      */
-    public function barcodePDF417($data, $ecc = 5, $pheight = 2, $pwidth = 2, $colunms = 3)
+    public function barcodePDF417($data = '', $ecc = 5, $pheight = 2, $pwidth = 2, $colunms = 3)
     {
+        if (empty($data)) {
+            return false;
+        }
         $length = strlen($data)+6;
         if ($length > 906) {
             return false;
