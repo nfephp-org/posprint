@@ -93,8 +93,8 @@ class BufferTest extends \PHPUnit_Framework_TestCase
         $data = "123".chr(10)."45678".chr(8)."90A".chr(0)."SDFG";
         $buffer->write($data);
         $response = $buffer->getDataReadable(false);
-        $expected = '123 [LF] 45678\x0890A [NUL] SDFG';
-        //$this->assertEquals($response, $expected);
+        $expected = '123 [LF] 45678 (08h) 90A [NUL] SDFG';
+        $this->assertEquals($response, $expected);
     }
 
     /**
@@ -126,7 +126,7 @@ class BufferTest extends \PHPUnit_Framework_TestCase
         $data = "123".chr(10)."45678".chr(8)."90A".chr(0)."SDFG";
         $buffer->write($data);
         $response = $buffer->read(20);
-        $expected = '123 [LF] 45678\x0890A [NUL] SDFG';
-        //$this->assertEquals($response, $expected);
+        $expected = '123 [LF] 45678 (08h) 90A [NUL] SDFG';
+        $this->assertEquals($response, $expected);
     }
 }

@@ -141,10 +141,14 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
         $font = $this->defaultFont($font);
         $fn = array_keys($this->aFont, $font, true);
         $mode = $fn[0];
-        $mode += ((2**3) * $this->boldMode);
-        $mode += ((2**4) * $this->doubleHeight);
-        $mode += ((2**5) * $this->expandedMode);
-        $mode += ((2**7) * $this->underlineMode);
+        $b = ($this->boldMode) ? 1 : 0;
+        $d = ($this->doubleHeight) ? 1 : 0;
+        $e = ($this->expandedMode) ? 1 : 0;
+        $u = ($this->underlineMode) ? 1 : 0;
+        $mode += ((2**3) * $b);
+        $mode += ((2**4) * $d);
+        $mode += ((2**5) * $e);
+        $mode += ((2**7) * $u);
         $this->buffer->write(self::ESC.'!'.chr($mode));
     }
 
