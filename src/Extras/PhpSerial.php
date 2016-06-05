@@ -415,6 +415,9 @@ class PhpSerial
      */
     public function write($data)
     {
+        if ($this->state !== self::SERIAL_DEVICE_OPENED) {
+            return '';
+        }
         $this->buffer .= $data;
         if ($this->autoflush === true) {
             $this->flush();
@@ -430,6 +433,9 @@ class PhpSerial
      */
     public function flush()
     {
+        if ($this->state !== self::SERIAL_DEVICE_OPENED) {
+            return '';
+        }
         if (fwrite($this->handle, $this->buffer) !== false) {
             $this->buffer = "";
             return true;

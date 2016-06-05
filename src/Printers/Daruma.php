@@ -26,6 +26,8 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
      */
     protected $aCodePage = array(
         'ISO8859-1' => array('conv' => 'ISO8859-1', 'table' => '0', 'desc' => 'ISO8859-1: Latin1'),
+        'CP437' => array('conv' => '437', 'table' => '3', 'desc' => 'PC437: USA, Standard Europe'),
+        'CP850' => array('conv' => '850', 'table' => '1', 'desc' => 'PC850: Multilingual')
     );
     /**
      * List all available region pages.
@@ -95,6 +97,7 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
     //          0000000000111111111122222222223333333333
     //          0123456789012345678901234567890123456789
     //[ESC] 228 0XXXX5678X0XXX45XXXXXXXXXXXXXXXXX3456XX9
+    
     /**
      * Select printer mode
      *
@@ -142,7 +145,7 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
         $fn = array_keys($this->aFont, $font, true);
         $mode = $fn[0];
         $mode += (8 * $this->boldMode);
-        $mode += (16 * $this->doubleHeight);
+        $mode += (16 * $this->doubleHeigth);
         $mode += (32 * $this->expandedMode);
         $mode += (128 * $this->underlineMode);
         $this->buffer->write(self::ESC.'!'.chr($mode));
