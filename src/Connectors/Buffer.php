@@ -41,7 +41,7 @@ final class Buffer implements ConnectorInterface
        ' [DC2] ' => 18, //DC2 Cancela modo condensado
        ' [DC3] ' => 19, //DC3 Cancela modo enfatizado
        ' [DC4] ' => 20, //DC4 Controle de dispositivo 4 Inicia modo normal
-       ' [NAK] ' => 21, // NAK 
+       ' [NAK] ' => 21, // NAK
        ' [SYN] ' => 22, //Sincronismo
        ' [CAN] ' => 24, //CAN Cancela linha enviada
        ' [EM] ' => 25, //Avança 4 linhas
