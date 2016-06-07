@@ -3,9 +3,9 @@
 namespace Posprint;
 
 /**
- * Esta classe foi colocada aqui apneas para facilitar o desenvolvimento, seu local correto 
- * é no repositório sped-da 
- * 
+ * Esta classe foi colocada aqui apneas para facilitar o desenvolvimento, seu local correto
+ * é no repositório sped-da
+ *
  * em caso de contingência criar duas vias consumidor e estabelecimento
  */
 
@@ -16,12 +16,12 @@ class DanfcePos
 {
     /**
      * NFCe
-     * @var SimpleXMLElement 
+     * @var SimpleXMLElement
      */
     protected $nfce = '';
     /**
      * protNFe
-     * @var SimpleXMLElement 
+     * @var SimpleXMLElement
      */
     protected $protNFe = '';
     /**
@@ -47,27 +47,27 @@ class DanfcePos
     protected $uri = '';
     
     protected $aURI = [
-      'AC' => 'http://sefaznet.ac.gov.br/nfce/consulta.xhtml',  
-      'AM' => 'http://sistemas.sefaz.am.gov.br/nfceweb/formConsulta.do',  
-      'BA' => 'http://nfe.sefaz.ba.gov.br/servicos/nfce/Modulos/Geral/NFCEC_consulta_chave_acesso.aspx',  
+      'AC' => 'http://sefaznet.ac.gov.br/nfce/consulta.xhtml',
+      'AM' => 'http://sistemas.sefaz.am.gov.br/nfceweb/formConsulta.do',
+      'BA' => 'http://nfe.sefaz.ba.gov.br/servicos/nfce/Modulos/Geral/NFCEC_consulta_chave_acesso.aspx',
       'MT' => 'https://www.sefaz.mt.gov.br/nfce/consultanfce',
-      'MA' => 'http://www.nfce.sefaz.ma.gov.br/portal/consultaNFe.do?method=preFilterCupom&', 
+      'MA' => 'http://www.nfce.sefaz.ma.gov.br/portal/consultaNFe.do?method=preFilterCupom&',
       'PA' => 'https://appnfc.sefa.pa.gov.br/portal/view/consultas/nfce/consultanfce.seam',
-      'PB' => 'https://www.receita.pb.gov.br/ser/servirtual/documentos-fiscais/nfc-e/consultar-nfc-e', 
+      'PB' => 'https://www.receita.pb.gov.br/ser/servirtual/documentos-fiscais/nfc-e/consultar-nfc-e',
       'PR' => 'http://www.sped.fazenda.pr.gov.br/modules/conteudo/conteudo.php?conteudo=100',
       'RJ' => 'http://www4.fazenda.rj.gov.br/consultaDFe/paginas/consultaChaveAcesso.faces',
       'RS' => 'https://www.sefaz.rs.gov.br/NFE/NFE-COM.aspx',
       'RO' => 'http://www.nfce.sefin.ro.gov.br/home.jsp',
-      'RR' => 'https://www.sefaz.rr.gov.br/nfce/servlet/wp_consulta_nfce',  
+      'RR' => 'https://www.sefaz.rr.gov.br/nfce/servlet/wp_consulta_nfce',
       'SE' => 'http://www.nfce.se.gov.br/portal/portalNoticias.jsp?jsp=barra-menu/servicos/consultaDANFENFCe.htm',
       'SP' => 'https://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaPublica.aspx'
     ];
 
     /**
-     * Carrega a impressora a ser usada 
-     * a mesma deverá já ter sido pré definida inclusive seu 
+     * Carrega a impressora a ser usada
+     * a mesma deverá já ter sido pré definida inclusive seu
      * conector
-     * 
+     *
      * @param PrinterInterface $this->printer
      */
     public function __construct(PrinterInterface $printer)
@@ -114,8 +114,8 @@ class DanfcePos
     }
     
     /**
-     * Manda os dados para a impressora ou 
-     * retorna os comandos em ordem e legiveis 
+     * Manda os dados para a impressora ou
+     * retorna os comandos em ordem e legiveis
      * para a tela
      */
     public function printDanfe()
@@ -127,10 +127,10 @@ class DanfcePos
     }
     
     /**
-     * Recupera a sequiencia de comandos para envio 
+     * Recupera a sequiencia de comandos para envio
      * posterior para a impressora por outro
      * meio como o QZ.io (tray)
-     * 
+     *
      * @return string
      */
     public function getCommands()
@@ -194,7 +194,7 @@ class DanfcePos
         //obter dados dos itens da NFCe
         $det = $this->nfce->infNFe->det;
         $this->totItens = $det->count();
-        for($x=0; $x<=$this->totItens-1; $x++) {
+        for ($x=0; $x<=$this->totItens-1; $x++) {
             $nItem = (int) $det[$x]->attributes()->{'nItem'};
             $cProd = (string) $det[$x]->prod->cProd;
             $xProd = (string) $det[$x]->prod->xProd;
@@ -204,7 +204,7 @@ class DanfcePos
             $vProd = (float) $det[$x]->prod->vProd;
             //falta formatar os campos e o espaçamento entre eles
             $this->printer->text($nItem .  $cProd. $xProd . $qCom . $uCom . $vUnCom . $vProd);
-        } 
+        }
         //linha divisória ??
     }
     
@@ -234,7 +234,7 @@ class DanfcePos
         $this->printer->text('FORMA PAGAMENTO          VALOR PAGO');
         $pag = $this->nfce->infNFe->pag;
         $tot = $pag->count();
-        for($x=0; $x<=$tot-1; $x++) {
+        for ($x=0; $x<=$tot-1; $x++) {
             $tPag = (string) $this->tipoPag($pag[0]->tPag);
             $vPag = (float) $pag[0]->vPag;
             $this->printer->text($tPag . '                  R$ '. $vPag);
@@ -243,7 +243,7 @@ class DanfcePos
     }
     
     /**
-     * Parte VI - Mensagem de Interesse do Contribuinte 
+     * Parte VI - Mensagem de Interesse do Contribuinte
      * conteudo de infCpl
      * Campo Opcional
      */
@@ -270,7 +270,7 @@ class DanfcePos
         $tpEmis = (int) $this->nfce->infNFe->ide->tpEmis;
         if ($tpEmis != 1) {
             $this->printer->setAlign('C');
-            $this->printer->text('EMITIDA EM AMBIENTE DE CONTINGẼNCIA'); 
+            $this->printer->text('EMITIDA EM AMBIENTE DE CONTINGẼNCIA');
         }
         $nNF = (float) $this->nfce->infNFe->ide->nNF;
         $serie = (int) $this->nfce->infNFe->ide->serie;
@@ -306,13 +306,13 @@ class DanfcePos
         $idEstrangeiro = (string) $this->nfce->infNFe->dest->idEstrangeiro;
         $this->printer->setAlign('L');
         if (!empty($cnpj)) {
-            $this->printer->text('CNPJ ' . $cnpj);    
+            $this->printer->text('CNPJ ' . $cnpj);
         }
         if (!empty($cpf)) {
-            $this->printer->text('CPF ' . $cpf);    
+            $this->printer->text('CPF ' . $cpf);
         }
         if (!empty($idEstrangeiro)) {
-            $this->printer->text('Extrangeiro ' . $idEstrangeiro);    
+            $this->printer->text('Extrangeiro ' . $idEstrangeiro);
         }
         $xLgr = (string) $this->nfce->infNFe->dest->enderDest->xLgr;
         $nro = (string) $this->nfce->infNFe->dest->enderDest->nro;
@@ -321,12 +321,12 @@ class DanfcePos
         $xMun = (string) $this->nfce->infNFe->dest->enderDest->xMun;
         $uf = (string) $this->nfce->infNFe->dest->enderDest->UF;
         $cep = (string) $this->nfce->infNFe->dest->enderDest->CEP;
-        $this->printer->text($xLgr . '' . $nro . '' . $xCpl . '' . $xBairro . '' . $xMun . '' . $uf); 
+        $this->printer->text($xLgr . '' . $nro . '' . $xCpl . '' . $xBairro . '' . $xMun . '' . $uf);
         //linha divisória ??
     }
     
     /**
-     * Parte IX - QRCode 
+     * Parte IX - QRCode
      * Consulte via Leitor de QRCode
      * Protocolo de autorização 1234567891234567 22/06/2016 14:43:51
      * Campo Obrigatório
