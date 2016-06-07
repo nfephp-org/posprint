@@ -355,38 +355,21 @@ class DanfcePos
      */
     private function tipoPag($tPag)
     {
-        $tPagNome = "";
-        switch ($tPag) {
-            case '01':
-                $tPagNome = 'Dinheiro';
-                break;
-            case '02':
-                $tPagNome = 'Cheque';
-                break;
-            case '03':
-                $tPagNome = 'Cartao de Credito';
-                break;
-            case '04':
-                $tPagNome = 'Cartao de Debito';
-                break;
-            case '05':
-                $tPagNome = 'Credito Loja';
-                break;
-            case '10':
-                $tPagNome = 'Vale Alimentacao';
-                break;
-            case '11':
-                $tPagNome = 'Vale Refeicao';
-                break;
-            case '12':
-                $tPagNome = 'Vale Presente';
-                break;
-            case '13':
-                $tPagNome = 'Vale Combustivel';
-                break;
-            case '99':
-                $tPagNome = 'Outros';
+        $aPag = [
+            '01' => 'Dinheiro',
+            '02' => 'Cheque',
+            '03' => 'Cartao de Credito',
+            '04' => 'Cartao de Debito',
+            '05' => 'Credito Loja',
+            '10' => 'Vale Alimentacao',
+            '11' => 'Vale Refeicao',
+            '12' => 'Vale Presente',
+            '13' => 'Vale Combustivel',
+            '99' => 'Outros'
+        ];
+        if (array_key_exists($tPag, $aPag)) {
+            return $aPag[$tPag];
         }
-        return $tPagNome;
+        return '';
     }
 }
