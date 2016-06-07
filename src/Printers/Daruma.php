@@ -16,6 +16,7 @@ namespace Posprint\Printers;
 
 use Posprint\Printers\DefaultPrinter;
 use Posprint\Printers\PrinterInterface;
+use Posprint\Graphics\Graphics;
 
 final class Daruma extends DefaultPrinter implements PrinterInterface
 {
@@ -515,7 +516,7 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
             default:
                 $ecc = 0;
         }
-        $this->buffer->write(self::ESC . chr(129) . chr($nL) . chr($nH) . chr($w) . $ecc . $data);
+        $this->buffer->write(self::ESC . chr(129) . chr($nL) . chr($nH) . chr($wmod) . $ecc . $data);
     }
     //public function send(); vide DefultPrinter
     //public function close(); vide DefaultPrinter
