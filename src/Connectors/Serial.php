@@ -83,7 +83,6 @@ class Serial implements ConnectorInterface
     {
         $this->resource->write($data);
         $this->resource->flush();
-        
     }
     
     /**
