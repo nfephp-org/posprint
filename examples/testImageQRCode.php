@@ -12,7 +12,7 @@ try {
     $gr->imageQRCode($text, 200, 10, $gr::MEDIUM);
 
     header('Content-Type: '.'image/png');
-    echo $gr->img;
+    imagepng($gr->img);
 } catch (\Exception $e) {
     echo $e->getMessage();
 }    

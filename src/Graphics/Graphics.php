@@ -225,7 +225,9 @@ class Graphics extends Basic
             $qrCode->setBackgroundColor(['r' => 255, 'g' => 255, 'b' => 255]);
             $qrCode->setValidateResult(true);
             //write PNG image
-            $this->img = $qrCode->writeString(PngWriter::class);
+            $this->img = imagecreatefromstring(
+                $qrCode->writeString(PngWriter::class)
+            );
             $this->getDimImage();
         } catch (\Exception $e) {
             throw new \RuntimeException(
