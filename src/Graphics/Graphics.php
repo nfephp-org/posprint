@@ -230,7 +230,8 @@ class Graphics extends Basic
         } catch (\Exception $e) {
             throw new \RuntimeException(
                 "ERROR. Falha de validação Ajuste o tamanho do codigo "
-                    . "para permitir legibilidade. [" . $e->getMessage() . ']');
+                . "para permitir legibilidade. [" . $e->getMessage() . ']'
+            );
         }
     }
     
