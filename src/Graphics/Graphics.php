@@ -401,7 +401,8 @@ class Graphics extends Basic
         }
         /* Loop through and convert format */
         do {
-            $byteVal |= (int) $this->imgData[$yCount * $widthPixels + $xCount] << (7 - $bit);
+            $num = $yCount * $widthPixels + $xCount;
+            $byteVal |= (int) $this->imgData[$num] << (7 - $bit);
             $xCount++;
             $bit++;
             if ($xCount >= $widthPixels) {
