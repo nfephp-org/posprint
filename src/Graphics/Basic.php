@@ -16,12 +16,17 @@ namespace Posprint\Graphics;
 
 abstract class Basic
 {
+    const LOW = 'low';
+    const MEDIUM = 'medium';
+    const QUARTILE = 'quartile';
+    const HIGH = 'high';
+    
     /**
      * Image GD
      *
      * @var resource
      */
-    protected $img;
+    public $img;
     /**
      * Image Height
      *

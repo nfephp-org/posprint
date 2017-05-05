@@ -14,6 +14,8 @@ namespace Posprint\Graphics;
  */
 
 use Posprint\Graphics\Basic;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\QrCode;
 use RuntimeException;
 use InvalidArgumentException;
@@ -212,18 +214,24 @@ class Graphics extends Basic
     ) {
         //adjust width for a closest multiple of 8
         $width = $this->closestMultiple($width, 8);
-        $qrCode = new QrCode();
-        $qrCode->setText($dataText)
-            ->setImageType('png')
-            ->setSize($width)
-            ->setPadding($padding)
-            ->setErrorCorrection($errCorretion)
-            ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
-            ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
-            ->setLabel('')
-            ->setLabelFontSize(8);
-        $this->img = $qrCode->getImage();
-        $this->getDimImage();
+        //create image
+        try {
+            $qrCode = new QrCode($dataText);
+            $qrCode->setMargin($padding);
+            $qrCode->setSize($width);
+            $qrCode->setEncoding('UTF-8');
+            $qrCode->setErrorCorrectionLevel(strtolower($errCorretion));
+            $qrCode->setForegroundColor(['r' => 0, 'g' => 0, 'b' => 0]);
+            $qrCode->setBackgroundColor(['r' => 255, 'g' => 255, 'b' => 255]);
+            $qrCode->setValidateResult(true);
+            //write PNG image
+            $this->img = $qrCode->writeString(PngWriter::class);
+            $this->getDimImage();
+        } catch (\Exception $e) {
+            throw new \RuntimeException(
+                "ERROR. Falha de validação Ajuste o tamanho do codigo "
+                    . "para permitir legibilidade. [" . $e->getMessage() . ']');
+        }
     }
     
     /**
