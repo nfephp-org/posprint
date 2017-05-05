@@ -1135,12 +1135,12 @@ abstract class DefaultPrinter implements PrinterInterface
      */
     protected function translate($text = '')
     {
-        $indCode = $this->defaultCodePage();
-        if (!empty($indCode)) {
-            $codep = $this->aCodePage[$indCode];
-            if (!empty($codep)) {
-                $text = iconv('UTF-8', $codep['conv'], $text);
-            }
+        if (empty($this->codepage)) {
+            $this->defaultCodePage();
+        }
+        $codep = $this->aCodePage[$this->codepage];
+        if (!empty($codep)) {
+            $text = @iconv('UTF-8', $codep['conv'], $text);
         }
         return $text;
     }
