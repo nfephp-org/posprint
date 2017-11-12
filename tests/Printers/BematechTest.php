@@ -9,8 +9,9 @@ namespace Posprint\Tests\Printers;
  */
 
 use Posprint\Printers\Bematech;
+use PHPUnit\Framework\TestCase;
 
-class BematechTest extends \PHPUnit_Framework_TestCase
+class BematechTest extends TestCase
 {
     public function testInitialize()
     {

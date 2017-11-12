@@ -9,8 +9,9 @@ namespace Posprint\Tests\Printers;
  */
 
 use Posprint\Printers\Epson;
+use PHPUnit\Framework\TestCase;
 
-class EpsonTest extends \PHPUnit_Framework_TestCase
+class EpsonTest extends TestCase
 {
     public function testInstantiable()
     {

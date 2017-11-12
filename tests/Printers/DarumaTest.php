@@ -9,8 +9,9 @@ namespace Posprint\Tests\Printers;
  */
 
 use Posprint\Printers\Daruma;
+use PHPUnit\Framework\TestCase;
 
-class DarumaTest extends \PHPUnit_Framework_TestCase
+class DarumaTest extends TestCase
 {
     public function testInitialize()
     {

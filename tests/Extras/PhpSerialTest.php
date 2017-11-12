@@ -8,8 +8,9 @@ namespace Posprint\Tests\Extras;
  */
 
 use Posprint\Extras\PhpSerial;
+use PHPUnit\Framework\TestCase;
 
-class PhpSerialTest extends \PHPUnit_Framework_TestCase
+class PhpSerialTest extends TestCase
 {
     public function testInstantiable()
     {

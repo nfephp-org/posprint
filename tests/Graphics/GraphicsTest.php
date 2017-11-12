@@ -9,8 +9,9 @@ namespace Posprint\Tests\Graphics;
  */
 
 use Posprint\Graphics\Graphics;
+use PHPUnit\Framework\TestCase;
 
-class GraphicsTest extends \PHPUnit_Framework_TestCase
+class GraphicsTest extends TestCase
 {
     
     public function testInstantiable()

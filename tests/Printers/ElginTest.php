@@ -9,8 +9,9 @@ namespace Posprint\Tests\Printers;
  */
 
 use Posprint\Printers\Elgin;
+use PHPUnit\Framework\TestCase;
 
-class ElginTest extends \PHPUnit_Framework_TestCase
+class ElginTest extends TestCase
 {
     public function testInitialize()
     {
