@@ -9,8 +9,9 @@ namespace Posprint\Tests\Connectors;
  */
 
 use Posprint\Connectors\Network;
+use PHPUnit\Framework\TestCase;
 
-class NetworkTest extends \PHPUnit_Framework_TestCase
+class NetworkTest extends TestCase
 {
     /**
      * @expectedException RuntimeException

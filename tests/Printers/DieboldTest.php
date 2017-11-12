@@ -9,8 +9,9 @@ namespace Posprint\Tests\Printers;
  */
 
 use Posprint\Printers\Diebold;
+use PHPUnit\Framework\TestCase;
 
-class DieboldTest extends \PHPUnit_Framework_TestCase
+class DieboldTest extends TestCase
 {
     public function testInitialize()
     {

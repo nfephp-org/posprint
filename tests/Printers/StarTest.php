@@ -9,8 +9,9 @@ namespace Posprint\Tests\Printers;
  */
 
 use Posprint\Printers\Star;
+use PHPUnit\Framework\TestCase;
 
-class StarTest extends \PHPUnit_Framework_TestCase
+class StarTest extends TestCase
 {
     public function testInitialize()
     {

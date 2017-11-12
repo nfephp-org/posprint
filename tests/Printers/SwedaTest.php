@@ -9,8 +9,9 @@ namespace Posprint\Tests\Printers;
  */
 
 use Posprint\Printers\Sweda;
+use PHPUnit\Framework\TestCase;
 
-class SwedaTest extends \PHPUnit_Framework_TestCase
+class SwedaTest extends TestCase
 {
     public function testInitialize()
     {

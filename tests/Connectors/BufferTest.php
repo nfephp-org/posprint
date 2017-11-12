@@ -9,8 +9,9 @@ namespace Posprint\Tests\Connectors;
  */
 
 use Posprint\Connectors\Buffer;
+use PHPUnit\Framework\TestCase;
 
-class BufferTest extends \PHPUnit_Framework_TestCase
+class BufferTest extends TestCase
 {
     /**
      * @covers Posprint\Connectors\Buffer::__construct
