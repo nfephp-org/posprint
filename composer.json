@@ -13,8 +13,8 @@
         }
     ],
     "require": {
-        "php" : "~5.5|~7.0",
-        "endroid/qrcode": "^2.1"
+        "php" : ">=5.6",
+        "endroid/qrcode": "^2"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^2.8",
@@ -40,5 +40,5 @@
             "dev-master": "0.1-dev"
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "stable"
 }
