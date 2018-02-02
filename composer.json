@@ -4,7 +4,7 @@
     "description": "Thermal POS printer library",
     "homepage": "https://github.com/nfephp/posprint",
     "keywords": ["nfce", "print", "escpos", "thermal", "driver"],
-    "license": ["LGPLv3+", "GPLv3+", "MIT"],
+    "license": ["LGPL-3.0-or-later", "GPL-3.0-or-later", "MIT"],
     "authors": [
         {
             "name": "Roberto L. Machado",
