@@ -64,7 +64,7 @@ class Graphics extends Basic
      * for inclusion on printer commands
      * This method change image to Black and White and
      * reducing the color resolution of 1 bit per pixel
-     *
+     * adptation fom escpos-php from Michael Billington
      * @return string
      */
     public function getRasterImage()
@@ -120,6 +120,7 @@ class Graphics extends Basic
     /**
      * Converts a true color image to Black and white
      * even if the image have transparency (alpha channel)
+     * adptation fom escpos-php from Michael Billington
      */
     public function convertBW()
     {

@@ -42,10 +42,10 @@ Prerequisitos PHP
 * ext-gd (para tratamento das imagens e logos) 
 * estudando a possibilidade de uso de ext-imagick 
 
-Referencias 
-* [escpos-php](https://github.com/mike42/escpos-php)
-* [php-esc-pos](https://github.com/ronisaha/php-esc-pos)
-* [PHP:IPP](http://www.nongnu.org/phpprintipp/) (C) Thomas Harding
+Referencias de Código usados para a criação desse projeto
+* [escpos-php](https://github.com/mike42/escpos-php) (C) Michael Billington (MIT License)
+* [php-esc-pos](https://github.com/ronisaha/php-esc-pos) (C) Roni Saha (MIT License)
+* [PHP:IPP](http://www.nongnu.org/phpprintipp/) (C)  (GPL)
 
 
 ## Funcionamento básico
