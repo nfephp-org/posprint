@@ -42,12 +42,6 @@ Prerequisitos PHP
 * ext-gd (para tratamento das imagens e logos) 
 * estudando a possibilidade de uso de ext-imagick 
 
-Referencias de Código usados para a criação desse projeto
-* [escpos-php](https://github.com/mike42/escpos-php) (C) Michael Billington (MIT License)
-* [php-esc-pos](https://github.com/ronisaha/php-esc-pos) (C) Roni Saha (MIT License)
-* [PHP:IPP](http://www.nongnu.org/phpprintipp/) (C)  (GPL)
-
-
 ## Funcionamento básico
 
 - Carrega classe do conector apropriado
@@ -127,8 +121,11 @@ Caso você encontre qualquer problema relacionado a segurança, informe diretame
 
 ## Creditos (*Credits*)
 
-- 
-- 
+* [escpos-php](https://github.com/mike42/escpos-php) (C) Michael Billington (MIT License)
+* [php-esc-pos](https://github.com/ronisaha/php-esc-pos) (C) Roni Saha (MIT License)
+* [PHP:IPP](http://www.nongnu.org/phpprintipp/) (C)  (GPL)
+
+*I must thank and a lot to these developers because without his help the availability of their works under open licenses would not be possible to develop this project.*
 
 ## Licenças (*License*)
 Este pacote está sendo disponibilizado sob as licenças LGPLv3 ou GPLv3 ou MIT, verifique o arquivo [Licenças](LICENSE.md) para maiores informações.
