@@ -16,7 +16,7 @@ namespace Posprint\Graphics;
 use Posprint\Graphics\Basic;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Endroid\QrCode\Writer\PngWriter;
-use Endroid\QrCode\QrCode;
+use Com\Tecnick\Barcode\Barcode;
 use RuntimeException;
 use InvalidArgumentException;
 
@@ -24,23 +24,20 @@ class Graphics extends Basic
 {
     /**
      * Image prixels in BW
-     *
-     * @var string
+     * @var string|null
      */
     protected $imgData = null;
     /**
      * Image Raster bit
-     *
-     * @var string
+     * @var string|null
      */
     protected $imgRasterData = null;
-  
+    
     /**
      * Constructor
      * Load a image, if passed a path to file and adjust dimentions
-     *
      * @param  string $filename
-     * @param  int    $width
+     * @param  int   $width
      * @param  int    $height
      * @throws RuntimeException
      */
@@ -65,7 +62,7 @@ class Graphics extends Basic
      * This method change image to Black and White and
      * reducing the color resolution of 1 bit per pixel
      * adptation fom escpos-php from Michael Billington
-     * @return string
+     * @return string|null
      */
     public function getRasterImage()
     {
@@ -78,12 +75,12 @@ class Graphics extends Basic
     /**
      * load
      * Load image file and adjust dimentions
-     *
      * @param  string $filename path to image file
-     * @param  float  $width
-     * @param  float  $height
+     * @param  int  $width
+     * @param  int  $height
      * @throws InvalidArgumentException
      * @throws RuntimeException
+     * @return void
      */
     public function load($filename, $width = null, $height = null)
     {
@@ -120,7 +117,8 @@ class Graphics extends Basic
     /**
      * Converts a true color image to Black and white
      * even if the image have transparency (alpha channel)
-     * adptation fom escpos-php from Michael Billington
+     * adptation from escpos-php by Michael Billington
+     * @return void
      */
     public function convertBW()
     {
@@ -148,7 +146,6 @@ class Graphics extends Basic
     
     /**
      * Save image to file
-     *
      * @param string $filename
      * @param string $type  PNG, JPG, GIF, BMP
      * @param integer $quality 0 - 100 default 75
@@ -163,7 +160,7 @@ class Graphics extends Basic
         }
         $aTypes = ['PNG', 'JPG', 'JPEG',  'GIF'];
         if (! in_array($type, $aTypes)) {
-            throw InvalidArgumentException('This file type is not supported.');
+            throw new InvalidArgumentException('This file type is not supported.');
         }
         return $this->saveImage($filename, $this->img, $type, $quality);
     }
@@ -173,9 +170,8 @@ class Graphics extends Basic
      * Resize an image
      * NOTE: the width is always set to the multiple of 8 more
      * next, why? printers have a resolution of 8 dots per mm
-     *
-     * @param  float $width
-     * @param  float $height
+     * @param  int $width
+     * @param  int $height
      * @throws InvalidArgumentException
      */
     public function resizeImage($width = null, $height = null)
@@ -200,39 +196,51 @@ class Graphics extends Basic
     
     /**
      * Creates a  GD QRCode image
-     *
      * @param string $dataText
-     * @param int    $width
-     * @param int    $padding
-     * @param string $errCorretion  LOW, MEDIUM, QUARTILE, HIGH
+     * @param int $width
+     * @param int $padding
+     * @param string $errCorretion LOW, MEDIUM, QUARTILE, HIGH
      * @return void
      */
     public function imageQRCode(
         $dataText = 'NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA NADA',
         $width = 200,
         $padding = 10,
-        $errCorretion = 'MEDIUM'
+        $errCorretion = 'medium'
     ) {
+        switch (strtolower($errCorretion)) {
+            case self::LOW:
+                $ec = 'L';
+                break;
+            case self::HIGH:
+                $ec = 'H';
+                break;
+            case self::QUARTILE:
+                $ec = 'Q';
+                break;
+            default:
+                $ec = 'M';
+        }
         //adjust width for a closest multiple of 8
         $width = $this->closestMultiple($width, 8);
         //create image
         try {
-            $qrCode = new QrCode($dataText);
-            $qrCode->setMargin($padding);
-            $qrCode->setSize($width);
-            $qrCode->setEncoding('UTF-8');
-            $qrCode->setErrorCorrectionLevel(strtolower($errCorretion));
-            $qrCode->setForegroundColor(['r' => 0, 'g' => 0, 'b' => 0]);
-            $qrCode->setBackgroundColor(['r' => 255, 'g' => 255, 'b' => 255]);
-            $qrCode->setValidateResult(true);
-            //write PNG image
+            $barcode = new Barcode();
+            $bobj = $barcode->getBarcodeObj(
+                "QRCODE,$ec",
+                $dataText,
+                $width,
+                $width,
+                'black',
+                array($padding, $padding, $padding, $padding)
+            )->setBackgroundColor('white');
             $this->img = imagecreatefromstring(
-                $qrCode->writeString(PngWriter::class)
+                $bobj->getPngData()
             );
             $this->getDimImage();
         } catch (\Exception $e) {
             throw new \RuntimeException(
-                "ERROR. Falha de validação Ajuste o tamanho do codigo "
+                "ERROR. Falha de validação no ajuste do tamanho do codigo "
                 . "para permitir legibilidade. [" . $e->getMessage() . ']'
             );
         }
@@ -241,7 +249,6 @@ class Graphics extends Basic
     /**
      * loadBMP
      * Create a GD image from BMP file
-     *
      * @param  string $filename
      * @return boolean
      */
@@ -249,12 +256,12 @@ class Graphics extends Basic
     {
         //open file as binary
         if (! $f1 = fopen($filename, "rb")) {
-            throw InvalidArgumentException('Can not open file.');
+            throw new InvalidArgumentException('Can not open file.');
         }
         //get properties from image file
         $file = unpack("vfile_type/Vfile_size/Vreserved/Vbitmap_offset", fread($f1, 14));
         if ($file['file_type'] != 19778) {
-            throw InvalidArgumentException('This file is not a BMP image.');
+            throw new InvalidArgumentException('This file is not a BMP image.');
         }
         //get properties form image
         $bmp = unpack('Vheader_size/Vwidth/Vheight/vplanes/vbits_per_pixel'.
@@ -292,7 +299,7 @@ class Graphics extends Basic
                 //get byte color from BMP
                 $color = $this->getBMPColor($bmp['bits_per_pixel'], $img, $vide, $p, $palette);
                 if ($color === false) {
-                    throw RuntimeException('Fail during conversion from BMP number bit per pixel incorrect!');
+                    throw new RuntimeException('Fail during conversion from BMP number bit per pixel incorrect!');
                 }
                 imagesetpixel($res, $x, $y, $color[1]);
                 $x++;
@@ -307,7 +314,6 @@ class Graphics extends Basic
 
     /**
      * Convert a GD image into a BMP string representation
-     *
      * @param string $filename
      * @return string
      */
@@ -359,7 +365,6 @@ class Graphics extends Basic
     /**
      * Convert image from GD resource
      * into Black and White pixels image
-     *
      * @return string Representation of bytes image in BW
      */
     protected function convertPixelBW()
@@ -385,7 +390,6 @@ class Graphics extends Basic
      * Output the image in raster (row) format.
      * This can result in padding on the right of the image,
      * if its width is not divisible by 8.
-     *
      * @throws RuntimeException Where the generated data is
      *         unsuitable for the printer (indicates a bug or oversized image).
      * @return string The image in raster format.
@@ -442,8 +446,7 @@ class Graphics extends Basic
     
     /**
      * Save safety binary image file
-     *
-     * @param string               $filename
+     * @param string $filename
      * @param resource|string|null $data
      * @param string $type PNG, JPG, GIF, BMP
      * @param integer $quality
@@ -489,7 +492,6 @@ class Graphics extends Basic
 
     /**
      * Get byte color form BMP
-     *
      * @param integer $bpp bytes_per_pixel
      * @param string $img bytes read of file
      * @param string $vide
@@ -536,7 +538,7 @@ class Graphics extends Basic
                     $color[1] = ($color[1] & 0x20)>>5;
                 } elseif (($p*8)%8 == 3) {
                     $color[1] = ($color[1] & 0x10)>>4;
-                } elseif (($P*8)%8 == 4) {
+                } elseif (($p*8)%8 == 4) {
                     $color[1] = ($color[1] & 0x8)>>3;
                 } elseif (($p*8)%8 == 5) {
                     $color[1] = ($color[1] & 0x4)>>2;
@@ -554,10 +556,9 @@ class Graphics extends Basic
     }
     
     /**
-     * Converts Litte Endian Bytes do String
-     *
-     * @param  int $number
-     * @param  int $minbytes
+     * Converts Litte Endian Bytes to String
+     * @param int $number
+     * @param int $minbytes
      * @return string
      */
     private static function littleEndian2String($number, $minbytes = 1)
@@ -572,22 +573,20 @@ class Graphics extends Basic
     
     /**
      * Get pixel colors
-     *
      * @param  resource $img
-     * @param  int      $x
-     * @param  int      $y
+     * @param  int $x
+     * @param  int $y
      * @return array
      */
     private static function getPixelColor($img, $x, $y)
     {
-        return imageColorsForIndex($img, imageColorAt($img, $x, $y));
+        return imagecolorsforindex($img, imagecolorat($img, $x, $y));
     }
     
     /**
-     * Ajusta o numero para o multiplo mais proximo de base
-     *
+     * Find closest multiple
      * @param  float $num
-     * @param  int   $num
+     * @param  int $num
      * @return int
      */
     private function closestMultiple($num = 0, $base = 8)

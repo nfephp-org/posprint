@@ -53,7 +53,6 @@ final class Buffer implements ConnectorInterface
     
     /**
      * Buffer of accumulated raw data.
-     *
      * @var array
      */
     private $buffer = null;
@@ -77,7 +76,6 @@ final class Buffer implements ConnectorInterface
 
     /**
      * Send data to buffer porperty
-     *
      * @param string $data
      */
     public function write($data)
@@ -87,9 +85,8 @@ final class Buffer implements ConnectorInterface
     
     /**
      * Read data form buffer
-     *
      * @param  int $len
-     * @return string
+     * @return string|array
      */
     public function read($len = null)
     {
@@ -128,8 +125,8 @@ final class Buffer implements ConnectorInterface
      */
     public function getDataBase64($retArray = true)
     {
-        $lbuff = $this->zConvArray('B');
-        if (! $retArray) {
+        $lbuff = $this->convertBuffer('B');
+        if (!$retArray) {
             return implode("\n", $lbuff);
         }
         return $lbuff;
@@ -153,14 +150,13 @@ final class Buffer implements ConnectorInterface
      * getDataReadable
      * Return buffer data converted into a readable string.
      * For testing and debbuging only, this format should not be sent to printer
-     *
      * @param  bool $retArray Enable return as array, otherwise will return a string
      * @return string|array
      */
     public function getDataReadable($retArray = true)
     {
-        $ret = $this->zConvArray('R');
-        if (! $retArray) {
+        $ret = $this->convertBuffer('R');
+        if (!$retArray) {
             $ret = implode("\n", $ret);
         }
         return $ret;
@@ -168,13 +164,12 @@ final class Buffer implements ConnectorInterface
     
     /**
      * Convert buffer content
-     *
      * @param string $type
      * @return array
      */
-    protected function zConvArray($type)
+    protected function convertBuffer($type)
     {
-        $ret = array();
+        $ret = [];
         foreach ($this->buffer as $data) {
             if ($type == 'R') {
                 $ret[] = $this->friendlyBinary($data);

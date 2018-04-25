@@ -17,6 +17,8 @@ namespace Posprint\Printers;
 use Posprint\Printers\DefaultPrinter;
 use Posprint\Printers\PrinterInterface;
 use Posprint\Graphics\Graphics;
+use InvalidArgumentException;
+use RuntimeException;
 
 final class Daruma extends DefaultPrinter implements PrinterInterface
 {
@@ -319,9 +321,9 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
      *  3 Quadruple      100 dpi                100 dpi
      *
      * @param  string $filename Path to image file
-     * @param  float  $width
-     * @param  float  $height
-     * @param  int    $size     0-normal 1-Double Width 2-Double Heigth 3-Quadruple
+     * @param  int $width
+     * @param  int $height
+     * @param  int $size 0-normal 1-Double Width 2-Double Heigth 3-Quadruple
      * @throws RuntimeException
      */
     public function putImage($filename = '', $width = null, $height = null, $size = 0)
@@ -400,9 +402,9 @@ final class Daruma extends DefaultPrinter implements PrinterInterface
      *      Standard 2 of 5 (Industrial): 0 a 9. Sem dígito de verificação
      *      MSI/Plessey: tamanho variável. 0 - 9. 1 dígito de verificação
      *
-     * @param int    $type        Default CODE128
-     * @param int    $height
-     * @param int    $lineWidth
+     * @param string $type        Default CODE128
+     * @param int $height
+     * @param int $lineWidth
      * @param string $txtPosition
      * @param string $txtFont
      * @param string $data

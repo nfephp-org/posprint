@@ -61,11 +61,10 @@ abstract class DefaultPrinter implements PrinterInterface
     const SYN = "\x16"; //Sincronismo
     const NOTRANS = false; //not translate characters codepage
     const TRANS = true; //perform a character convertion to codepage
-
+    const ACK = '\x06'; //Acknowledge
     //Cut types
     const CUT_FULL = 65;
     const CUT_PARTIAL = 66;
-    
     //Image sizing options
     const IMG_DEFAULT = 0;
     const IMG_DOUBLE_WIDTH = 1;
@@ -137,74 +136,62 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Seleted code page
      * Defined in printer class.
-     *
      * @var string
      */
     protected $codepage = 'CP437';
     /**
      * Number of codpage in printer memory.
-     *
      * @var int
      */
     protected $charsetTableNum = 0;
     /**
      * Selected Region character page
      * Defined in printer class.
-     *
      * @var string
      */
     protected $region = 'LATIN';
     /**
      * List all avaiable fonts
-     *
      * @var array
      */
     protected $aFont = array(0 => 'A', 1 => 'B', 2 => 'C', 3 => 'D', 4 => 'E', 97 => 'SA', 98 => 'SB');
     /**
      * Selected internal font.
-     *
      * @var string
      */
     protected $font = 'A';
     /**
      * Resolution in dpi.
-     *
      * @var int
      */
     public $dpi = 203; //dots per inch
     /**
      * Resolution in dpmm.
-     *
      * @var int
      */
     public $dpmm = 8; //dots per mm
     /**
      * Maximum width paper.
-     *
      * @var int
      */
     public $widthMaxmm = 80;//mm
     /**
      * Selected Width paper.
-     *
      * @var int
      */
     public $widthPaper = 80;//mm
     /**
      * Maximum width for printed area.
-     *
      * @var int
      */
     public $widthPrint = 72;//mm
     /**
      * Maximum width for printed area in dots.
-     *
      * @var int
      */
     public $widthMaxdots = 576;//dots
     /**
      * Maximum number of characters per line.
-     *
      * @var int
      */
     public $maxchars = 48;//max characters per line
@@ -212,31 +199,26 @@ abstract class DefaultPrinter implements PrinterInterface
     //protected property standards
     /**
      * Connector to printer.
-     *
-     * @var ConnectosInterface
+     * @var ConnectorInterface|null
      */
     protected $connector = null;
     /**
      * Seleted printer mode.
-     *
      * @var string
      */
     protected $printerMode = 'normal';
     /**
      * Selected bold mode.
-     *
      * @var bool
      */
     protected $boldMode = false;
     /**
      * Selected italic mode.
-     *
      * @var bool
      */
     protected $italicMode = false;
     /**
      * Selected condenced mode.
-     *
      * @var bool
      */
     protected $condensedMode = false;
@@ -252,26 +234,22 @@ abstract class DefaultPrinter implements PrinterInterface
     protected $doubleHeigth = false;
     /**
      * Selected reverse colors mode.
-     *
      * @var bool
      */
     protected $reverseColors = false;
     /**
      * Selected under lined mode.
-     *
      * @var bool
      */
     protected $underlineMode = false;
     /**
      * Selected rotate 90 degrees mode
-     *
      * @var bool
      */
     protected $rotateMode = false;
     /**
      * Buffer class.
-     *
-     * @var Connectors\Buffer
+     * @var Buffer
      */
     protected $buffer = null;
     /**
@@ -326,7 +304,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * @param string $model
      * @return string|array
      */
-    public function defaultModel($model = 'T20')
+    public function defaultModel($model = null)
     {
         if (!is_null($model)) {
             $model = strtoupper(trim($model));
@@ -570,7 +548,6 @@ abstract class DefaultPrinter implements PrinterInterface
     
     /**
      * Set expanded mode.
-     *
      * @param int $size multiplies normal size 1 - 8
      */
     public function setExpanded($size = null)
@@ -592,6 +569,7 @@ abstract class DefaultPrinter implements PrinterInterface
 
     /**
      * Set condensed mode.
+     * @return void
      */
     public function setCondensed()
     {
@@ -601,6 +579,7 @@ abstract class DefaultPrinter implements PrinterInterface
     
     /**
      * Set rotate 90 degrees.
+     * @return void
      */
     public function setRotate90()
     {
@@ -616,7 +595,6 @@ abstract class DefaultPrinter implements PrinterInterface
      * Send message or command to buffer
      * when sending commands is not required to convert characters,
      * so the variable may translate by false.
-     *
      * @param string $text
      */
     public function text($text = '')
@@ -629,7 +607,6 @@ abstract class DefaultPrinter implements PrinterInterface
      * Set horizontal and vertical motion units
      * $horizontal => character spacing 1/x"
      * $vertical => line spacing 1/y".
-     *
      * @param int $horizontal
      * @param int $vertical
      */
@@ -643,7 +620,6 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Set right-side character spacing
      * 0 ≤ n ≤ 255 => 1/x".
-     *
      * @param int $value
      */
     public function setCharSpacing($value = 3)
@@ -658,8 +634,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * any different number of zero will generate multiples of.
      * n  1/180-inch vertical motion
      * normal paragraph 30/180" => 4.23 mm
-     *
-     * @param int $paragraph
+     * @param int $value
      */
     public function setParagraph($value = 0)
     {
@@ -680,8 +655,7 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Prints data and feeds paper n lines
      * ESC d n Prints data and feeds paper n lines.
-     *
-     * @param integer $lines
+     * @param int|null $lines
      */
     public function lineFeed($lines = 1)
     {
@@ -696,7 +670,6 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Prints data and feeds paper n dots
      * ESC J n Prints data and feeds paper n dots.
-     *
      * @param int $dots
      */
     public function dotFeed($dots = 1)
@@ -708,7 +681,6 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Generate a pulse, for opening a cash drawer if one is connected.
      * The default settings should open an Epson drawer.
-     *
      * @param int $pin    0 or 1, for pin 2 or pin 5 kick-out connector respectively.
      * @param int $on_ms  pulse ON time, in milliseconds.
      * @param int $off_ms pulse OFF time, in milliseconds.
@@ -723,7 +695,6 @@ abstract class DefaultPrinter implements PrinterInterface
 
     /**
      * Cut the paper.
-     *
      * @param int $mode  FULL or PARTIAL. If not specified, FULL will be used.
      * @param int $lines Number of lines to feed after cut
      */
@@ -770,9 +741,9 @@ abstract class DefaultPrinter implements PrinterInterface
      *           n = 1, "1": Font B
      *
      * @param string $data
-     * @param int    $type        Default CODE128
-     * @param int    $height
-     * @param int    $lineWidth
+     * @param string $type Default CODE128
+     * @param int $height
+     * @param int $lineWidth
      * @param string $txtPosition
      * @param string $txtFont
      */
@@ -884,11 +855,10 @@ abstract class DefaultPrinter implements PrinterInterface
   
     /**
      * Prints QRCode
-     *
      * @param string $data   barcode data
      * @param string $level  correction level L,M,Q ou H
-     * @param int    $modelo QRCode model 1, 2 ou 0 Micro
-     * @param int    $wmod   width bar 3 ~ 16
+     * @param int $modelo QRCode model 1, 2 ou 0 Micro
+     * @param int $wmod   width bar 3 ~ 16
      */
     public function barcodeQRCode($data = '', $level = 'L', $modelo = 2, $wmod = 4)
     {
@@ -972,6 +942,8 @@ abstract class DefaultPrinter implements PrinterInterface
 
     /**
      * Send commands from buffer to connector printer.
+     * @param ConnectorInterface $conn
+     * @return string|void
      */
     public function send(ConnectorInterface $conn = null)
     {
@@ -991,9 +963,9 @@ abstract class DefaultPrinter implements PrinterInterface
      * Insert a image.
      *
      * @param  string $filename Path to image file
-     * @param  float  $width
-     * @param  float  $height
-     * @param  int    $size     0-normal 1-Double Width 2-Double Heigth
+     * @param  int $width
+     * @param  int $height
+     * @param  int $size 0-normal 1-Double Width 2-Double Heigth
      * @throws RuntimeException
      */
     public function putImage($filename = '', $width = null, $height = null, $size = 0)
@@ -1042,7 +1014,7 @@ abstract class DefaultPrinter implements PrinterInterface
      * Generate two characters for a number:
      * In lower and higher parts, or more parts as needed.
      *
-     * @param int $int    Input number
+     * @param int $input Input number
      * @param int $length The number of bytes to output (1 - 4).
      */
     protected static function intLowHigh($input, $length)
@@ -1096,12 +1068,11 @@ abstract class DefaultPrinter implements PrinterInterface
     /**
      * Verify if the argument given is not an integer within the specified range.
      * will return default instead
-     *
-     * @param  int $test    the input to test
-     * @param  int $min     the minimum allowable value (inclusive)
-     * @param  int $max     the maximum allowable value (inclusive)
+     * @param  int|null $test the input to test
+     * @param  int $min the minimum allowable value (inclusive)
+     * @param  int $max the maximum allowable value (inclusive)
      * @param  int $default the default value
-     * @return int
+     * @return int|null
      */
     protected static function validateInteger($test, $min, $max, $default)
     {
@@ -1110,22 +1081,7 @@ abstract class DefaultPrinter implements PrinterInterface
         }
         return $test;
     }
-
-    /**
-     * Verify if the argument given can't be cast to a string.
-     *
-     * @param  string $test    the input to test
-     * @param  string $default the default value
-     * @return string
-     */
-    protected static function validateString($test, $default)
-    {
-        if (is_object($test) && !method_exists($test, '__toString')) {
-            return $default;
-        }
-        return $test;
-    }
-    
+  
     /**
      * Translate the text from UTF-8 for the specified codepage
      * this translation uses "iconv" and admits texts ONLY in UTF-8.

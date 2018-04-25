@@ -22,7 +22,7 @@ use InvalidArgumentException;
 class File implements ConnectorInterface
 {
     /**
-     * @var resource The file pointer to send data to.
+     * @var resource|bool The file pointer to send data to.
      */
     protected $resource = false;
 
@@ -30,21 +30,22 @@ class File implements ConnectorInterface
      * Construct new connector, given a filename
      * If created a binary file must be granted the necessary
      * permissions to create and write the system file
-     *
-     * @param string $filename
+     * @param string|null $filename
      */
     public function __construct($filename = null)
     {
-        if (is_null($filename) || empty($filename)) {
-            throw new InvalidArgumentException("A filepath must be passed!");
+        if (!is_null($filename) && empty($filename)) {
+            throw new InvalidArgumentException("A filename must be passed!");
         }
-        $command = 'rb+';
-        if (! is_file($filename)) {
-            $command = 'wb+';
-        }
-        $this->resource = @fopen($filename, $command);
-        if ($this->resource === false) {
-            throw new RuntimeException("Failed to open the file. Check the permissions!");
+        if (!is_null($filename)) {
+            $command = 'rb+';
+            if (!is_file($filename)) {
+                $command = 'wb+';
+            }
+            $this->resource = @fopen($filename, $command);
+            if ($this->resource === false) {
+                throw new RuntimeException("Failed to open the file. Check the permissions!");
+            }
         }
     }
 
@@ -73,7 +74,6 @@ class File implements ConnectorInterface
 
     /**
      * Write data to the file
-     *
      * @param string $data
      * @return int
      */
@@ -84,15 +84,18 @@ class File implements ConnectorInterface
         }
         return 0;
     }
+    
     /**
      * Read some bytes from file
-     *
      * @param  int $len
-     * @return stirng
+     * @return string
      */
     public function read($len = null)
     {
         $data = '';
+        if (!is_resource($this->resource)) {
+            return $data;
+        }
         if (!is_null($len) && is_numeric($len)) {
             $len = ceil($len);
             return fread($this->resource, $len);

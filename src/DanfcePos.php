@@ -3,10 +3,10 @@
 namespace Posprint;
 
 /**
- * Esta classe foi colocada aqui apneas para facilitar o desenvolvimento, seu local correto
- * é no repositório sped-da
- *
- * em caso de contingência criar duas vias consumidor e estabelecimento
+ * Esta classe foi colocada aqui apenas para facilitar
+ * o desenvolvimento, seu local correto
+ * em caso de contingência criar duas vias consumidor
+ * e estabelecimento
  */
 
 use Posprint\Printers\PrinterInterface;
@@ -16,14 +16,14 @@ class DanfcePos
 {
     /**
      * NFCe
-     * @var SimpleXMLElement
+     * @var \SimpleXMLElement
      */
-    protected $nfce = '';
+    protected $nfce;
     /**
      * protNFe
-     * @var SimpleXMLElement
+     * @var \SimpleXMLElement
      */
-    protected $protNFe = '';
+    protected $protNFe;
     /**
      * Printer
      * @var PrinterInterface
@@ -33,7 +33,7 @@ class DanfcePos
      * Documento montado
      * @var array
      */
-    protected $da = array();
+    protected $da = [];
     /**
      * Total de itens da NFCe
      * @var integer
@@ -67,8 +67,7 @@ class DanfcePos
      * Carrega a impressora a ser usada
      * a mesma deverá já ter sido pré definida inclusive seu
      * conector
-     *
-     * @param PrinterInterface $this->printer
+     * @param PrinterInterface $printer
      */
     public function __construct(PrinterInterface $printer)
     {
@@ -235,7 +234,7 @@ class DanfcePos
         $pag = $this->nfce->infNFe->pag;
         $tot = $pag->count();
         for ($x=0; $x<=$tot-1; $x++) {
-            $tPag = (string) $this->tipoPag($pag[0]->tPag);
+            $tPag = $this->tipoPag($pag[0]->tPag);
             $vPag = (float) $pag[0]->vPag;
             $this->printer->text($tPag . '                  R$ '. $vPag);
         }

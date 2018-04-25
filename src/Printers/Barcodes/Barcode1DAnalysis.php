@@ -56,7 +56,7 @@ class Barcode1DAnalysis
         if (($oddeven == 'even' && $dlen % 2 != 0)
             || ($oddeven == 'odd' && $dlen % 2 == 0)
         ) {
-                return false;
+            return false;
         }
         $al = explode('-', $len);
         if (count($al) > 1) {

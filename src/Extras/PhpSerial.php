@@ -32,135 +32,114 @@ class PhpSerial
     const OS_BSD = 5; //FreeBSD or NetBSD or OpenBSD /dev/ttyu1
     const OS_OSX = 6; //Darwin MacOS
     const OS_HPUX = 7; //tty1p0
-    
     const SERIAL_DEVICE_NOTSET = 0;
     const SERIAL_DEVICE_SET = 1;
     const SERIAL_DEVICE_OPENED = 2;
-    
     const PARITY_NONE = 0;
     const PARITY_ODD = 1;
     const PARITY_EVEN = 2;
-    
     const FLOW_NONE = 0; //no flow control
     const FLOW_RTSCTS = 1; // use RTS/CTS handshaking
     const FLOW_XONXOFF = 2; //use XON/XOFF protocol
     
     /**
      * Pointer for device
-     *
-     * @var resource
+     * @var resource|bool
      */
-    protected $handle = null;
+    protected $handle = false;
     /**
      * Data buffer
-     *
      * @var string
      */
     protected $buffer = "";
     /**
      * This var says if buffer should be flushed by write (true) or
      * manually (false)
-     *
      * @var bool
      */
     protected $autoflush = false;
     /**
      * Wait time after send data to serial
-     *
      * @var float
      */
     protected $waittime = 0.1;
     /**
      * OS type where php is running
      * linux is default
-     *
      * @var int
      */
     protected $ostype = 2;
     /**
      * Mode command to set up serial port
      * formated device mode for especific OS use
-     *
-     * @var string
+     * @var string|null
      */
     protected $mode = '';
     /**
      * Status of port
      * NoSet, Set or Open
-     *
-     * @var int
+     * @var int|null
      */
     protected $state = self::SERIAL_DEVICE_NOTSET;
     /**
      * Port name
-     *
-     * @var string
+     * @var string|null
      */
     protected $port = '/dev/ttyS0';
     /**
      * Data bits
-     *
-     * @var int
+     * @var int|null
      */
     protected $databits = 8;
     /**
      * Baud Rate
-     *
-     * @var int
+     * @var int|null
      */
     protected $baudrate = 9600;
     /**
      * Parity
-     *
-     * @var int
+     * @var int|null
      */
     protected $parity = self::PARITY_NONE;
     /**
      * Stop Bits
-     *
-     * @var float
+     * @var int|null
      */
     protected $stopbits = 1;
     /**
      * Flow Control
-     *
-     * @var int
+     * @var int|null
      */
     protected $flowcontrol = self::FLOW_NONE;
     /**
      * Formated device name command
-     *
-     * @var string
+     * @var string|null
      */
     protected $device = '/dev/ttyS0';
     /**
      * Formated Data Bits command
      *
-     * @var string
+     * @var string|null
      */
     protected $formatedDataBits = 'cs8';
     /**
      * Formated Baud Rate command
-     *
-     * @var string
+     * @var string|null
      */
     protected $formatedBaudRate = '9600';
     /**
      * Formated parity command
-     *
-     * @var string
+     * @var string|null
      */
     protected $formatedParity = '-parenb';
     /**
      * Formated stop bits command
-     *
-     * @var string
+     * @var string|null
      */
     protected $formatedStopBits = '-cstopb';
     /**
      * Formated flow control command
-     *
-     * @var string
+     * @var string|null
      */
     protected $formatedFlowControl = 'clocal -crtscts -ixon -ixoff';
     
@@ -198,7 +177,6 @@ class PhpSerial
     /**
      * Constructor
      * Set ostype parameter
-     *
      * @param int $forceOS
      */
     public function __construct($forceOS = null)
@@ -246,7 +224,6 @@ class PhpSerial
     
     /**
      * Open set port
-     *
      * @return boolean
      */
     public function open()
@@ -263,7 +240,6 @@ class PhpSerial
             sleep(1);
         }
         if ($this->handle === false) {
-            $this->handle = null;
             $this->state = self::SERIAL_DEVICE_NOTSET;
             throw new RuntimeException('Fail to open device. Check permissions.');
         }
@@ -283,7 +259,7 @@ class PhpSerial
             return true;
         }
         if (fclose($this->handle)) {
-            $this->handle = null;
+            $this->handle = false;
             $this->state = self::SERIAL_DEVICE_SET;
             return true;
         }
@@ -293,8 +269,7 @@ class PhpSerial
     /**
      * Returns the setup configuration for serial port
      * this command will be exectuted in terminal
-     *
-     * @return string
+     * @return string|null
      */
     public function getSetUp()
     {
@@ -305,7 +280,6 @@ class PhpSerial
      * Use class parameters to configure the serial port
      * before the serial port is opened it must be configured,
      * and in windows environment, all sets at a single time
-     *
      * @return bool
      */
     public function setUp()
@@ -326,15 +300,15 @@ class PhpSerial
             7 => 'stty -F' //HPUX
         ];
         $mode = $modesos[$this->ostype]
-                . " "
-                . "$this->device "
-                . "$this->formatedBaudRate "
-                . "$this->formatedParity "
-                . "$this->formatedDataBits "
-                . "$this->formatedStopBits "
-                . "$this->formatedFlowControl";
+            . " "
+            . "$this->device "
+            . "$this->formatedBaudRate "
+            . "$this->formatedParity "
+            . "$this->formatedDataBits "
+            . "$this->formatedStopBits "
+            . "$this->formatedFlowControl";
         
-        $out = '';
+        $out = null;
         if ($this->execCommand($mode, $out) != 0) {
             throw new RuntimeException("SetUP fail with: ".$out[1]);
         }
@@ -345,7 +319,6 @@ class PhpSerial
     
     /**
      * Set automatic send massage to serial
-     *
      * @param bool  $auto
      * @param float $waittime
      */
@@ -409,14 +382,13 @@ class PhpSerial
      * depends of getAuto()
      * if  getAuto() == true this command writes directly to port
      * if  getAuto() == false this command writes to buffer (default)
-     *
      * @param  string $data
      * @return boolean
      */
     public function write($data)
     {
         if ($this->state !== self::SERIAL_DEVICE_OPENED) {
-            return '';
+            return false;
         }
         $this->buffer .= $data;
         if ($this->autoflush === true) {
@@ -428,13 +400,12 @@ class PhpSerial
     
     /**
      * Flushs imediatly data to serial port
-     *
      * @return boolean
      */
     public function flush()
     {
         if ($this->state !== self::SERIAL_DEVICE_OPENED) {
-            return '';
+            return true;
         }
         if (fwrite($this->handle, $this->buffer) !== false) {
             $this->buffer = "";
@@ -473,8 +444,7 @@ class PhpSerial
     
     /**
      * Returns port name
-     *
-     * @return string
+     * @return string|null
      */
     public function getPort()
     {
@@ -483,8 +453,7 @@ class PhpSerial
     
     /**
      * Returns device formated name
-     *
-     * @return string
+     * @return string|null
      */
     public function getDevice()
     {
@@ -510,8 +479,7 @@ class PhpSerial
     
     /**
      * Returns char length
-     *
-     * @return int
+     * @return int|null
      */
     public function getDataBits()
     {
@@ -552,8 +520,7 @@ class PhpSerial
     
     /**
      * Return baud rate
-     *
-     * @return int
+     * @return int|null
      */
     public function getBaudRate()
     {
@@ -562,7 +529,6 @@ class PhpSerial
     
     /**
      * Format baud rate command
-     *
      * @param  int $rate
      * @return string
      */
@@ -630,26 +596,24 @@ class PhpSerial
     /**
      * Set length of stop bits
      * the length of a stop bit.
-     * It must be either 1, 1.5 or 2.
+     * It must be either 1 or 2.
      * 1.5 is not supported under linux and on some computers.
-     *
-     * @param  float $length
+     * @param int $length
      * @return boolean
      */
     public function setStopBits($length)
     {
-        if ($length !== 1 && $length !== 1.5 && $length !== 2) {
+        if ($length != 1 && $length != 2) {
             $length = 1;
         }
         $this->stopbits = $length;
-        $this->formatedStopBits = $this->zStopBits($length);
+        $this->formatedStopBits = $this->formatStopBits($length);
         return true;
     }
     
     /**
      * Return stop bits set
-     *
-     * @return float
+     * @return int|null
      */
     public function getStopBits()
     {
@@ -658,11 +622,10 @@ class PhpSerial
     
     /**
      * Format stop bit command
-     *
-     * @param  float $length
-     * @return string
+     * @param int $length
+     * @return string|null
      */
-    public function zStopBits($length)
+    public function formatStopBits($length)
     {
         $stopb = (($length == 1) ? "-" : "") . "cstopb";
         if ($this->ostype === self::OS_WIN) {
@@ -677,7 +640,6 @@ class PhpSerial
      *   "none" : no flow control
      *   "rts/cts" : use RTS/CTS handshaking
      *   "xon/xoff" : use XON/XOFF protocol
-     *
      * @param  string $flow
      * @return boolean
      */
@@ -699,7 +661,6 @@ class PhpSerial
     
     /**
      * Returns flow control set
-     *
      * @return string
      */
     public function getFlowControl()
@@ -716,7 +677,6 @@ class PhpSerial
     
     /**
      * Return flow control command formated for OP type
-     *
      * @param  int $flow
      * @return string
      */
@@ -766,12 +726,11 @@ class PhpSerial
                 "-clocal -crtscts ixon ixoff"
             ]
         ];
-        return (string) $modeos[$this->ostype][$flow];
+        return $modeos[$this->ostype][$flow];
     }
     
     /**
      * Find OS type
-     *
      * @return int
      */
     protected function getOs()
@@ -799,9 +758,8 @@ class PhpSerial
     
     /**
      * Exec command line in OS console
-     *
      * @param  string $cmd comand line to execute
-     * @param  array  $out retorn of this command in terminal
+     * @param  array|null  $out return of this command in terminal
      * @return int
      */
     public function execCommand($cmd, &$out = null)
