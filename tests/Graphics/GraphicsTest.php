@@ -27,6 +27,7 @@ class GraphicsTest extends TestCase
     {
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.png');
         $graphics = new Graphics($imagePath);
+        $this->assertNotEmpty($graphics->img);
     }
 
     /**
@@ -85,8 +86,10 @@ class GraphicsTest extends TestCase
     {
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux.bmp');
         $graphics = new Graphics($imagePath);
+        $this->assertNotEmpty($graphics->img);
         $imagePath = realpath(dirname(__FILE__).'/../fixtures/tux2.png');
-        $graphics->save($imagePath, 'PNG');
+        $resp = $graphics->save($imagePath, 'PNG');
+        $this->assertTrue($resp);
     }
 
     /**
@@ -129,9 +132,9 @@ class GraphicsTest extends TestCase
         $graphics = new Graphics($imagePath);
         $result = $graphics->getRasterImage();
         $filename = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'tux.raw';
+        //file_put_contents($filename, $result);
         $expected = file_get_contents($filename);
-        $result = $graphics->getRasterImage();
-        //$this->assertEquals($result, $expected);
+        $this->assertEquals($result, $expected);
     }
 
     /**
@@ -168,5 +171,6 @@ class GraphicsTest extends TestCase
         $graphics->imageQRCode();
         $filename = realpath(dirname(__FILE__).'/../fixtures').DIRECTORY_SEPARATOR.'qr.png';
         $graphics->save($filename);
+        $this->assertTrue(true);
     }
 }

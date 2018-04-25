@@ -26,11 +26,12 @@ class Network extends File implements ConnectorInterface
      * Open a connection to a TCP/IP socket for ethernet printer connections
      *
      * @param  string $hostname
-     * @param  int    $port
+     * @param  int $port
      * @throws RuntimeException
      */
     public function __construct($hostname = '', $port = 9100)
     {
+        parent::__construct();
         if (empty($hostname)) {
             throw new InvalidArgumentException("A hostname or a valid IP must be passed.");
         }

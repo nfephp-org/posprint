@@ -21,37 +21,45 @@ namespace Posprint\Printers;
 interface PrinterInterface
 {
     //DEFAULT ENVIRONMENT
-    public function defaultModel();
-    public function defaultCodePage();
-    public function defaultRegionPage();
-    public function defaultFont();
+    public function defaultModel($model = null);
+    public function defaultCodePage($codepage = null);
+    public function defaultRegionPage($region = null);
+    public function defaultFont($font = null);
     //SET UP
-    public function setCodePage();
-    public function setRegionPage();
-    public function setFont();
+    public function setCodePage($codepage = null);
+    public function setRegionPage($region = null);
+    public function setFont($font = null);
     public function setBold();
     public function setUnderlined();
     public function setItalic();
     public function setCondensed();
     public function setExpanded();
-    public function setAlign();
+    public function setAlign($align = null);
     public function setReverseColors();
     public function setRotate90();
-    public function setSpacing();
-    public function setCharSpacing();
-    public function setParagraph();
-    public function setPrintMode();
+    public function setSpacing($horizontal = 0, $vertical = 0);
+    public function setCharSpacing($value = 3);
+    public function setParagraph($value = 0);
+    public function setPrintMode($mode = null);
     //ACTIONS
+    public function getBuffer($type = '');
     public function initialize();
-    public function text();
-    public function lineFeed();
-    public function dotFeed();
+    public function text($text = '');
+    public function lineFeed($lines = 1);
+    public function dotFeed($dots = 1);
     public function putImage();
-    public function pulse();
-    public function cut();
-    public function barcode();
-    public function barcodeQRCode();
-    public function barcodePDF417();
+    public function pulse($pin = 0, $on_ms = 120, $off_ms = 240);
+    public function cut($mode = 'PARTIAL', $lines = 3);
+    public function barcode(
+        $data = '123456',
+        $type = 'CODE128',
+        $height = 162,
+        $lineWidth = 2,
+        $txtPosition = 'none',
+        $txtFont = ''
+    );
+    public function barcodeQRCode($data = '', $level = 'L', $modelo = 2, $wmod = 4);
+    public function barcodePDF417($data = '', $ecc = 5, $pheight = 2, $pwidth = 2, $colunms = 3);
     public function send();
     public function close();
 }

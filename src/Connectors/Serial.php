@@ -19,12 +19,10 @@ use Posprint\Extras\PhpSerial;
 class Serial implements ConnectorInterface
 {
     /**
-     *
      * @var PhpSerial
      */
     protected $resource;
     /**
-     *
      * @var bool
      */
     protected $deviceStatus = false;
@@ -36,7 +34,7 @@ class Serial implements ConnectorInterface
      * @param int $baudRate
      * @param int $byteSize
      * @param string $parity
-     * @param string $stopbits
+     * @param int $stopbits
      * @param string $flowctrl
      */
     public function __construct(
@@ -44,7 +42,7 @@ class Serial implements ConnectorInterface
         $baudRate = 9600,
         $byteSize = 8,
         $parity = 'none',
-        $stopbits = '1',
+        $stopbits = 1,
         $flowctrl = 'none'
     ) {
         $this->resource = new PhpSerial();

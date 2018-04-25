@@ -16,13 +16,15 @@ namespace Posprint\Printers;
 
 use Posprint\Printers\DefaultPrinter;
 use Posprint\Printers\PrinterInterface;
+use Posprint\Graphics\Graphics;
+use InvalidArgumentException;
+use RuntimeException;
 
 class Bematech extends DefaultPrinter implements PrinterInterface
 {
     
     /**
      * List all available code pages.
-     *
      * @var array
      */
     protected $aCodePage = array(
@@ -34,39 +36,40 @@ class Bematech extends DefaultPrinter implements PrinterInterface
         'CP866' => array('conv' => '866', 'table' => '6', 'desc' => 'PC866: Cyrillic'),
         'UTF8'  => array('conv' => 'UTF8', 'table' => '8', 'desc' => 'UTF-8: Unicode')
     );
+    
     /**
      * List all available region pages.
-     *
      * @var array
      */
     protected $aRegion = array(
         'LATIN'
     );
+    
     /**
      * Seleted printer mode.
-     *
      * @var string
      */
     protected $printerMode = 'ESCBEMA';
+    
     /**
      * List all avaiable fonts
-     *
      * @var array
      */
     protected $aFont = array(0 => 'C', 1 => 'D');
+    
     /**
      * Selected internal font.
-     *
      * @var string
      */
     protected $font = 'C';
+    
     /**
      * Seleted code page
      * Defined in printer class.
-     *
      * @var string
      */
     protected $codepage = 'CP850';
+    
     /**
      * Acceptable barcodes list
      * @var array
@@ -84,6 +87,7 @@ class Bematech extends DefaultPrinter implements PrinterInterface
         'ISBN' => null,
         'MSI' => null
     ];
+    
     /**
      * List of supported models
      * @var array
@@ -91,6 +95,7 @@ class Bematech extends DefaultPrinter implements PrinterInterface
     protected $modelList = [
         '4200TH'
     ];
+    
     /**
      * Selected model
      * @var string
@@ -106,7 +111,6 @@ class Bematech extends DefaultPrinter implements PrinterInterface
     
     /**
      * Select printer mode
-     *
      * @param string $mode
      */
     public function setPrintMode($mode = 'ESCBEMA')
@@ -124,7 +128,7 @@ class Bematech extends DefaultPrinter implements PrinterInterface
         if ($this->printerMode == 'ESCPOS') {
             $nmod = 1;
         }
-        $this->buffer->write(self::GS . chr(249) . chr(53) . $nmode);
+        $this->buffer->write(self::GS . chr(249) . chr(53) . $nmod);
     }
     
     /**
@@ -156,13 +160,12 @@ class Bematech extends DefaultPrinter implements PrinterInterface
     /**
      * Set a printer font
      * If send a valid font name will set the printer otherelse a default font is selected
-     *
      * @param string $font
      */
     public function setFont($font = null)
     {
         if ($this->printerMode == 'ESCPOS') {
-            parent::setFont($codepage);
+            parent::setFont($this->codepage);
         }
     }
 
@@ -243,7 +246,7 @@ class Bematech extends DefaultPrinter implements PrinterInterface
     public function setReverseColors()
     {
         if ($this->printerMode == 'ESCPOS') {
-            parent::reverseColors();
+            parent::setReverseColors();
         }
     }
     
@@ -284,8 +287,7 @@ class Bematech extends DefaultPrinter implements PrinterInterface
     /**
      * Prints data and feeds paper n lines
      * ESC d n Prints data and feeds paper n lines.
-     *
-     * @param integer $lines
+     * @param int|null $lines
      */
     public function lineFeed($lines = 1)
     {
@@ -306,7 +308,7 @@ class Bematech extends DefaultPrinter implements PrinterInterface
      * GS v0 m xL xH yL yH d1 ... dk
      *
      * @param string $filename
-     * @param intger $width
+     * @param integer $width
      * @param integer $height
      * @param integer $size resolution relation
      * @throws RuntimeException
@@ -371,10 +373,9 @@ class Bematech extends DefaultPrinter implements PrinterInterface
 
     /**
      * Implements barcodes 1D
-     *
-     * @param int    $type        Default CODE128
-     * @param int    $height
-     * @param int    $lineWidth
+     * @param string $type Default CODE128
+     * @param int $height
+     * @param int $lineWidth
      * @param string $txtPosition
      * @param string $txtFont
      * @param string $data
@@ -419,19 +420,19 @@ class Bematech extends DefaultPrinter implements PrinterInterface
                 $this->buffer->write(self::GS . 'kD' .self::BEL . $data);
                 break;
             case 'CODE39':
-                $this->buffer->write(self::GS . 'kE' . char($n) . $data);
+                $this->buffer->write(self::GS . 'kE' . chr($n) . $data);
                 break;
             case 'I25':
-                $this->buffer->write(self::GS . 'kF' . char($n) . $data);
+                $this->buffer->write(self::GS . 'kF' . chr($n) . $data);
                 break;
             case 'CODABAR':
-                $this->buffer->write(self::GS . 'kG' . char($n) . $data);
+                $this->buffer->write(self::GS . 'kG' . chr($n) . $data);
                 break;
             case 'CODE93':
-                $this->buffer->write(self::GS . 'kH' . char($n) . $data);
+                $this->buffer->write(self::GS . 'kH' . chr($n) . $data);
                 break;
             case 'CODE128':
-                $this->buffer->write(self::GS . 'kI' . char($n) . $data);
+                $this->buffer->write(self::GS . 'kI' . chr($n) . $data);
                 break;
             case 'ISBN':
                 $this->buffer->write(self::GS . 'k' . self::NAK . $data . self::NUL);
