@@ -3,10 +3,10 @@
 namespace Posprint;
 
 /**
- * Esta classe foi colocada aqui apenas para facilitar
- * o desenvolvimento, seu local correto
- * em caso de contingência criar duas vias consumidor
- * e estabelecimento
+ * Esta classe foi colocada aqui apneas para facilitar o desenvolvimento, seu local correto
+ * é no repositório sped-da
+ *
+ * em caso de contingência criar duas vias consumidor e estabelecimento
  */
 
 use Posprint\Printers\PrinterInterface;
@@ -16,14 +16,14 @@ class DanfcePos
 {
     /**
      * NFCe
-     * @var \SimpleXMLElement
+     * @var SimpleXMLElement
      */
-    protected $nfce;
+    protected $nfce = '';
     /**
      * protNFe
-     * @var \SimpleXMLElement
+     * @var SimpleXMLElement
      */
-    protected $protNFe;
+    protected $protNFe = '';
     /**
      * Printer
      * @var PrinterInterface
@@ -33,7 +33,7 @@ class DanfcePos
      * Documento montado
      * @var array
      */
-    protected $da = [];
+    protected $da = array();
     /**
      * Total de itens da NFCe
      * @var integer
@@ -67,7 +67,8 @@ class DanfcePos
      * Carrega a impressora a ser usada
      * a mesma deverá já ter sido pré definida inclusive seu
      * conector
-     * @param PrinterInterface $printer
+     *
+     * @param PrinterInterface $this->printer
      */
     public function __construct(PrinterInterface $printer)
     {
@@ -158,13 +159,16 @@ class DanfcePos
             $this->uri = $this->aURI[$uf];
         }
         $this->printer->setAlign('C');
+        $this->printer->setBold();
         $this->printer->text($razao);
+        $this->printer->setBold();
+        $this->printer->lineFeed();
         $this->printer->text('CNPJ: '.$cnpj.'     '.'IE: ' . $ie);
-        $this->printer->text('IM: '.$im);
-        $this->printer->setAlign('L');
-        //o que acontece quando o texto é maior que o numero de carecteres da linha ??
-        $this->printer->text($log . ', ' . $nro . ' ' . $bairro . ' ' . $mun . ' ' . $uf);
-        //linha divisória ??
+        $this->printer->lineFeed();
+        $this->printer->text($log . ', ' . $nro);
+        $this->printer->lineFeed();
+        $this->printer->text($bairro . ', ' . $mun . ' - ' . $uf);
+        $this->printer->lineFeed();
     }
     
     /**
@@ -174,12 +178,14 @@ class DanfcePos
     protected function parteII()
     {
         $this->printer->setAlign('C');
-        $this->printer->text('DANFE NFC-e Documento Auxiliar');
-        $this->printer->text('da Nota Fiscal eletrônica para consumidor final');
+        $this->printer->text('DANFE NFC-E Nota Fiscal Eletronica');
+        $this->printer->lineFeed();
+        $this->printer->text('para Consumidor Final');
+        $this->printer->lineFeed();
         $this->printer->setBold();
-        $this->printer->text('Não permite aproveitamento de crédito de ICMS');
+        $this->printer->text('Nao permite aproveitamento de credito de ICMS');
         $this->printer->setBold();
-        //linha divisória ??
+        $this->printer->lineFeed();
     }
     
     /**
@@ -189,10 +195,10 @@ class DanfcePos
     protected function parteIII()
     {
         $this->printer->setAlign('L');
-        $this->printer->text('Item Cod   Desc         Qtd    V.Unit  V.Total');
         //obter dados dos itens da NFCe
         $det = $this->nfce->infNFe->det;
         $this->totItens = $det->count();
+        $vtot = 0;
         for ($x=0; $x<=$this->totItens-1; $x++) {
             $nItem = (int) $det[$x]->attributes()->{'nItem'};
             $cProd = (string) $det[$x]->prod->cProd;
@@ -201,45 +207,64 @@ class DanfcePos
             $uCom = (string) $det[$x]->prod->uCom;
             $vUnCom = (float) $det[$x]->prod->vUnCom;
             $vProd = (float) $det[$x]->prod->vProd;
-            //falta formatar os campos e o espaçamento entre eles
-            $this->printer->text($nItem .  $cProd. $xProd . $qCom . $uCom . $vUnCom . $vProd);
+            $vtot += $vProd;
+            $this->printer->setBold();
+            $this->printer->text($cProd . " - " . $xProd);
+            $this->printer->setBold();
+            $this->printer->lineFeed();
+            $this->printer->setUnderlined();
+            $printvalue = str_pad((string) $qCom." ".$uCom."   *  ".$vUnCom." = ",40," ",STR_PAD_LEFT) . str_pad((string) $vProd,10," ",STR_PAD_LEFT);
+            $this->printer->text($printvalue);
+            $this->printer->setUnderlined();
+            $this->printer->lineFeed();
         }
-        //linha divisória ??
+        $printtot = str_pad((string) "Total:",40," ",STR_PAD_LEFT) . str_pad((string) $vtot,10," ",STR_PAD_LEFT);
+        $this->printer->setBold();
+        $this->printer->text($printtot);
+        $this->printer->setBold();
+        $this->printer->lineFeed();
+    }
+
+    /**
+     * Parte IV - Totais da Venda
+     * Campo Obrigatório
+     */
+    protected function parteIV()
+    {
+        $vNF = (float) $this->nfce->infNFe->total->ICMSTot->vNF;
+        $this->printer->setAlign('L');
+        $printTotItens = str_pad((string) 'QTD. TOTAL DE ITENS:',40," ",STR_PAD_LEFT) . str_pad((string) $this->totItens,10," ",STR_PAD_LEFT);
+        $this->printer->text($printTotItens);
+        $this->printer->lineFeed();
+        $pag = $this->nfce->infNFe->pag->detPag;
+        $tot = $pag->count();
+        for ($x=0; $x<=$tot-1; $x++) {
+            $tPag = (string) $pag->tPag;
+            $tPag = (string) $this->tipoPag($tPag);
+            $vPag = (float) $pag->vPag;
+            $printFormPag = str_pad((string) $tPag,40," ",STR_PAD_LEFT) . str_pad((string) $vPag,10," ",STR_PAD_LEFT);
+            $this->printer->text($printFormPag);
+            $this->printer->lineFeed();
+        }
     }
     
     /**
      * Parte V - Informação de tributos
      * Campo Obrigatório
      */
-    protected function parteIV()
+    protected function parteV()
     {
         $vTotTrib = (float) $this->nfce->infNFe->total->ICMSTot->vTotTrib;
         $this->printer->setAlign('L');
-        $this->printer->text('Informação dos Tributos Totais:' . '' . 'R$ ' .  $vTotTrib);
+        //$this->printer->text('Informação dos Tributos Totais:' . '' . 'R$ ' .  $vTotTrib);
+        $printimp = str_pad((string) "Informacao dos Tributos Incidentes:",40," ",STR_PAD_LEFT) . str_pad((string) $vTotTrib,10," ",STR_PAD_LEFT);
+        $this->printer->text($printimp);
+        $this->printer->lineFeed();
+        $this->printer->setAlign('C');
         $this->printer->text('Incidentes (Lei Federal 12.741 /2012) - Fonte IBPT');
-        //linha divisória ??
+        $this->printer->lineFeed();
     }
     
-    /**
-     * Parte IV - Totais da Venda
-     * Campo Obrigatório
-     */
-    protected function parteV()
-    {
-        $vNF = (float) $this->nfce->infNFe->total->ICMSTot->vNF;
-        $this->printer->setAlign('L');
-        $this->printer->text('QTD. TOTAL DE ITENS' . ' ' . $this->totItens);
-        $this->printer->text('VALOR TOTAL            R$ ' . $vNF);
-        $this->printer->text('FORMA PAGAMENTO          VALOR PAGO');
-        $pag = $this->nfce->infNFe->pag;
-        $tot = $pag->count();
-        for ($x=0; $x<=$tot-1; $x++) {
-            $tPag = $this->tipoPag($pag[0]->tPag);
-            $vPag = (float) $pag[0]->vPag;
-            $this->printer->text($tPag . '                  R$ '. $vPag);
-        }
-        //linha divisória ??
-    }
     
     /**
      * Parte VI - Mensagem de Interesse do Contribuinte
@@ -265,25 +290,31 @@ class DanfcePos
         if ($tpAmb == 2) {
             $this->printer->setAlign('C');
             $this->printer->text('EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL');
+            $this->printer->lineFeed();
         }
         $tpEmis = (int) $this->nfce->infNFe->ide->tpEmis;
         if ($tpEmis != 1) {
             $this->printer->setAlign('C');
             $this->printer->text('EMITIDA EM AMBIENTE DE CONTINGẼNCIA');
+            $this->printer->lineFeed();
         }
         $nNF = (float) $this->nfce->infNFe->ide->nNF;
         $serie = (int) $this->nfce->infNFe->ide->serie;
         $dhEmi = (string) $this->nfce->infNFe->ide->dhEmi;
         $Id = (string) $this->nfce->infNFe->attributes()->{'Id'};
         $chave = substr($Id, 3, strlen($Id)-3);
-        $this->printer->setAlign('L');
-        $this->printer->text('Nr. ' . $nNF. ' Serie ' .$serie . ' Emissão ' .$dhEmi . ' via Consumidor');
         $this->printer->setAlign('C');
+        //$this->printer->text('Nr. ' . $nNF. ' Serie ' .$serie . ' Emissão ' .$dhEmi . ' via Consumidor');
+        $this->printer->text("NFCE: ". preg_replace( "/[^0-9]/", "", $nNF ) ."   Serie: ". $serie ."   ". date( 'd/m/Y H:i:s', strtotime($dhEmi) ) );
+        $this->printer->lineFeed();
         $this->printer->text('Consulte pela chave de acesso em');
+        $this->printer->lineFeed();
         $this->printer->text($this->uri);
+        $this->printer->lineFeed();
         $this->printer->text('CHAVE DE ACESSO');
+        $this->printer->lineFeed();
         $this->printer->text($chave);
-        //linha divisória ??
+        $this->printer->lineFeed();
     }
     
     /**
@@ -295,23 +326,30 @@ class DanfcePos
         $this->printer->setAlign('C');
         $dest = $this->nfce->infNFe->dest;
         if (empty($dest)) {
-            $this->printer->text('CONSUMIDOR NÃO IDENTIFICADO');
+            $this->printer->setBold();
+            $this->printer->text('CONSUMIDOR NAO IDENTIFICADO');
+            $this->printer->setBold();
+            $this->printer->lineFeed();
             return;
         }
         $xNome = (string) $this->nfce->infNFe->dest->xNome;
         $this->printer->text($xNome);
+        $this->printer->lineFeed();
         $cnpj = (string) $this->nfce->infNFe->dest->CNPJ;
         $cpf = (string) $this->nfce->infNFe->dest->CPF;
         $idEstrangeiro = (string) $this->nfce->infNFe->dest->idEstrangeiro;
-        $this->printer->setAlign('L');
+        $this->printer->setAlign('C');
         if (!empty($cnpj)) {
             $this->printer->text('CNPJ ' . $cnpj);
+            $this->printer->lineFeed();
         }
         if (!empty($cpf)) {
             $this->printer->text('CPF ' . $cpf);
+            $this->printer->lineFeed();
         }
         if (!empty($idEstrangeiro)) {
             $this->printer->text('Extrangeiro ' . $idEstrangeiro);
+            $this->printer->lineFeed();
         }
         $xLgr = (string) $this->nfce->infNFe->dest->enderDest->xLgr;
         $nro = (string) $this->nfce->infNFe->dest->enderDest->nro;
@@ -320,8 +358,10 @@ class DanfcePos
         $xMun = (string) $this->nfce->infNFe->dest->enderDest->xMun;
         $uf = (string) $this->nfce->infNFe->dest->enderDest->UF;
         $cep = (string) $this->nfce->infNFe->dest->enderDest->CEP;
-        $this->printer->text($xLgr . '' . $nro . '' . $xCpl . '' . $xBairro . '' . $xMun . '' . $uf);
-        //linha divisória ??
+        $this->printer->text($xLgr . ', ' . $nro . ', ' . $xCpl . ', ' . $xBairro);
+        $this->printer->lineFeed();
+        $this->printer->text($xMun . ' - ' . $uf);
+        $this->printer->lineFeed();
     }
     
     /**
@@ -334,12 +374,14 @@ class DanfcePos
     {
         $this->printer->setAlign('C');
         $this->printer->text('Consulte via Leitor de QRCode');
+        $this->printer->lineFeed();
         $qr = (string) $this->nfce->infNFeSupl->qrCode;
         $this->printer->barcodeQRCode($qr);
         if (!empty($this->protNFe)) {
             $nProt = (string) $this->protNFe->infProt->nProt;
             $dhRecbto = (string) $this->protNFe->infProt->dhRecbto;
-            $this->printer->text('Protocolo de autorização ' . $nProt . $dhRecbto);
+            $this->printer->text('Protocolo de autorização ' . $nProt);
+            $this->printer->lineFeed();
         } else {
             $this->printer->setBold();
             $this->printer->text('NOTA FISCAL INVÁLIDA - SEM PROTOCOLO DE AUTORIZAÇÃO');
