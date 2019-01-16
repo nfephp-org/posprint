@@ -234,7 +234,7 @@ class DanfcePos
         $pag = $this->nfce->infNFe->pag;
         $tot = $pag->count();
         for ($x=0; $x<=$tot-1; $x++) {
-            $tPag = $this->tipoPag($pag[0]->tPag);
+            $tPag = (string) $this->tipoPag((string) $pag[0]->tPag);
             $vPag = (float) $pag[0]->vPag;
             $this->printer->text($tPag . '                  R$ '. $vPag);
         }
